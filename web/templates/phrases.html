@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block body %}
+
+	<table class="uk-table uk-text-nowrap">
+            <thead>
+                <tr>
+                    <th>Rank</th>
+                    <th>Phrase</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for phrase_count in phrase_counts %}
+                	<tr>
+                		<td class="rankcolumn">{{ phrase_count['rank'] }}</td>
+                		<td>
+                			<a href="/phrase/{{ phrase_count['phrase'] }}">
+                				{{ phrase_count['phrase'] }}
+                			</a>
+                		</td>
+                	</tr>
+				{% endfor %}
+            </tbody>
+        </table>
+
+{% endblock %}

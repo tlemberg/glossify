@@ -1,0 +1,55 @@
+[data-role=page]{height: 100% !important; position:relative !important;}
+[data-role=footer]{bottom:0; position:absolute !important; top: auto !important; width:100%;}
+
+
+.overview-head {
+	margin-bottom: 40px;
+}
+
+.overview-list {
+	margin-bottom: 40px;
+}
+
+.overview-row {
+	
+}
+
+.overview-tile {
+	float: left;
+	width: 20%;
+	background-color: #eeeeee;
+	margin-bottom: 12px;
+}
+
+.overview-tile-text {
+	position: relative;
+	top: 50%;
+	-webkit-transform: translateY(-50%);
+	-ms-transform: translateY(-50%);
+	transform: translateY(-50%);
+	text-align: center;
+    display: block;
+    font-size: 30;
+}
+
+.study-wrapper {
+	background-color: #ffff00;
+}
+
+
+.study-btn {
+	float: left;
+	width: 20%;
+	margin: 0px;
+}
+
+.study-btn-text {
+	position: relative;
+	top: 50%;
+	-webkit-transform: translateY(-50%);
+	-ms-transform: translateY(-50%);
+	transform: translateY(-50%);
+	text-align: center;
+    display: block;
+    font-size: 30;
+}

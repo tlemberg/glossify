@@ -1,0 +1,26 @@
+{% extends "mobile-base.html" %}
+
+{% block body %}
+
+	<script type="text/javascript" src="{{ url_for('static', filename='js/study.js') }}"></script>
+
+	<div data-role="page" id="study">
+		<div data-role="header">
+	        <h1>Study</h1>
+	    </div>
+
+	    <div data-role="main" class="overview-head ui-content">
+	    	<div class="study-wrapper">
+	    		Words
+	    	</div>
+        </div>
+        <div data-role="footer">
+	        {% for quality in range(0, 5) %}
+	        	<div class="study-btn" data-quality="{{ quality }}">
+	        		<div class="study-btn-text">{{ quality }}</div>
+	        	</div>
+	        {% endfor %}
+	    </div>
+	</div>
+
+{% endblock %}

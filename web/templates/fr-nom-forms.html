@@ -1,0 +1,14 @@
+<table class="uk-table uk-text-nowrap">
+    <tbody>
+        {% if entry.forms %}
+            {% for form in entry.forms %}
+            	<tr>
+            		<td>{{ form }}</td>
+                    <td>{{ entry.forms[form] }}</td>
+            	</tr>
+    		{% endfor %}
+        {% else %}
+            NO FORMS AVAILABLE
+        {% endif %}
+    </tbody>
+</table>

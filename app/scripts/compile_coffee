@@ -1,0 +1,4 @@
+#!/bin/bash
+
+HDIR=../www/coffee
+coffee --compile --output $HDIR/lib/ $HDIR/src/

@@ -1,0 +1,46 @@
+.phrase-head-left {
+	float: left;
+}
+
+.phrase-head-right {
+	float: right;
+}
+
+
+
+
+.tx-list {
+	list-style-type: none;
+	padding: 0px;
+}
+
+.tx-div {
+	height: 46px;
+	padding-left: 12px;
+	padding-top: 14px;
+	padding-right: 12px;
+	margin-left: 0px;
+}
+
+.tx-div-hidden {
+	display: none;
+}
+
+.odd {
+	background-color: #eeeeee;
+}
+
+.tx-div-left {
+	float: left;
+}
+
+.tx-div-right {
+	float: right;
+}
+
+.tx-icon {
+	width: 26px;
+	height: 26px;
+	margin-top: 1px;
+	margin-right: 6px;
+}
