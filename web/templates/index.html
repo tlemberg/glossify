@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block body %}
+
+	<div class="header">
+		<div class="header-left">
+			<a><img src="{{ url_for('static', filename='img/logo.png') }}" /></a>
+		</div>
+		<div class="header-right">
+			<a>Sign in</a>
+		</div>
+	</div>
+
+	<div class="content">
+		<div class="content-left">
+			<img src="{{ url_for('static', filename='img/iphone.png') }}" />
+		</div>
+		<div class="content-right">
+			<div class="content-right-group-1">
+				Acquire a full vocabulary in any language
+			</div>
+			<div class="content-right-group-2">
+				 Learn thousands of new words
+			</div>
+			<div class="content-right-group-3">
+				<a>
+					<div class="facebook-signup-btn">
+					</div>
+				</a>
+			</div>
+			<div class="content-right-group-4">
+				or
+			</div>
+			<div class="content-right-group-5">
+				use your <a class='email-signup-link'>email address</a>
+			</div>
+		</div>
+	</div>
+
+{% endblock %}

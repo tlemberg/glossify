@@ -10,23 +10,19 @@
 		<meta name="author" content="SitePoint">
 
 		<script src="{{ url_for('static', filename='js/jquery-1.11.2.min.js') }}"></script>
-		<script src="{{ url_for('static', filename='js/uikit.min.js') }}"></script>
 		<script src="{{ url_for('static', filename='js/jquery.query-object.js') }}"></script>
 
-		<link rel="stylesheet" href="{{ url_for('static', filename='css/uikit.min.css') }}" />
-		<link rel="stylesheet" href="{{ url_for('static', filename='css/tenk.css') }}" />
+		<link rel="stylesheet" href="{{ url_for('static', filename='less/lib/shared.css') }}" />
+		<link rel="stylesheet" href="{{ url_for('static', filename='less/lib/web.css') }}" />
+
 		{% block head %}
 		{% endblock %}
 		
 	</head>
 
 	<body>
-		<div class="uk-container uk-container-center uk-margin-top uk-margin-large-bottom">
-			<div class="uk-overflow-container">
-				{% block body %}
-				{% endblock %}
-			</div>
-		</div>
+		{% block body %}
+		{% endblock %}
 	</body>
 
 </html>

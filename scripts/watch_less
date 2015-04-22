@@ -1,1 +1,9 @@
-fswatch-run ../www/coffee/src ../scripts/compile_coffee
+#!/bin/bash
+
+SHAREDDIR=$PROJECT_HOME/shared/less
+APPDIR=$PROJECT_HOME/app/www/less
+WEBDIR=$PROJECT_HOME/web/static/less
+
+fswatch-run $SHAREDDIR/src $PROJECT_HOME/scripts/compile_less &
+fswatch-run $APPDIR/src $PROJECT_HOME/scripts/compile_less &
+fswatch-run $WEBDIR/src $PROJECT_HOME/scripts/compile_less &
