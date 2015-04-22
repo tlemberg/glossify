@@ -3,7 +3,7 @@ requirejs.config
 	paths:
 		jquery: '../../js/jquery-2.1.3.min'
 
-requirejs ['jquery', 'strings', 'utils', 'deck', 'api', 'nav', 'css', 'login', 'signup', 'manage', 'overview', 'study'], ($, strings, utils, deck, api, nav, css, login, signup, manage, overview, study) ->
+requirejs ['jquery', 'storage', 'strings', 'utils', 'deck', 'api', 'nav', 'css', 'login', 'signup', 'manage', 'overview', 'study'], ($, storage, strings, utils, deck, api, nav, css, login, signup, manage, overview, study) ->
 
 	$(document).ready (event) ->
 		#logout()
@@ -15,7 +15,11 @@ requirejs ['jquery', 'strings', 'utils', 'deck', 'api', 'nav', 'css', 'login', '
 		#	addLanguage 'clemberg10@gmail.com', 'fr', token, (r) ->
 		#		console.log(r)
 
-		nav.preloadPages('login')
+		userProfile = storage.getUserProfile()
+		if userProfile?
+			nav.preloadPages('overview')
+		else
+			nav.preloadPages('login')
 
 
 	$(window).resize (event) ->

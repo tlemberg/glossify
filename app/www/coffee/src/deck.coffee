@@ -1,8 +1,14 @@
-define ['utils'], (utils) ->
+define ['utils', 'storage'], (utils, storage) ->
 
-	MAX_BUFFER = 3
+	MAX_BUFFER      = 3
+	BOX_SIZE        = 100
+	PAGE_SIZE       = 1000
+	DICTIONARY_SIZE = 10000
 
-	# Pulls a card from a deck object
+	############################################################################
+	# refreshPool
+	#
+	############################################################################
 	refreshPool = (deck) ->
 		# Init list accumulators
 		totalPenalty = 0
@@ -38,6 +44,32 @@ define ['utils'], (utils) ->
 		# Assign the pool to the deck as a property
 		deck['pool']     = pool
 		deck['poolSize'] = Object.keys(pool).length
+
+
+	############################################################################
+	# _updateCards
+	#
+	############################################################################
+	_updateCards = (deck) ->
+		# Get the user profile and language
+		userProfile = storage.getUserProfile()
+		lang        = deck['lang']
+
+		# Create mapping
+		cardMap = deck['cardMap']
+
+		# Iterate over progress in user profile
+		i = 0
+		oldCards = userProfile['langs'][lang]
+		for i in [0..oldCards.length-1]
+			oldCard = userProfile['langs'][lang][i]
+			newCard = cardMap[oldCard['phrase_id']]
+			if newCard?
+				console.log("REPLACING")
+				userProfile['langs'][lang][i]['progress'] = newCard['progress']
+
+		# Save the new object
+		storage.setUserProfile(userProfile)
 			
 
 	############################################################################
@@ -46,15 +78,6 @@ define ['utils'], (utils) ->
 	############################################################################
 	return {
 
-		########################################################################
-		# Creates and returns a deck object, which has the following properties
-		#
-		#	cards  : a list of cards in the deck
-		#	cardMap: a hash mapping phraseIds to phrase objects
-		#	pool   : a distribution from which cards can be drawn (is a hash)
-		#	buffer : a small list of cards that have been recently drawn
-		#
-		########################################################################
 		createDeck: (cards, dictionary) ->
 			# Create a list of card hashes with progress and progress keys
 			cardList = (for card in cards
@@ -70,6 +93,7 @@ define ['utils'], (utils) ->
 
 			# Make the cards a property of a deck object
 			deck =
+				lang   : dictionary['lang']
 				cards  : cardList
 				cardMap: cardMap
 				buffer : []
@@ -85,12 +109,9 @@ define ['utils'], (utils) ->
 		# Draw a card from the pool, creating a new pool if necessary
 		drawCard: (deck) ->
 
-			console.log(deck['pool'])
-
 			# Draw from the pool
 			while not card? or card in deck['buffer']
 				p = utils.randomInt(0, deck['poolSize'] - 1)
-				console.log(p)
 				card = deck['pool'][p]
 
 			# Add the card to the buffer
@@ -109,6 +130,20 @@ define ['utils'], (utils) ->
 			refreshPool(deck)
 
 
+		boxSize: ->
+			BOX_SIZE
+
+
+		pageSize: ->
+			PAGE_SIZE
+
+
+		dictionarySize: ->
+			DICTIONARY_SIZE
+
+
+		updateCards: (cards) ->
+			_updateCards(cards)
 
 
 	}

@@ -63,6 +63,7 @@
       },
       refreshPage: function() {
         page.formatPageDimensions();
+        page.formatGlobalElements();
         return this.pageRenderers()[currentPageId]['refresh']();
       }
     };

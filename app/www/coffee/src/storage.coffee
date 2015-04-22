@@ -9,6 +9,8 @@ define ['utils'], (utils) ->
 	USER_PROFILE_KEY = 'user_profile'
 	DICTIONARY_KEY   = 'dictionary'
 	LANGUAGE_KEY     = 'lang'
+	SECTION_KEY      = 'section'
+	BOX_KEY          = 'box'
 
 
 	############################################################################
@@ -63,6 +65,23 @@ define ['utils'], (utils) ->
 		_setLocalStorageItem("dictionary_#{ lang }", v)
 
 
+	_getSection = ->
+		_getLocalStorageItem(SECTION_KEY)
+
+
+	_setSection = (v) ->
+		_setLocalStorageItem(SECTION_KEY, v)
+
+
+	_getBox = ->
+		_getLocalStorageItem(BOX_KEY)
+
+
+	_setBox = (v) ->
+		_setLocalStorageItem(BOX_KEY, v)
+
+
+
 	############################################################################
 	# Exposed objects
 	#
@@ -89,7 +108,7 @@ define ['utils'], (utils) ->
 			_getLanguage()
 
 
-		_setLanguage: (v) ->
+		setLanguage: (v) ->
 			_setLanguage(v)
 
 
@@ -99,6 +118,22 @@ define ['utils'], (utils) ->
 
 		setDictionary: (lang, v) ->
 			_setDictionary(lang, v)
+
+
+		getSection: ->
+			_getSection()
+
+
+		setSection: (v) ->
+			_setSection(v)
+
+
+		getBox: ->
+			_getBox()
+
+
+		setBox: (v) ->
+			_setBox(v)
 
 	}
 

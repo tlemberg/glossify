@@ -39,7 +39,7 @@ define ['utils'], (utils) ->
 	#
 	############################################################################
 	_getContentHeight = ->
-		utils.appHeight() - _getHeaderHeight - _getFooterHeight()
+		utils.appHeight() - _getHeaderHeight() - _getFooterHeight()
 
 
 	############################################################################
@@ -130,6 +130,6 @@ define ['utils'], (utils) ->
 
 
 		formatGlobalElements: ->
-			_formatGlobalElements
+			_formatGlobalElements()
 
 	}

@@ -13,13 +13,15 @@
           'padding-top': '10px'
         },
         'content': {
-          'background-color': '#cccccc'
+          'background-color': '#cccccc',
+          'overflow-y': 'scroll'
         },
         'footer': {
           'position': 'absolute',
           'bottom': '0px',
           'width': '100%',
-          'background-color': '#333333'
+          'background-color': '#333333',
+          'color': '#ffffff'
         }
       },
       'login': {
@@ -109,11 +111,6 @@
         }
       },
       'overview': {
-        'header': {
-          'background-color': '#333333',
-          'height': '100px',
-          'padding': '20px'
-        },
         'picker': {
           'max-height': '100%',
           'background-color': '#cccccc',
@@ -133,6 +130,48 @@
           'text-align': 'center',
           'display': 'block',
           'font-size': '30'
+        },
+        'btn-left': {
+          'float': 'left',
+          'cursor': 'pointer'
+        },
+        'btn-right': {
+          'float': 'right',
+          'cursor': 'pointer'
+        },
+        'display': {
+          'text-align': 'center',
+          'float': 'left'
+        },
+        'picker-container': {
+          'background-color': '#999999'
+        },
+        'block': {
+          'padding': '10px',
+          'border-radius': '20px'
+        },
+        'block-header': {
+          'padding': '10px',
+          'padding-top': '20px',
+          'padding-bottom': '20px',
+          'background-color': '#999999',
+          'border-top-left-radius': '14px',
+          'border-top-right-radius': '14px'
+        },
+        'block-row': {
+          'padding': '10px',
+          'padding-top': '20px',
+          'padding-bottom': '20px',
+          'background-color': '#ffffff',
+          'border-bottom-style': 'solid',
+          'border-width': '1px',
+          'border-color': '#999999'
+        },
+        'block-sample': {
+          'font-style': 'italic'
+        },
+        'block-row-link': {
+          'cursor': 'pointer'
         }
       },
       'study': {

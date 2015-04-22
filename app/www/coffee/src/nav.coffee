@@ -80,6 +80,9 @@ define ['require', 'api', 'css', 'page', 'login', 'signup', 'manage', 'overview'
 			# Width and height
 			page.formatPageDimensions()
 
+			# Global elements
+			page.formatGlobalElements()
+
 			this.pageRenderers()[currentPageId]['refresh']()
 
 	}

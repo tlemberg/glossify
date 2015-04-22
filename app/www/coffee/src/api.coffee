@@ -2,6 +2,35 @@ define ['utils', 'storage'], (utils, storage) ->
 
 
 	############################################################################
+	# Module properties
+	#
+	############################################################################
+	URL_BASE = 'http://52.10.65.123:5000/api/'
+
+	############################################################################
+	# _apiUrl
+	#
+	############################################################################
+	_apiUrl = (url, authenticated, params) ->
+
+		params ||= {}
+
+		# Define authentication params
+		if authenticated
+			params['email']      = storage.getUserProfile()['email']
+			params['auth_token'] = storage.getAccessToken()
+
+		# Create strings for the GET parameters
+		paramStr = ("#{ k }=#{ v }" for k, v of params).join('&')
+
+		# Return the URL
+		if paramStr
+			"#{ URL_BASE }#{ url }?#{ paramStr }"
+		else
+			"#{ URL_BASE }#{ url }"
+
+
+	############################################################################
 	# _createUser
 	#
 	#	Creates a user on the server and executes a response handler
@@ -17,7 +46,7 @@ define ['utils', 'storage'], (utils, storage) ->
 
 		# Send the remote call
 		$.ajax
-			url      : "http://52.10.65.123:5000/api/create-user" # TODO: Authentication
+			url      : _apiUrl('create-user')
 			method   : "POST"
 			data     : { email: email, password: password }
 			dataType : 'json'
@@ -43,7 +72,7 @@ define ['utils', 'storage'], (utils, storage) ->
 	############################################################################
 	_authenticateUser = (email, password, handler) ->
 		$.ajax
-			url      : "http://52.10.65.123:5000/api/authenticate-user"
+			url      : _apiUrl('authenticate-user')
 			method   : "POST"
 			data     : { email: email, password: password }
 			dataType : 'json'
@@ -160,13 +189,9 @@ define ['utils', 'storage'], (utils, storage) ->
 	############################################################################
 	_addLanguage = (lang, handler) ->
 
-		# Prepare some variables
-		email = storage.getUserProfile()['email']
-		token = storage.getAccessToken()
-
 		# Send the remote call
 		$.ajax
-			url      : "http://52.10.65.123:5000/api/add-language/#{ email }/#{ lang }?auth_token=#{ token }"
+			url      : _apiUrl("add-language/#{ lang }", authenticated = true)
 			dataType : 'json'
 			success  : (json) ->
 				handler(json)	

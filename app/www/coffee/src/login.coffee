@@ -1,4 +1,4 @@
-define ['strings', 'utils', 'api', 'nav', 'css'], (strings, utils, api, nav, css) ->
+define ['strings', 'storage', 'utils', 'api', 'nav', 'css'], (strings, storage, utils, api, nav, css) ->
 
 
 	############################################################################
@@ -80,6 +80,7 @@ define ['strings', 'utils', 'api', 'nav', 'css'], (strings, utils, api, nav, css
 			# Attempt to fetch an access token via the API
 			api.authenticateUser email, password, (json) ->
 				if json['success']
+					storage.setLanguage('fr') # TODO: generalize
 
 					api.ensureDictionary 'fr', (json) ->
 						if json['success']

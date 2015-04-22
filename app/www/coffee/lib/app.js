@@ -7,9 +7,15 @@
     }
   });
 
-  requirejs(['jquery', 'strings', 'utils', 'deck', 'api', 'nav', 'css', 'login', 'signup', 'manage', 'overview', 'study'], function($, strings, utils, deck, api, nav, css, login, signup, manage, overview, study) {
+  requirejs(['jquery', 'storage', 'strings', 'utils', 'deck', 'api', 'nav', 'css', 'login', 'signup', 'manage', 'overview', 'study'], function($, storage, strings, utils, deck, api, nav, css, login, signup, manage, overview, study) {
     $(document).ready(function(event) {
-      return nav.preloadPages('login');
+      var userProfile;
+      userProfile = storage.getUserProfile();
+      if (userProfile != null) {
+        return nav.preloadPages('overview');
+      } else {
+        return nav.preloadPages('login');
+      }
     });
     return $(window).resize(function(event) {
       return nav.refreshPage();

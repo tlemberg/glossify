@@ -1,4 +1,4 @@
-define ['utils', 'nav', 'deck', 'css'], (utils, nav, deck, css) ->
+define ['utils', 'stack', 'storage', 'nav', 'deck', 'css', 'page'], (utils, stack, storage, nav, deck, css, page) ->
 
 
 	############################################################################
@@ -41,11 +41,8 @@ define ['utils', 'nav', 'deck', 'css'], (utils, nav, deck, css) ->
 			_card['progress'] = $(this).data('progress')
 			deck.updateCard(_deck, _card)
 
-			console.log('drawing card')
-
 			# Draw a new card
 			_card = deck.drawCard(_deck)
-			console.log(_card)
 
 			# Refresh the page
 			_refreshPage()
@@ -55,10 +52,15 @@ define ['utils', 'nav', 'deck', 'css'], (utils, nav, deck, css) ->
 			_refreshPage()
 
 		$('#study-back-btn').click (event) ->
-			api.updateUserPofile _userProfile, (json) ->
-				if not json['success']
-					console.log(json)
-				_nav.loadPage('overview')
+
+			section = storage.getSection()
+			box     = storage.getBox()
+			lang    = storage.getLanguage()
+			cards   = stack.getCards(section, box, lang)
+
+			deck.updateCards(_deck)
+
+			_nav.loadPage('overview')
 
 
 	############################################################################
@@ -86,7 +88,7 @@ define ['utils', 'nav', 'deck', 'css'], (utils, nav, deck, css) ->
 		# Set progress counter
 		_setProgressCounter()
 
-		$('.study-footer').css('height', getFooterHeight())
+		$('.study-footer').css('height', page.getFooterHeight())
 
 		$('.study-content').css('border-color', BG_COLORS[_card['progress']])
 
@@ -109,20 +111,19 @@ define ['utils', 'nav', 'deck', 'css'], (utils, nav, deck, css) ->
 	# _loadPage
 	#
 	############################################################################
-	_loadPage = (params) ->
-		# Extract some parameters
-		_userProfile = params['userProfile']
-		dictionary = storage.getDictionary('')
-		_tileId      = params['tileId']
+	_loadPage = ->
+		userProfile = storage.getUserProfile()
+		lang        = storage.getLanguage()
+		section     = storage.getSection()
+		box         = storage.getBox()
+		dictionary  = storage.getDictionary(lang)
 
-
-		lang = _dictionary['lang']
-
-		# Get the cards from the user profile
-		cards = _userProfile['langs'][lang][_tileId]
+		minIndex = minIndex = (section - 1) * deck.boxSize() + box * deck.boxSize()
+		maxIndex = minIndex + deck.boxSize()
+		cards = userProfile['langs'][lang].slice(minIndex, maxIndex)
 
 		# Construct a deck and store is as a module variable
-		_deck = deck.createDeck(cards, _dictionary)
+		_deck = deck.createDeck(cards, dictionary)
 
 		# Draw a card to start the deck
 		_card = deck.drawCard(_deck)
@@ -229,19 +230,11 @@ define ['utils', 'nav', 'deck', 'css'], (utils, nav, deck, css) ->
 
 
 	############################################################################
-	# _getFooterHeight
-	#
-	############################################################################
-	_getFooterHeight = ->
-		utils.appWidth() / 5
-
-
-	############################################################################
 	# _setStudyFooterCss
 	#
 	############################################################################
 	_setStudyFooterCss = ->
-		btnWidth = getFooterHeight()
+		btnWidth = page.getFooterHeight()
 
 		# Set the tile width and heights
 		$('.study-btn').css('width', btnWidth)
@@ -259,7 +252,7 @@ define ['utils', 'nav', 'deck', 'css'], (utils, nav, deck, css) ->
 		# Calculate the new height of the content pane and set it
 		contentMargin = utils.stripNumeric(css.getStaticCss('study', 'container', 'padding'))
 		borderWidth = utils.stripNumeric(css.getStaticCss('study', 'content', 'border-width'))
-		contentHeight = utils.appHeight() - getFooterHeight() - contentMargin * 2 - headerHeight
+		contentHeight = utils.appHeight() - page.getFooterHeight() - contentMargin * 2 - headerHeight
 		$('#study-container').css('height', contentHeight)
 
 

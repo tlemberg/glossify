@@ -8,7 +8,7 @@
       return utils.appWidth() / 5;
     };
     _getContentHeight = function() {
-      return utils.appHeight() - _getHeaderHeight - _getFooterHeight();
+      return utils.appHeight() - _getHeaderHeight() - _getFooterHeight();
     };
     _getFooterHeight = function() {
       return utils.appWidth() / 5;
@@ -40,7 +40,7 @@
         return _formatPageDimensions();
       },
       formatGlobalElements: function() {
-        return _formatGlobalElements;
+        return _formatGlobalElements();
       }
     };
   });

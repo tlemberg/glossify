@@ -1,0 +1,6 @@
+#!/bin/bash
+
+HDIR=$PROJECT_HOME/shared/less
+find $HDIR/src/ -name '*.less' -exec lessc {} \; > $HDIR/lib/shared.css
+cp $HDIR/lib/shared.css $PROJECT_HOME/app/www/css
+cp $HDIR/lib/shared.css $PROJECT_HOME/web/static/css
