@@ -1,4 +1,21 @@
-define ['strings', 'utils', 'nav', 'css', 'api'], (strings, utils, nav, css, api) ->
+define [
+	'strings',
+	'storage',
+	'utils',
+	'api',
+	'nav',
+	'css',
+	'pageview',
+],
+(
+	strings,
+	storage,
+	utils,
+	api,
+	nav,
+	css,
+) ->
+
 
 	############################################################################
 	# Module properties
@@ -8,10 +25,13 @@ define ['strings', 'utils', 'nav', 'css', 'api'], (strings, utils, nav, css, api
 
 
 	############################################################################
-	# _preloadPage
+	# _loadPage
 	#
 	############################################################################
-	_preloadPage = (userProfile, dictionary, params) ->
+	_loadPage = (template) ->
+
+		$(".signup-page").html(template())
+
 		_registerEvents()
 
 
@@ -19,16 +39,8 @@ define ['strings', 'utils', 'nav', 'css', 'api'], (strings, utils, nav, css, api
 	# _refreshPage
 	#
 	############################################################################
-	_refreshPage = (userProfile, dictionary, params) ->
+	_refreshPage = ->
 		console.log("refresh")
-
-
-	############################################################################
-	# _loadPage
-	#
-	############################################################################
-	_loadPage = (userProfile, dictionary, params) ->
-		console.log("load")
 
 
 	############################################################################
@@ -36,25 +48,39 @@ define ['strings', 'utils', 'nav', 'css', 'api'], (strings, utils, nav, css, api
 	#
 	############################################################################
 	_registerEvents = ->
-		$('#signup-btn').click (event) ->
+		$('.signup-page .signup-btn').click (event) ->
+
+			console.log("HIHIHI")
 
 			# Collect inputs from the UI
-			email     = $('#signup-email-input').val()
-			password1 = $('#signup-password-input').val()
-			password2 = $('#signup-retype-password-input').val()
+			email     = $('.signup-page .email-input').val()
+			password1 = $('.signup-page .password-input-1').val()
+			password2 = $('.signup-page .password-input-2').val()
 
 			# Validate inputs
 			if not _validateEmail(email)
-				$('#signup-error').html(strings.getString('invalidEmail'))
+				_nav.showAlert(strings.getString('invalidEmail'))
 			# Validate password
 			else if not _validatePassword(password1, password2)
-				$('#signup-error').html(strings.getString('invalidPassword'))
+				_nav.showAlert(strings.getString('invalidPassword'))
 			else
-				$('#signup-error').html('')
+				api.createUser email, password1, (json) ->
+					console.log(json)
 
-			# Call the API
-			api.createUser email, password1, (json) ->
-				console.log(json)
+					if json['success']
+						# Attempt to fetch an access token via the API
+						api.authenticateUser email, password1, (json) ->
+							if json['success']
+								storage.setLanguage('fr') # TODO: generalize
+
+								api.ensureDictionary 'fr', (json) ->
+									if json['success']
+										_nav.loadPage('overview')
+									else
+										# Error ensuring dictionary
+										_nav.showAlert(strings.getString('unexpectedFailure'))
+					else
+						_nav.showAlert("error creating user")
 
 
 	############################################################################
@@ -79,61 +105,11 @@ define ['strings', 'utils', 'nav', 'css', 'api'], (strings, utils, nav, css, api
 	############################################################################
 	return {
 
+		refreshPage: ->
+			_refreshPage()
 
-		########################################################################
-		# preloadStudyPage
-		#
-		#	Generates the elements of the page that only need to be built once
-		#
-		# Parameters:
-		#
-		#	userProfile: userProfile hash
-		#	dictionary : dictionary hash
-		#	params     : extra parameters
-		#	
-		# Returns:
-		#	Nothing
-		########################################################################
-		preloadPage: (userProfile, dictionary, params) ->
+		loadPage: (template) ->
 			_nav = require('nav')
-
-			_preloadPage(userProfile, dictionary, params)
-
-
-		########################################################################
-		# refreshStudyPage
-		#
-		#	Adjusts the elements of the page every time it changes size
-		#
-		# Parameters:
-		#
-		#	userProfile: userProfile hash
-		#	dictionary : dictionary hash
-		#	params     : extra parameters
-		#	
-		# Returns:
-		#	Nothing
-		########################################################################
-		refreshPage: (userProfile, dictionary, params) ->
-			_refreshPage(userProfile, dictionary, params)
-
-
-		########################################################################
-		# loadStudyPage
-		#
-		#	Adjusts the elements of the page when it is navigated to in the app
-		#
-		# Parameters:
-		#
-		#	userProfile: userProfile hash
-		#	dictionary : dictionary hash
-		#	params     : extra parameters
-		#	
-		# Returns:
-		#	Nothing
-		########################################################################
-		loadPage: (userProfile, dictionary, params) ->
-			_loadPage(userProfile, dictionary, params)
-
+			_loadPage(template)
 
 	}

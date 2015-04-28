@@ -1,0 +1,5 @@
+#!/bin/bash
+
+APPDIR=$PROJECT_HOME/app/www/slim
+
+fswatch-run $APPDIR/src $PROJECT_HOME/scripts/compile_slim.py

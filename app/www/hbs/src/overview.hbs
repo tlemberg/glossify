@@ -1,0 +1,23 @@
+<div class="content">
+	<div class="content-meta-group">
+		<div class="content-group-1">
+			words {{interval.min}} through {{interval.max}}
+		</div>
+		<div class="content-group-2">
+			<ul>
+				{{#each boxes}}
+					<li>
+						<div class="box-div" data-index="{{index}}">
+							<div class="box-group-left">
+								{{sample}}
+							</div>
+						</div>
+					</li>
+				{{/each}}
+			</ul>
+		</div>
+	</div>
+</div>
+
+<div class="footer">
+</div>

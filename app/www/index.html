@@ -4,95 +4,14 @@
         <meta charset="utf-8" />
         <meta name="format-detection" content="telephone=no" />
         <meta name="msapplication-tap-highlight" content="no" />
-        <!-- WARNING: for iOS 7, remove the width=device-width and height=device-height attributes. See https://issues.apache.org/jira/browse/CB-4323 -->
-        <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi" />
 
-        <link rel="stylesheet" type="text/css" href="css/index.css" />
+        <link rel="stylesheet" type="text/css" href="less/lib/app.css" />
 
         <script data-main="coffee/lib/app.js" src="js/require.js"></script>
 
-        <title>Hello World</title>
+        <title>Glossify - learn any language</title>
 
     </head>
     <body>
-        <div id="app-container" class="app-container">
-
-            <div id="splash" class="splash">
-                SPLASH SCREEN
-            </div>
-
-            <div id="login-page" class="page page-off login-page">
-                <div id="login-header" class="login-header">
-                    LOGIN
-                </div>
-                <div id="login-container" class="login-container">
-                    <div class="login-input-container login-input-container-top">
-                        <input type="text" id="login-email-input" class="login-text-input" placeholder="email address" />
-                    </div>
-                    <div class="login-input-container">
-                        <input type="password" id="login-password-input" class="login-text-input" placeholder="password" />
-                    </div>
-                    <a id="login-btn" class="login-btn"><div id="login-btn-div" class="login-btn-div">log in</div></a>
-                    <div class="login-or">or</div>
-                    <a id="login-signup-btn" class="login-btn"><div class="login-btn-div">create an account</div></a>
-                    <div id="login-error" class="login-error"></div>
-                </div>
-            </div>
-
-            <div id="signup-page" class="page page-off signup-page">
-                <div id="signup-header" class="signup-header">
-                    CREATE AN ACCOUNT
-                </div>
-                <div id="signup-container" class="signup-container">
-                    <div class="signup-input-container signup-input-container-top">
-                        <input type="text" id="signup-email-input" class="signup-text-input" placeholder="email address" />
-                    </div>
-                    <div class="signup-input-container">
-                        <input type="password" id="signup-password-input" class="signup-text-input" placeholder="password" />
-                    </div>
-                    <div class="signup-input-container">
-                        <input type="password" id="signup-retype-password-input" class="signup-text-input" placeholder="retype password" />
-                    </div>
-                    <a id="signup-btn" class="signup-btn"><div class="signup-btn-div">create account</div></a>
-                    <div id="signup-error" class="signup-error"></div>
-                </div>
-            </div>
-
-            <div id="overview-page" class="page page-off overview-page">
-                <div id="overview-header" class="global-header">
-                   <span class="report-username"></span>
-                </div>
-                <div id="overview-content" class="global-content"></div>
-                <div id="overview-footer" class="global-footer">
-                    <a id="overview-btn-left"><div class="overview-btn-left" class="overview-btn-left"><=</div></a>
-                    <div id="overview-display" class="overview-display"></div>
-                    <a id="overview-btn-right"><div class="overview-btn-left" class="overview-btn-right">=></div></a>
-                </div>
-            </div>
-
-            <div id="study-page" class="page page-off study-page">
-                <div id="study-header" class="study-header">
-                    <a><div id="study-back-btn" class="study-back-btn">Back</div></a>
-                    <a><div id="study-progress-counter" class="study-progress-counter"></div></a>
-                </div>
-                <div id="study-container" class="study-container">
-                    <div id="study-content" class="study-content">
-                        <div id="study-top" class="study-half study-top">
-                            <span id="study-top-text" class="study-top-text"></span>
-                        </div>
-                        <div id="study-bottom" class="study-half study-bottom">
-                            <span id="study-bottom-text" class="study-bottom-text"></span>
-                        </div>
-                    </div>
-                </div>
-                <div id="study-footer" class="study-footer">
-                    <div id="study-flip-btn-container" class="study-flip-btn-container">
-                        <a id="study-flip-button" class="study-flip-button"><div>reveal answer</div></a>
-                    </div>
-                    <div id="study-btn-container" class="study-btn-container"></div>
-                </div>
-            </div>
-
-        </div>
     </body>
 </html>

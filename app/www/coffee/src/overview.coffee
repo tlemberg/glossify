@@ -1,4 +1,4 @@
-define ['utils', 'storage', 'nav', 'css', 'deck'], (utils, storage, nav, css, deck) ->
+define ['utils', 'storage', 'nav', 'css', 'deck', 'stack'], (utils, storage, nav, css, deck, stack) ->
 
 
 	############################################################################
@@ -16,50 +16,10 @@ define ['utils', 'storage', 'nav', 'css', 'deck'], (utils, storage, nav, css, de
 
 
 	############################################################################
-	# _preloadPage
-	#
-	#	Preload the page
-	#
-	# Parameters:
-	#	None
-	#	
-	# Returns:
-	#	Nothing.
+	# _loadPage
 	#
 	############################################################################
-	_preloadPage = ->
-		console.log('preload')
-
-
-	############################################################################
-	# _preloadPage
-	#
-	#	Preload the page
-	#
-	# Parameters:
-	#	None
-	#	
-	# Returns:
-	#	Nothing.
-	#
-	############################################################################
-	_refreshPage = ->
-		console.log('refresh')
-
-
-	############################################################################
-	# _preloadPage
-	#
-	#	Preload the page
-	#
-	# Parameters:
-	#	None
-	#	
-	# Returns:
-	#	Nothing.
-	#
-	############################################################################
-	_loadPage = (params) ->
+	_loadPage = (template) ->
 
 		# Ensure progress is here
 		lang = storage.getLanguage()
@@ -67,30 +27,53 @@ define ['utils', 'storage', 'nav', 'css', 'deck'], (utils, storage, nav, css, de
 		if lang not in Object.keys(userProfile['langs'])
 			_createEmptyProgress()
 
-		# Build header
-		$('#overview-header').html('FRENCH')
-
 		# Build footer
 		section = storage.getSection()
 		if not section
 			section = 1
 
-		_setSection(section)
+		# Build args
+		userProfile = storage.getUserProfile()
+		dictionary  = storage.getDictionary(lang)
+
+		sectionInterval = stack.getSectionInterval(section)
+
+		templateArgs =
+			interval:
+				min: sectionInterval['min'] + 1
+				max: sectionInterval['max'] + 1
+			boxes   : stack.getBoxes(userProfile, dictionary, section, lang, 100)
+
+		$(".overview-page").html(template(templateArgs))
+
+		# _setSection(section)
 
 		# Register page events
 		_registerEvents()
+
+
+	############################################################################
+	# _refreshPage
+	#
+	############################################################################
+	_refreshPage = ->
+		console.log('refresh')
 		
 
 	############################################################################
+	# _getBoxes
+	#
+	############################################################################
+	_getBoxes = (section, dictionary) ->
+		minIndex = (section - 1) * 1000
+		maxIndex = section * 1000 - 1
+
+		boxes = {}
+		nBoxes = deck.pageSize() / deck.boxSize()
+
+
+	############################################################################
 	# _setPickerHtml
-	#
-	#	Set the picker's html
-	#
-	# Parameters:
-	#	None
-	#	
-	# Returns:
-	#	Nothing.
 	#
 	############################################################################
 	_setPickerHtml = ->
@@ -180,24 +163,17 @@ define ['utils', 'storage', 'nav', 'css', 'deck'], (utils, storage, nav, css, de
 	############################################################################
 	# _registerEvents
 	#
-	#	Register page events
-	#
-	# Parameters:
-	#	None
-	#	
-	# Returns:
-	#	Nothing.
-	#
 	############################################################################
 	_registerEvents = ->
 
-		# Clicking on a tile on the overview page
-		$('.overview-tile-link').click (event) ->
-			event.preventDefault();
-			tileId = $(this).data("tile-id")
+		$('.overview-page .box-div').click (event) ->
+			index = $(this).data('index')
+			storage.setBox(index)
 
-			_nav.loadPage 'study',
-				tileId     : tileId
+			console.log(index)
+
+			_nav.loadPage('study')
+
 
 		$('#overview-btn-left').click (event) ->
 			_setSection(storage.getSection() - 1)
@@ -234,17 +210,11 @@ define ['utils', 'storage', 'nav', 'css', 'deck'], (utils, storage, nav, css, de
 	############################################################################
 	return {
 
-		preloadPage: ->
+		loadPage: (template) ->
 			_nav = require('nav')
-			_preloadPage()
-
+			_loadPage(template)
 
 		refreshPage: ->
 			_refreshPage()
-
-
-		loadPage: (params) ->
-			_loadPage(params)
-
 
 	}

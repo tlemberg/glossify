@@ -2,7 +2,7 @@
 (function() {
   define(['utils'], function(utils) {
     var MAX_PAGE_ASPECT, MAX_PAGE_WIDTH, _formatGlobalElements, _formatPageDimensions, _getContentHeight, _getFooterHeight, _getHeaderHeight;
-    MAX_PAGE_WIDTH = 400;
+    MAX_PAGE_WIDTH = 800;
     MAX_PAGE_ASPECT = 1.5;
     _getHeaderHeight = function() {
       return utils.appWidth() / 5;
@@ -14,15 +14,13 @@
       return utils.appWidth() / 5;
     };
     _formatPageDimensions = function() {
-      var pageHeight, pageWidth, pageX, pageY;
+      var pageHeight, pageWidth;
       pageWidth = Math.min(MAX_PAGE_WIDTH, utils.windowWidth());
-      pageHeight = Math.min(pageWidth * MAX_PAGE_ASPECT, utils.windowHeight());
-      pageX = (utils.windowWidth() - pageWidth) / 2;
-      pageY = (utils.windowHeight() - pageHeight) / 2;
+      pageHeight = utils.windowHeight();
       $(".page").css('width', utils.withUnit(pageWidth, 'px'));
       $(".page").css('height', utils.withUnit(pageHeight, 'px'));
-      $(".page").css('left', utils.withUnit(pageX, 'px'));
-      return $(".page").css('top', utils.withUnit(pageY, 'px'));
+      $(".page").css('margin-left', 'auto');
+      return $(".page").css('margin-right', 'auto');
     };
     _formatGlobalElements = function() {
       $('.global-header').css('height', utils.withUnit(_getHeaderHeight(), 'px'));

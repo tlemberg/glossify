@@ -3,18 +3,21 @@
   requirejs.config({
     baseUrl: 'coffee/lib',
     paths: {
-      jquery: '../../js/jquery-2.1.3.min'
+      jquery: '../../js/jquery-2.1.3.min',
+      hbs: '../../require-handlebars-plugin/hbs'
     }
   });
 
-  requirejs(['jquery', 'storage', 'strings', 'utils', 'deck', 'api', 'nav', 'css', 'login', 'signup', 'manage', 'overview', 'study'], function($, storage, strings, utils, deck, api, nav, css, login, signup, manage, overview, study) {
+  requirejs(['jquery', 'nav', 'storage'], function($, nav, storage) {
     $(document).ready(function(event) {
       var userProfile;
+      storage.logout();
+      nav.initPages();
       userProfile = storage.getUserProfile();
       if (userProfile != null) {
-        return nav.preloadPages('overview');
+        return nav.loadPage('overview');
       } else {
-        return nav.preloadPages('login');
+        return nav.loadPage('login');
       }
     });
     return $(window).resize(function(event) {

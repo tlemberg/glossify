@@ -82,7 +82,7 @@
           result: dictionary
         });
       } else {
-        return fetchDictionary(lang, handler);
+        return _fetchDictionary(lang, handler);
       }
     };
     _updateUserProfile = function(handler) {
@@ -126,9 +126,6 @@
       addLanguage: function(lang, handler) {
         return _addLanguage(lang, handler);
       },
-      fetchDictionary: function(lang, handler) {
-        return _fetchDictionary(lang, handler);
-      },
       ensureDictionary: function(lang, handler) {
         return _ensureDictionary(lang, handler);
       },
@@ -147,10 +144,6 @@
           },
           'addLanguage': {
             func: this.addLanguage,
-            params: ['lang']
-          },
-          'fetchDictionary': {
-            func: this.fetchDictionary,
             params: ['lang']
           },
           'updateUserProfile': {

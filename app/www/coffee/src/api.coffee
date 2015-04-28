@@ -139,7 +139,7 @@ define ['utils', 'storage'], (utils, storage) ->
 				success: 1
 				result : dictionary
 		else
-			fetchDictionary(lang, handler)
+			_fetchDictionary(lang, handler)
 
 
 	############################################################################
@@ -213,10 +213,6 @@ define ['utils', 'storage'], (utils, storage) ->
 
 		addLanguage: (lang, handler) ->
 			_addLanguage(lang, handler)
-			
-
-		fetchDictionary: (lang, handler) ->
-			_fetchDictionary(lang, handler)
 
 
 		ensureDictionary: (lang, handler) ->
@@ -236,9 +232,6 @@ define ['utils', 'storage'], (utils, storage) ->
 				params: ['email', 'password']
 			'addLanguage':
 				func: this.addLanguage
-				params: ['lang']
-			'fetchDictionary':
-				func: this.fetchDictionary
 				params: ['lang']
 			'updateUserProfile':
 				func: this.updateUserProfile
