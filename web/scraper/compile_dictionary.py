@@ -43,5 +43,5 @@ print obj
 
 s = dumps(obj)
 
-with open("/home/ubuntu/projects/tenk/templates/dictionaries/fr.json", "w") as f:
+with open("templates/dictionaries/fr.json", "w") as f:
 	f.write(s)

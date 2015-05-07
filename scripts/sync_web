@@ -1,0 +1,5 @@
+#!/bin/bash
+
+cp -rf $PROJECT_HOME/web/* /var/www/glossify/
+cp -rf /home/ubuntu/Envs/tenk/lib/python2.7/site-packages /var/www/glossify/
+

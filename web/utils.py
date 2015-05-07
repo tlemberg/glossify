@@ -10,11 +10,11 @@ from flask.ext.mail import Mail
 # App
 app = Flask('tenk')
 
-# API
-api = restful.Api(app)
-
 # CORS
 CORS(app, resources=r'/api/*', allow_headers='Content-Type')
+
+# API
+api = restful.Api(app)
 
 # Mongo DB
 mongo = PyMongo(app)
@@ -22,10 +22,6 @@ mongo = PyMongo(app)
 # Config the app
 app.config['DEBUG'] = True
 app.config['SECRET_KEY'] = 'super-secret'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////data/sqlite/tenk.db'
-
-# SQLAlchemy DB
-sql_db = SQLAlchemy(app)
 
 # Helper methods
 class JSONEncoder(json.JSONEncoder):
@@ -39,3 +35,7 @@ def json_result(obj):
 
 # Mail
 mail = Mail(app)
+
+# Domains
+web_domain = 'glossify.net'
+app_domain = 'http://glossify.net.s3-website-us-west-2.amazonaws.com/'

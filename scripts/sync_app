@@ -1,0 +1,1 @@
+s3put -a $AWS_ACCESS_KEY_ID -s $AWS_SECRET_ACCESS_KEY -b glossify.net -p $PROJECT_HOME/app/www $PROJECT_HOME/app/www
