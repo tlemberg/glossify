@@ -1,21 +1,23 @@
 <div class="content">
-	<div class="content-meta-group">
-		<div class="content-group-1">
-			words {{interval.min}} through {{interval.max}}
+	<div class="nav-header">
+		<div class="arrow-btn-left">
+			<div class="arrow-btn-bg">
+				<img class="arrow-img" src="img/icons/left15.png" />
+			</div>
 		</div>
-		<div class="content-group-2">
-			<ul>
-				{{#each boxes}}
-					<li>
-						<div class="box-div" data-index="{{index}}">
-							<div class="box-group-left">
-								{{sample}}
-							</div>
-						</div>
-					</li>
-				{{/each}}
-			</ul>
+		<div class="interval-text">
 		</div>
+		<div class="arrow-btn-right">
+			<div class="arrow-btn-bg">
+				<img class="arrow-img" src="img/icons/right11.png" />
+			</div>
+		</div>
+	</div>
+	<div class="box-list-container">
+		{{#each sections}}
+			<div class="box-list box-list-{{this}}">
+			</div>
+		{{/each}}
 	</div>
 </div>
 

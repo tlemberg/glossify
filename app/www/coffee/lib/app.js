@@ -11,7 +11,6 @@
   requirejs(['jquery', 'nav', 'storage'], function($, nav, storage) {
     $(document).ready(function(event) {
       var userProfile;
-      storage.logout();
       nav.initPages();
       userProfile = storage.getUserProfile();
       if (userProfile != null) {

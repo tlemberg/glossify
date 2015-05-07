@@ -1,4 +1,4 @@
-define ['utils', 'storage'], (utils, storage) ->
+define ['utils', 'storage', 'nav', 'strings'], (utils, storage, nav, strings) ->
 
 
 	############################################################################
@@ -6,6 +6,7 @@ define ['utils', 'storage'], (utils, storage) ->
 	#
 	############################################################################
 	URL_BASE = 'http://52.10.65.123:5000/api/'
+	_nav = undefined
 
 	############################################################################
 	# _apiUrl
@@ -43,6 +44,7 @@ define ['utils', 'storage'], (utils, storage) ->
 	#
 	############################################################################
 	_createUser = (email, password, handler) ->
+		_nav.showModal("Creating user", "ajax", 1000)
 
 		# Send the remote call
 		$.ajax
@@ -50,8 +52,12 @@ define ['utils', 'storage'], (utils, storage) ->
 			method   : "POST"
 			data     : { email: email, password: password }
 			dataType : 'json'
+			timeout  : 10 * 1000
 			success  : (json) ->
+				_nav.hideModal()
 				handler(json)
+			error    : (jqXHR, textStatus, thownError) ->
+				_nav.showModal(strings.getString("ajaxError"), "alert")
 
 
 	############################################################################
@@ -71,16 +77,21 @@ define ['utils', 'storage'], (utils, storage) ->
 	#
 	############################################################################
 	_authenticateUser = (email, password, handler) ->
+		_nav.showModal("Signing in", "ajax", 1000)
 		$.ajax
 			url      : _apiUrl('authenticate-user')
 			method   : "POST"
 			data     : { email: email, password: password }
 			dataType : 'json'
+			timeout  : 10 * 1000
 			success  : (json) ->
+				_nav.hideModal()
 				if json['success']
 					storage.setAccessToken(json['result']['token'])
 					storage.setUserProfile(json['result']['userProfile'])
 				handler(json)
+			error    : (jqXHR, textStatus, thownError) ->
+				_nav.showModal(strings.getString("ajaxError"), "alert")
 
 
 	############################################################################
@@ -97,6 +108,7 @@ define ['utils', 'storage'], (utils, storage) ->
 	#
 	############################################################################
 	_fetchDictionary = (lang, handler) ->
+		_nav.showModal("Downloading dictionary", "ajax", 1000)
 
 		# Prepare some variables
 		token = storage.getAccessToken()
@@ -105,13 +117,55 @@ define ['utils', 'storage'], (utils, storage) ->
 		$.ajax
 			url      : "http://52.10.65.123:5000/api/get-dictionary/#{ lang }?auth_token=#{ token }"
 			dataType : 'json'
+			timeout  : 10 * 1000
 			success  : (json) ->
+				_nav.hideModal()
 				if json['success'] is 1
 					dictionary = json['result']
 					storage.setDictionary(lang, dictionary)
 
 				# Refresh the page now that we have made an attempt at fetching the dictionary
 				handler(json)
+			error    : (jqXHR, textStatus, thownError) ->
+				_nav.showModal(strings.getString("ajaxError"), "alert")
+
+
+	############################################################################
+	# _updateUserProfile
+	#
+	#	Updates a userProfile on the server and executes a response handler
+	#
+	# Parameters:
+	#	None
+	#	
+	# Returns:
+	#	Nothing. Executes the response handler.
+	#
+	############################################################################
+	_updateUserProfile = (handler) ->
+		_nav.showModal("Updating user profile", "ajax", 1000)
+
+		# Prepare some variables
+		userProfile = storage.getUserProfile()
+		email = userProfile['email']
+		token = storage.getAccessToken()
+
+		# Send the remote call
+		$.ajax
+			url      : "http://52.10.65.123:5000/api/update-progress/#{ email }?auth_token=#{ token }"
+			method   : 'post'
+			data     : { cards: cards }
+			dataType : 'json'
+			timeout  : 10 * 1000
+			success  : (json) ->
+				_nav.hideModal()
+				if json['success'] is 1
+					dictionary = json['result']
+
+				# Refresh the page now that we have made an attempt at fetching the dictionary
+				handler(json)
+			error    : (jqXHR, textStatus, thownError) ->
+				_nav.showModal(strings.getString("ajaxError"), "alert")
 
 
 	############################################################################
@@ -143,39 +197,6 @@ define ['utils', 'storage'], (utils, storage) ->
 
 
 	############################################################################
-	# _updateUserProfile
-	#
-	#	Updates a userProfile on the server and executes a response handler
-	#
-	# Parameters:
-	#	None
-	#	
-	# Returns:
-	#	Nothing. Executes the response handler.
-	#
-	############################################################################
-	_updateUserProfile = (handler) ->
-
-		# Prepare some variables
-		userProfile = storage.getUserProfile()
-		email = userProfile['email']
-		token = storage.getAccessToken()
-
-		# Send the remote call
-		$.ajax
-			url      : "http://52.10.65.123:5000/api/update-progress/#{ email }?auth_token=#{ token }"
-			method   : 'post'
-			data     : { cards: cards }
-			dataType : 'json'
-			success  : (json) ->
-				if json['success'] is 1
-					dictionary = json['result']
-
-				# Refresh the page now that we have made an attempt at fetching the dictionary
-				handler(json)
-
-
-	############################################################################
 	# _addLanguage
 	#
 	#	Adds a language on the server and executes a response handler
@@ -193,8 +214,9 @@ define ['utils', 'storage'], (utils, storage) ->
 		$.ajax
 			url      : _apiUrl("add-language/#{ lang }", authenticated = true)
 			dataType : 'json'
+			timeout  : 10 * 1000
 			success  : (json) ->
-				handler(json)	
+				handler(json)
 
 
 	############################################################################
@@ -204,22 +226,27 @@ define ['utils', 'storage'], (utils, storage) ->
 	return {
 
 		createUser: (email, password, handler) ->
+			_nav = require("nav")
 			_createUser(email, password, handler)
 
 
 		authenticateUser: (email, password, handler) ->
+			_nav = require("nav")
 			_authenticateUser(email, password, handler)
 
 
 		addLanguage: (lang, handler) ->
+			_nav = require("nav")
 			_addLanguage(lang, handler)
 
 
 		ensureDictionary: (lang, handler) ->
+			_nav = require("nav")
 			_ensureDictionary(lang, handler)
 
 
 		updateUserProfile: (handler) ->
+			_nav = require("nav")
 			_updateUserProfile(handler)
 
 

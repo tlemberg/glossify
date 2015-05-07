@@ -1,5 +1,21 @@
-define ['utils', 'storage', 'nav', 'css', 'deck', 'stack'], (utils, storage, nav, css, deck, stack) ->
-
+define [
+	'utils',
+	'storage',
+	'nav',
+	'css',
+	'deck',
+	'stack',
+	'hbs!../../hbs/src/box-list',
+],
+(
+	utils,
+	storage,
+	nav,
+	css,
+	deck,
+	stack,
+	boxListTemplate,
+) ->
 
 	############################################################################
 	# Module properties
@@ -27,26 +43,26 @@ define ['utils', 'storage', 'nav', 'css', 'deck', 'stack'], (utils, storage, nav
 		if lang not in Object.keys(userProfile['langs'])
 			_createEmptyProgress()
 
-		# Build footer
-		section = storage.getSection()
-		if not section
-			section = 1
+		# Ensure a section exists
+		if not storage.getSection()?
+			storage.setSection(1)
 
 		# Build args
 		userProfile = storage.getUserProfile()
 		dictionary  = storage.getDictionary(lang)
 
-		sectionInterval = stack.getSectionInterval(section)
-
 		templateArgs =
-			interval:
-				min: sectionInterval['min'] + 1
-				max: sectionInterval['max'] + 1
-			boxes   : stack.getBoxes(userProfile, dictionary, section, lang, 100)
-
+			sections: [1..10]
 		$(".overview-page").html(template(templateArgs))
 
+		_loadBoxList(false)
+		_loadNavHeader()
+
 		# _setSection(section)
+
+		_nav.showBackBtn "Logout", (event) ->
+			storage.logout()
+			_nav.loadPage('login')
 
 		# Register page events
 		_registerEvents()
@@ -58,6 +74,62 @@ define ['utils', 'storage', 'nav', 'css', 'deck', 'stack'], (utils, storage, nav
 	############################################################################
 	_refreshPage = ->
 		console.log('refresh')
+
+
+	_loadNavHeader = ->
+		section = storage.getSection()
+		sectionInterval = stack.getSectionInterval(section)
+
+		minIndex = sectionInterval['min'] + 1
+		maxIndex = sectionInterval['max'] + 1
+
+		s = "Cards #{minIndex} through #{maxIndex}"
+
+		$(".overview-page .interval-text").html(s)
+
+
+	############################################################################
+	# _loadBoxList
+	#
+	############################################################################
+	_loadBoxList = (transition = true) ->
+		# Get state
+		userProfile = storage.getUserProfile()
+		lang        = storage.getLanguage()
+		dictionary  = storage.getDictionary(lang)
+		section     = storage.getSection()
+
+		# Construct arguments
+		templateArgs =
+			boxes : stack.getBoxes(userProfile, dictionary, section, lang, 100)
+
+		# Render template
+		$(".overview-page .box-list-#{section}").html(boxListTemplate(templateArgs))
+		$(".overview-page .box-list-#{section}").css("width", utils.withUnit(utils.windowWidth(), 'px'))
+
+		$(".overview-page .box-list-container").css("width", utils.withUnit(utils.windowWidth() * 10, 'px'))
+
+		matchWidth = $(".overview-page .box-list-#{section}").css("width")
+		matchHeight = $(".overview-page .box-list-#{section}").css("height")
+		$(".overview-page .box-list").css("width", matchWidth)
+		$(".overview-page .box-list").css("height", matchHeight)
+
+		# Register events
+		$(".box-list-container .box-div").off('click')
+		$(".box-list-#{section} .box-div").click (event) ->
+			index = $(this).data('index')
+			storage.setBox(index)
+
+			_nav.loadPage('study')
+
+		console.log(transition)
+		console.log(utils.withUnit(utils.windowWidth(), 'px'))
+
+		if transition
+			$(".box-list-container").animate { "margin-left": utils.withUnit(-1 * (section - 1) * utils.windowWidth(), 'px') }, 500, ->
+				console.log("animate")
+		else
+			$(".box-list-container").css("margin-left", utils.withUnit(-1 * (section - 1) * utils.windowWidth(), 'px'))
 		
 
 	############################################################################
@@ -166,21 +238,17 @@ define ['utils', 'storage', 'nav', 'css', 'deck', 'stack'], (utils, storage, nav
 	############################################################################
 	_registerEvents = ->
 
-		$('.overview-page .box-div').click (event) ->
-			index = $(this).data('index')
-			storage.setBox(index)
 
-			console.log(index)
-
-			_nav.loadPage('study')
+		$('.overview-page .arrow-btn-left').click (event) ->
+			storage.setSection(storage.getSection() - 1)
+			_loadBoxList()
+			_loadNavHeader()
 
 
-		$('#overview-btn-left').click (event) ->
-			_setSection(storage.getSection() - 1)
-
-
-		$('#overview-btn-right').click (event) ->
-			_setSection(storage.getSection() + 1)
+		$('.overview-page .arrow-btn-right').click (event) ->
+			storage.setSection(storage.getSection() + 1)
+			_loadBoxList()
+			_loadNavHeader()
 
 
 	############################################################################

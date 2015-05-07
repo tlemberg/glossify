@@ -61,9 +61,12 @@ define ['utils', 'storage'], (utils, storage) ->
 			sampleWords = (dictionary['dictionary'][card['phrase_id']]['base'] for card in sampleCards)
 			sample = sampleWords.join(', ') + "..."
 
+			percent = _getProgressPercentage(cards)
+
 			box =
-				sample: sample
-				index : boxIndex
+				sample : sample
+				index  : boxIndex
+				percent: percent
 
 			boxes.push(box)
 
@@ -76,15 +79,47 @@ define ['utils', 'storage'], (utils, storage) ->
 	############################################################################
 	_getProgressPercentage = (cards) ->
 
-		# Compute the max progress
-		maxProgress = 5 * _deck['cards'].length
+		maxProgress = 5 * cards.length
 
 		# Compute the total progress
 		totalProgress = 0
-		for card in _deck['cards']
+		for card in cards
 			totalProgress += card['progress']
 
+		console.log("total")
+		console.log(totalProgress)
+
 		Math.floor(totalProgress / maxProgress * 100)
+
+
+	############################################################################
+	# _updateCards
+	#
+	############################################################################
+	_updateCards = (cards) ->
+		# Get the user profile and language
+		userProfile = storage.getUserProfile()
+		lang        = storage.getLanguage()
+
+		console.log(cards)
+
+		# Create mapping
+		cardMap = {}
+		for card in cards
+			cardMap[card['phrase_id']] = card
+
+		# Iterate over progress in user profile
+		i = 0
+		oldCards = userProfile['langs'][lang]
+		for i in [0..oldCards.length-1]
+			oldCard = userProfile['langs'][lang][i]
+			newCard = cardMap[oldCard['phrase_id']]
+			if newCard?
+				console.log("UPDATING")
+				userProfile['langs'][lang][i]['progress'] = newCard['progress']
+
+		# Save the new object
+		storage.setUserProfile(userProfile)
 			
 
 	############################################################################
@@ -111,6 +146,9 @@ define ['utils', 'storage'], (utils, storage) ->
 
 		getProgressPercentage: (cards) ->
 			_getProgressPercentage(cards)
+
+		updateCards: (cards) ->
+			_updateCards(cards)
 
 
 	}

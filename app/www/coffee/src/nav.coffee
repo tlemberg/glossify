@@ -20,6 +20,13 @@ define [
 ) ->
 
 	############################################################################
+	# Module properties
+	#
+	############################################################################
+	_modalTimeout = undefined
+
+
+	############################################################################
 	# _initPages
 	#
 	############################################################################
@@ -37,11 +44,12 @@ define [
 	_loadPage = (page) ->
 		template = constants.templateMap[page]
 
+		_hideAlert()
+		_hideBackBtn()
+
 		constants.pageActionMap[page]['load'](template)
 
-		_hideAlert()
-
-		storage.setPage(page)		
+		storage.setPage(page)
 
 		pageview.formatPageDimensions(page)
 
@@ -55,7 +63,7 @@ define [
 
 		constants.pageActionMap[page]['refresh']()
 
-		pageview.formatPageDimensions(page)
+		pageview.formatPageDimensions(page, false)
 
 
 	############################################################################
@@ -80,6 +88,26 @@ define [
 
 
 	############################################################################
+	# _showBackBtn
+	#
+	############################################################################
+	_showBackBtn = (text, clickEvent) ->
+		$(".header .back-btn").html(text)
+		$(".header .back-btn").css("visibility", "visible");
+
+		$(".header .back-btn").off('click')
+		$(".header .back-btn").click(clickEvent)
+
+
+	############################################################################
+	# _hideBackBtn
+	#
+	############################################################################
+	_hideBackBtn = ->
+		$(".header .back-btn").css("visibility", "hidden");
+
+
+	############################################################################
 	# _hideAlert
 	#
 	############################################################################
@@ -94,10 +122,21 @@ define [
 	# _showModal
 	#
 	############################################################################
-	_showModal = (html) ->
-		$(".modal-div").html(modalTemplate({ html: html }))
+	_showModal = (html, type, delay) ->
+		templateArgs =
+			html   : html
+			isAjax : type == 'ajax'
+			isAlert: type == 'alert'
+
+		$(".modal-div").html(modalTemplate(templateArgs))
 		$(".modal-div").css("visibility", "visible");
-		$(".modal-div").show()
+
+		$(".modal-div .btn").click (event) ->
+			_hideModal()
+
+		if _modalTimeout?
+			clearTimeout(_modalTimeout)
+		_modalTimeout = setTimeout (-> $(".modal-div").fadeIn(250)), delay
 
 
 	############################################################################
@@ -105,7 +144,10 @@ define [
 	#
 	############################################################################
 	_hideModal = ->
-		$(".modal-div").hide()
+		if _modalTimeout?
+			clearTimeout(_modalTimeout)
+			
+		$(".modal-div").fadeOut(250)
 
 
 	############################################################################
@@ -129,10 +171,13 @@ define [
 		hideAlert: ->
 			_hideAlert()
 
-		showModal: (html) ->
-			_showModal(html)
+		showModal: (html, type, delay) ->
+			_showModal(html, type, delay)
 
 		hideModal: ->
 			_hideModal()
+
+		showBackBtn: (text, clickEvent) ->
+			_showBackBtn(text, clickEvent)
 
 	}

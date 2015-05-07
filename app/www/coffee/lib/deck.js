@@ -3,7 +3,7 @@
   var indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
   define(['utils', 'storage'], function(utils, storage) {
-    var BOX_SIZE, DICTIONARY_SIZE, MAX_BUFFER, PAGE_SIZE, _updateCards, refreshPool;
+    var BOX_SIZE, DICTIONARY_SIZE, MAX_BUFFER, PAGE_SIZE, refreshPool;
     MAX_BUFFER = 3;
     BOX_SIZE = 100;
     PAGE_SIZE = 1000;
@@ -40,23 +40,6 @@
       deck['pool'] = pool;
       return deck['poolSize'] = Object.keys(pool).length;
     };
-    _updateCards = function(deck) {
-      var cardMap, i, j, lang, newCard, oldCard, oldCards, ref, userProfile;
-      userProfile = storage.getUserProfile();
-      lang = deck['lang'];
-      cardMap = deck['cardMap'];
-      i = 0;
-      oldCards = userProfile['langs'][lang];
-      for (i = j = 0, ref = oldCards.length - 1; 0 <= ref ? j <= ref : j >= ref; i = 0 <= ref ? ++j : --j) {
-        oldCard = userProfile['langs'][lang][i];
-        newCard = cardMap[oldCard['phrase_id']];
-        if (newCard != null) {
-          console.log("REPLACING");
-          userProfile['langs'][lang][i]['progress'] = newCard['progress'];
-        }
-      }
-      return storage.setUserProfile(userProfile);
-    };
     return {
       createDeck: function(cards, dictionary) {
         var card, cardList, cardMap, deck, j, len;
@@ -66,7 +49,7 @@
           for (j = 0, len = cards.length; j < len; j++) {
             card = cards[j];
             results.push({
-              phraseId: card['phrase_id'],
+              phrase_id: card['phrase_id'],
               phrase: dictionary['dictionary'][card['phrase_id']],
               progress: card['progress']
             });
@@ -76,7 +59,7 @@
         cardMap = {};
         for (j = 0, len = cardList.length; j < len; j++) {
           card = cardList[j];
-          cardMap[card['phraseId']] = card;
+          cardMap[card['phrase_id']] = card;
         }
         deck = {
           lang: dictionary['lang'],
@@ -100,7 +83,7 @@
         return card;
       },
       updateCard: function(deck, card) {
-        deck['cards'][card['phraseId']] = card;
+        deck['cards'][card['phrase_id']] = card;
         return refreshPool(deck);
       },
       boxSize: function() {
@@ -111,9 +94,6 @@
       },
       dictionarySize: function() {
         return DICTIONARY_SIZE;
-      },
-      updateCards: function(cards) {
-        return _updateCards(cards);
       }
     };
   });

@@ -13,7 +13,6 @@
     _registerEvents = function() {
       $('.login-page .login-btn').click(function(event) {
         var email, password;
-        _nav.showModal("modal message");
         email = $('.login-page #email-input').val();
         password = $('.login-page #password-input').val();
         return api.authenticateUser(email, password, function(json) {

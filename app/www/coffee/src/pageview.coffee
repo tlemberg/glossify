@@ -45,7 +45,7 @@ define ['utils', 'constants'], (utils, constants) ->
 	# _formatPageDimensions
 	#
 	############################################################################
-	_formatPageDimensions = (page) ->
+	_formatPageDimensions = (page, transition = true) ->
 
 		# Compute the page width, height, and position
 		pageWidth  = Math.min(MAX_PAGE_WIDTH, utils.windowWidth())
@@ -63,10 +63,12 @@ define ['utils', 'constants'], (utils, constants) ->
 			if constants.pages[i] == page
 				pageIndex = i
 
-		$(".page-container").css('width', utils.withUnit(utils.windowWidth() * constants.pages.length, 'px'))
-
-		$(".page-container").animate { "margin-left": utils.withUnit(-1 * pageIndex * utils.windowWidth(), 'px') }, 500, ->
-			console.log("done")
+		if transition
+			$(".page-container").css('width', utils.withUnit(utils.windowWidth() * constants.pages.length, 'px'))
+			$(".page-container").animate { "margin-left": utils.withUnit(-1 * pageIndex * utils.windowWidth(), 'px') }, 500, ->
+				console.log("done")
+		else
+			$(".page-container").css("margin-left", utils.withUnit(-1 * pageIndex * utils.windowWidth(), 'px'))
 
 
 	############################################################################
@@ -104,8 +106,8 @@ define ['utils', 'constants'], (utils, constants) ->
 			_getAlertHeight()
 
 
-		formatPageDimensions: (page) ->
-			_formatPageDimensions(page)
+		formatPageDimensions: (page, transition) ->
+			_formatPageDimensions(page, transition)
 
 
 		formatGlobalElements: ->

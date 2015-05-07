@@ -52,8 +52,6 @@ define [
 		# When the login button is clicked
 		$('.login-page .login-btn').click (event) ->
 
-			_nav.showModal("modal message")
-
 			# Extract email and password
 			email    = $('.login-page #email-input').val()
 			password = $('.login-page #password-input').val()

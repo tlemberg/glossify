@@ -2,36 +2,83 @@
 (function() {
   var indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
-  define(['utils', 'storage', 'nav', 'css', 'deck', 'stack'], function(utils, storage, nav, css, deck, stack) {
-    var PICKER_TILE_MARGIN, _createEmptyProgress, _getBoxes, _loadPage, _nav, _refreshPage, _registerEvents, _setPickerHtml, _setSection;
+  define(['utils', 'storage', 'nav', 'css', 'deck', 'stack', 'hbs!../../hbs/src/box-list'], function(utils, storage, nav, css, deck, stack, boxListTemplate) {
+    var PICKER_TILE_MARGIN, _createEmptyProgress, _getBoxes, _loadBoxList, _loadNavHeader, _loadPage, _nav, _refreshPage, _registerEvents, _setPickerHtml, _setSection;
     _nav = void 0;
     PICKER_TILE_MARGIN = 10;
     _loadPage = function(template) {
-      var dictionary, lang, section, sectionInterval, templateArgs, userProfile;
+      var dictionary, lang, templateArgs, userProfile;
       lang = storage.getLanguage();
       userProfile = storage.getUserProfile();
       if (indexOf.call(Object.keys(userProfile['langs']), lang) < 0) {
         _createEmptyProgress();
       }
-      section = storage.getSection();
-      if (!section) {
-        section = 1;
+      if (storage.getSection() == null) {
+        storage.setSection(1);
       }
       userProfile = storage.getUserProfile();
       dictionary = storage.getDictionary(lang);
-      sectionInterval = stack.getSectionInterval(section);
       templateArgs = {
-        interval: {
-          min: sectionInterval['min'] + 1,
-          max: sectionInterval['max'] + 1
-        },
-        boxes: stack.getBoxes(userProfile, dictionary, section, lang, 100)
+        sections: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
       };
       $(".overview-page").html(template(templateArgs));
+      _loadBoxList(false);
+      _loadNavHeader();
+      _nav.showBackBtn("Logout", function(event) {
+        storage.logout();
+        return _nav.loadPage('login');
+      });
       return _registerEvents();
     };
     _refreshPage = function() {
       return console.log('refresh');
+    };
+    _loadNavHeader = function() {
+      var maxIndex, minIndex, s, section, sectionInterval;
+      section = storage.getSection();
+      sectionInterval = stack.getSectionInterval(section);
+      minIndex = sectionInterval['min'] + 1;
+      maxIndex = sectionInterval['max'] + 1;
+      s = "Cards " + minIndex + " through " + maxIndex;
+      return $(".overview-page .interval-text").html(s);
+    };
+    _loadBoxList = function(transition) {
+      var dictionary, lang, matchHeight, matchWidth, section, templateArgs, userProfile;
+      if (transition == null) {
+        transition = true;
+      }
+      userProfile = storage.getUserProfile();
+      lang = storage.getLanguage();
+      dictionary = storage.getDictionary(lang);
+      section = storage.getSection();
+      templateArgs = {
+        boxes: stack.getBoxes(userProfile, dictionary, section, lang, 100)
+      };
+      $(".overview-page .box-list-" + section).html(boxListTemplate(templateArgs));
+      $(".overview-page .box-list-" + section).css("width", utils.withUnit(utils.windowWidth(), 'px'));
+      $(".overview-page .box-list-container").css("width", utils.withUnit(utils.windowWidth() * 10, 'px'));
+      matchWidth = $(".overview-page .box-list-" + section).css("width");
+      matchHeight = $(".overview-page .box-list-" + section).css("height");
+      $(".overview-page .box-list").css("width", matchWidth);
+      $(".overview-page .box-list").css("height", matchHeight);
+      $(".box-list-container .box-div").off('click');
+      $(".box-list-" + section + " .box-div").click(function(event) {
+        var index;
+        index = $(this).data('index');
+        storage.setBox(index);
+        return _nav.loadPage('study');
+      });
+      console.log(transition);
+      console.log(utils.withUnit(utils.windowWidth(), 'px'));
+      if (transition) {
+        return $(".box-list-container").animate({
+          "margin-left": utils.withUnit(-1 * (section - 1) * utils.windowWidth(), 'px')
+        }, 500, function() {
+          return console.log("animate");
+        });
+      } else {
+        return $(".box-list-container").css("margin-left", utils.withUnit(-1 * (section - 1) * utils.windowWidth(), 'px'));
+      }
     };
     _getBoxes = function(section, dictionary) {
       var boxes, maxIndex, minIndex, nBoxes;
@@ -110,18 +157,15 @@
       return _nav.refreshPage();
     };
     _registerEvents = function() {
-      $('.overview-page .box-div').click(function(event) {
-        var index;
-        index = $(this).data('index');
-        storage.setBox(index);
-        console.log(index);
-        return _nav.loadPage('study');
+      $('.overview-page .arrow-btn-left').click(function(event) {
+        storage.setSection(storage.getSection() - 1);
+        _loadBoxList();
+        return _loadNavHeader();
       });
-      $('#overview-btn-left').click(function(event) {
-        return _setSection(storage.getSection() - 1);
-      });
-      return $('#overview-btn-right').click(function(event) {
-        return _setSection(storage.getSection() + 1);
+      return $('.overview-page .arrow-btn-right').click(function(event) {
+        storage.setSection(storage.getSection() + 1);
+        _loadBoxList();
+        return _loadNavHeader();
       });
     };
     _createEmptyProgress = function() {

@@ -16,8 +16,11 @@
     _getAlertHeight = function() {
       return utils.stripNumeric($(".alert-div").css("height"));
     };
-    _formatPageDimensions = function(page) {
+    _formatPageDimensions = function(page, transition) {
       var i, j, marginWidth, pageHeight, pageIndex, pageWidth, ref;
+      if (transition == null) {
+        transition = true;
+      }
       pageWidth = Math.min(MAX_PAGE_WIDTH, utils.windowWidth());
       pageHeight = utils.windowHeight();
       marginWidth = (utils.windowWidth() - pageWidth) / 2;
@@ -31,12 +34,16 @@
           pageIndex = i;
         }
       }
-      $(".page-container").css('width', utils.withUnit(utils.windowWidth() * constants.pages.length, 'px'));
-      return $(".page-container").animate({
-        "margin-left": utils.withUnit(-1 * pageIndex * utils.windowWidth(), 'px')
-      }, 500, function() {
-        return console.log("done");
-      });
+      if (transition) {
+        $(".page-container").css('width', utils.withUnit(utils.windowWidth() * constants.pages.length, 'px'));
+        return $(".page-container").animate({
+          "margin-left": utils.withUnit(-1 * pageIndex * utils.windowWidth(), 'px')
+        }, 500, function() {
+          return console.log("done");
+        });
+      } else {
+        return $(".page-container").css("margin-left", utils.withUnit(-1 * pageIndex * utils.windowWidth(), 'px'));
+      }
     };
     _formatGlobalElements = function() {
       $('.global-header').css('height', utils.withUnit(_getHeaderHeight(), 'px'));
@@ -53,8 +60,8 @@
       getAlertHeight: function() {
         return _getAlertHeight();
       },
-      formatPageDimensions: function(page) {
-        return _formatPageDimensions(page);
+      formatPageDimensions: function(page, transition) {
+        return _formatPageDimensions(page, transition);
       },
       formatGlobalElements: function() {
         return _formatGlobalElements();

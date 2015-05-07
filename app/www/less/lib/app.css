@@ -1,8 +1,22 @@
+ul {
+  padding: 0px;
+  margin: 0px;
+}
+.viewer {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  width: 100%;
+  height: 100%;
+  overflow-x: hidden;
+  overflow-y: scroll;
+}
 .page {
   float: left;
 }
 body {
   width: 100%;
+  height: 100%;
   margin: 0px;
   padding: 0px;
   color: #ffffff;
@@ -34,7 +48,11 @@ input[type="password"].focus {
   position: relative;
   z-index: 2;
 }
-.header-meta-group {
+.header-group-left {
+  float: left;
+  width: 33%;
+}
+.header-group-center {
   position: relative;
   top: 50%;
   -webkit-transform: translateY(-50%);
@@ -45,6 +63,25 @@ input[type="password"].focus {
   font-style: italic;
   cursor: pointer;
   display: inline-block;
+  width: 34%;
+  float: left;
+}
+.header-group-right {
+  float: right;
+  width: 33%;
+}
+.header .back-btn {
+  background-color: #ddffdd;
+  color: #000000;
+  padding: 10px;
+  display: inline-block;
+  border-radius: 10px;
+  width: 60px;
+  cursor: pointer;
+  float: left;
+  margin-left: 10px;
+  margin-top: 10px;
+  visibility: hidden;
 }
 .alert-div {
   background-color: #999999;
@@ -59,9 +96,16 @@ input[type="password"].focus {
   position: relative;
   z-index: 1;
   visibility: hidden;
+  height: 60px;
 }
 .alert-div .message {
-  margin-top: 10px;
+  float: left;
+  position: relative;
+  top: 50%;
+  -webkit-transform: translateY(-50%);
+  -ms-transform: translateY(-50%);
+  transform: translateY(-50%);
+  margin-left: 20px;
 }
 .alert-div .alert-btn {
   background-color: #ddffdd;
@@ -69,10 +113,15 @@ input[type="password"].focus {
   padding: 10px;
   display: inline-block;
   border-radius: 10px;
-  margin-top: 10px;
-  margin-bottom: 10px;
   width: 100px;
   cursor: pointer;
+  float: right;
+  position: relative;
+  top: 50%;
+  -webkit-transform: translateY(-50%);
+  -ms-transform: translateY(-50%);
+  transform: translateY(-50%);
+  margin-right: 20px;
 }
 .modal-div {
   position: absolute;
@@ -84,6 +133,7 @@ input[type="password"].focus {
   z-index: 99999;
   text-align: center;
   visibility: hidden;
+  cursor: auto;
 }
 .modal-block {
   dislpay: inline-block;
@@ -103,9 +153,22 @@ input[type="password"].focus {
   margin-right: auto;
   padding: 20px;
 }
+.modal-div .ajax-loader {
+  margin-top: 10px;
+}
 .modal-div .ajax-loader-img {
   width: 32px;
   height: 32px;
+}
+.modal-div .btn {
+  background-color: #ddffdd;
+  color: #000000;
+  padding: 10px;
+  display: inline-block;
+  border-radius: 10px;
+  width: 100px;
+  cursor: pointer;
+  margin-top: 20px;
 }
 .facebook-signup-btn {
   background-color: #3399ff;
@@ -120,13 +183,8 @@ input[type="password"].focus {
 }
 .content {
   padding-top: 30px;
-  padding-bottom: 60px;
-  border-bottom-style: solid;
-  border-bottom-width: 1px;
-  border-bottom-color: #999999;
+  padding-bottom: 30px;
   text-align: center;
-  padding-left: 30px;
-  padding-right: 30px;
 }
 .footer {
   text-align: center;
@@ -197,6 +255,61 @@ input[type="password"].focus {
 .overview-page ul {
   list-style-type: none;
 }
+.overview-page .nav-header {
+  height: 50px;
+  text-align: center;
+  width: 100%;
+  margin-bottom: 30px;
+}
+.overview-page .arrow-btn-left {
+  float: left;
+  width: 40px;
+  position: relative;
+  top: 50%;
+  -webkit-transform: translateY(-50%);
+  -ms-transform: translateY(-50%);
+  transform: translateY(-50%);
+  display: inline-block;
+  width: 15%;
+}
+.overview-page .interval-text {
+  float: left;
+  position: relative;
+  top: 50%;
+  -webkit-transform: translateY(-50%);
+  -ms-transform: translateY(-50%);
+  transform: translateY(-50%);
+  display: inline-block;
+  width: 70%;
+}
+.overview-page .arrow-btn-right {
+  float: right;
+  width: 40px;
+  position: relative;
+  top: 50%;
+  -webkit-transform: translateY(-50%);
+  -ms-transform: translateY(-50%);
+  transform: translateY(-50%);
+  display: inline-block;
+  width: 15%;
+}
+.overview-page .arrow-btn-bg {
+  background-color: #cccccc;
+  width: 45px;
+  height: 45px;
+  display: inline-block;
+  border-radius: 10px;
+  cursor: pointer;
+}
+.overview-page .arrow-img {
+  width: 80%;
+  height: 80%;
+  position: relative;
+  top: 50%;
+  -webkit-transform: translateY(-50%);
+  -ms-transform: translateY(-50%);
+  transform: translateY(-50%);
+}
 .overview-page .box-div {
   padding: 30px;
   border-top-style: solid;
@@ -214,6 +327,24 @@ input[type="password"].focus {
   -ms-transform: translateY(-50%);
   transform: translateY(-50%);
 }
+.overview-page .box-group-right {
+  float: right;
+  text-align: right;
+  font-style: italic;
+  position: relative;
+  top: 50%;
+  -webkit-transform: translateY(-50%);
+  -ms-transform: translateY(-50%);
+  transform: translateY(-50%);
+}
+.overview-page .box-list-container {
+  display: inline-block;
+  overflow-x: hidden;
+}
+.overview-page .box-list {
+  float: left;
+  display: inline-block;
+}
 .study-page .btn-container {
   display: inline-block;
 }
@@ -221,9 +352,9 @@ input[type="password"].focus {
   float: left;
   width: 100px;
   height: 100px;
-  margin: 5px;
   border-radius: 13px;
   font-weight: bold;
+  cursor: pointer;
 }
 .study-page .btn-1 {
   background-color: #0099ff;
@@ -260,6 +391,36 @@ input[type="password"].focus {
   color: #000000;
   width: 100%;
 }
+.study-page .card-progress-1 {
+  margin-left: -2px;
+  border-style: solid;
+  border-width: 4px;
+  border-color: #0099ff;
+}
+.study-page .card-progress-2 {
+  margin-left: -2px;
+  border-style: solid;
+  border-width: 4px;
+  border-color: #66ccff;
+}
+.study-page .card-progress-3 {
+  margin-left: -2px;
+  border-style: solid;
+  border-width: 4px;
+  border-color: #ccffff;
+}
+.study-page .card-progress-4 {
+  margin-left: -2px;
+  border-style: solid;
+  border-width: 4px;
+  border-color: #00ffcc;
+}
+.study-page .card-progress-5 {
+  margin-left: -2px;
+  border-style: solid;
+  border-width: 4px;
+  border-color: #66ff33;
+}
 .study-page .card-half {
   height: 50%;
   margin-left: 20px;
@@ -290,6 +451,7 @@ input[type="password"].focus {
   margin-top: 10px;
   background-color: #333333;
   border-radius: 13px;
+  cursor: pointer;
 }
 .study-page .flip-btn-text {
   position: relative;

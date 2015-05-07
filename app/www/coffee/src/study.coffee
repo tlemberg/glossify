@@ -16,42 +16,8 @@ define ['utils', 'stack', 'storage', 'nav', 'deck', 'css', 'pageview'], (utils, 
 	#
 	############################################################################
 	MAX_CARD_WIDTH = 340
+	MAX_BUTTON_AREA_WIDTH = 600
 	CARD_ASPECT = 1.5
-
-
-	############################################################################
-	# _preloadPage
-	#
-	############################################################################
-	_preloadPage = ->
-		# Load the footer
-		_setStudyFooterHtml()
-
-		$('.study-btn').click (event) ->
-			# Update progress on the card
-			_card['progress'] = $(this).data('progress')
-			deck.updateCard(_deck, _card)
-
-			# Draw a new card
-			_card = deck.drawCard(_deck)
-
-			# Refresh the page
-			_refreshPage()
-
-		$('#study-flip-button').click (event) ->
-			_isFlipped = true
-			_refreshPage()
-
-		$('#study-back-btn').click (event) ->
-
-			section = storage.getSection()
-			box     = storage.getBox()
-			lang    = storage.getLanguage()
-			cards   = stack.getCards(section, box, lang)
-
-			deck.updateCards(_deck)
-
-			_nav.loadPage('overview')
 
 
 	############################################################################
@@ -98,16 +64,57 @@ define ['utils', 'stack', 'storage', 'nav', 'deck', 'css', 'pageview'], (utils, 
 
 		_resetCard()
 
+		_nav.showBackBtn "Done", (event) ->
+			_nav.loadPage('overview')
+
+		_registerEvents()
+
+
+	############################################################################
+	# _registerEvents
+	#
+	############################################################################
+	_registerEvents = ->
+		$('.study-page .flip-btn').click (event) ->
+			_isFlipped = true
+			_resetCard()
+
+		$('.study-page .btn').click (event) ->
+			# Update progress on the card
+			_card['progress'] = $(this).data('progress')
+			deck.updateCard(_deck, _card)
+			stack.updateCards([_card])
+
+			# Draw a new card
+			_card = deck.drawCard(_deck)
+
+			# Refresh the page
+			_isFlipped = false
+			_resetCard()
+
+		$('.study-page .back-btn').click (event) ->
+
+			section = storage.getSection()
+			box     = storage.getBox()
+			lang    = storage.getLanguage()
+			cards   = stack.getCards(section, box, lang)
+
+			_nav.loadPage('overview')
+
 
 	############################################################################
 	# _resetCard
 	#
 	############################################################################
 	_resetCard = ->
-		console.log(_card)
-
 		# Set the text to match the card
 		_setTopText(_card['phrase']['base'])
+
+		# Set the border color to indicate progress
+		progress = _card['progress']
+		for i in [0..5]
+			$('.study-page .card').removeClass("card-progress-#{ i }")
+		$('.study-page .card').addClass("card-progress-#{ progress }")
 
 		if not _isFlipped
 			# Build the flip buton UI and show it
@@ -155,8 +162,6 @@ define ['utils', 'stack', 'storage', 'nav', 'deck', 'css', 'pageview'], (utils, 
 
 		$('.study-footer').css('height', page.getFooterHeight())
 
-		$('.study-content').css('border-color', BG_COLORS[_card['progress']])
-
 
 
 	############################################################################
@@ -185,8 +190,8 @@ define ['utils', 'stack', 'storage', 'nav', 'deck', 'css', 'pageview'], (utils, 
 	#
 	############################################################################
 	_showFlipButton = ->
-		$('.study-page .flip-btn-container').show()
-		$('.study-page .bottom-text').hide()
+		$('.study-page .flip-btn').show()
+		$('.study-page .card-bottom-text').hide()
 		$('.study-page .btn-container').hide()
 
 
@@ -195,8 +200,8 @@ define ['utils', 'stack', 'storage', 'nav', 'deck', 'css', 'pageview'], (utils, 
 	#
 	############################################################################
 	_hideFlipButton = ->
-		$('.study-page .flip-btn-container').hide()
-		$('.study-page .bottom-text').show()
+		$('.study-page .flip-btn').hide()
+		$('.study-page .card-bottom-text').show()
 		$('.study-page .btn-container').show()
 
 
@@ -253,11 +258,14 @@ define ['utils', 'stack', 'storage', 'nav', 'deck', 'css', 'pageview'], (utils, 
 		#$('.study-page .card').css('width', cardWidth)
 		$('.study-page .card').css('height', cardHeight)
 
-		btnWidth = (cardWidth - 5) / 5 - 5
+		btnWidth = (cardWidth - 20) / 5
 
 		# Set the tile width and heights
-		#$('.study-page .btn').css('width', btnWidth)
+		$('.study-page .btn').css('width', btnWidth)
 		$('.study-page .btn').css('height', btnWidth)
+		$('.study-page .btn').css('margin-top', '5px')
+		$('.study-page .btn').css('margin-right', '5px')
+		$('.study-page .btn-5').css('margin-right', '0px')
 
 		$('.study-page .flip-btn').css('height', btnWidth)
 

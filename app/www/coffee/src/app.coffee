@@ -17,8 +17,6 @@ requirejs [
 	#
 	############################################################################
 	$(document).ready (event) ->
-		storage.logout()
-
 		nav.initPages()
 
 		userProfile = storage.getUserProfile()
