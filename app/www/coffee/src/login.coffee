@@ -1,4 +1,20 @@
-define ['strings', 'storage', 'utils', 'api', 'nav', 'css'], (strings, storage, utils, api, nav, css) ->
+define [
+	'strings',
+	'storage',
+	'utils',
+	'api',
+	'nav',
+	'css',
+	'pageview',
+],
+(
+	strings,
+	storage,
+	utils,
+	api,
+	nav,
+	css,
+) ->
 
 
 	############################################################################
@@ -9,47 +25,18 @@ define ['strings', 'storage', 'utils', 'api', 'nav', 'css'], (strings, storage, 
 
 
 	############################################################################
-	# _preloadPage
-	#
-	#	Preload the page
-	#
-	# Parameters:
-	#	None
-	#	
-	# Returns:
-	#	Nothing.
+	# _loadPage
 	#
 	############################################################################
-	_preloadPage = ->
+	_loadPage = (template) ->
+
+		$(".login-page").html(template())
+
 		_registerEvents()
 
 
 	############################################################################
-	# _loadPage
-	#
-	#	Load the page
-	#
-	# Parameters:
-	#	None
-	#	
-	# Returns:
-	#	Nothing.
-	#
-	############################################################################
-	_loadPage = (params) ->
-		console.log("load")
-
-
-	############################################################################
 	# _refreshPage
-	#
-	#	Refresh the page
-	#
-	# Parameters:
-	#	None
-	#	
-	# Returns:
-	#	Nothing.
 	#
 	############################################################################
 	_refreshPage = ->
@@ -59,23 +46,15 @@ define ['strings', 'storage', 'utils', 'api', 'nav', 'css'], (strings, storage, 
 	############################################################################
 	# _registerEvents
 	#
-	#	Register page events
-	#
-	# Parameters:
-	#	None
-	#	
-	# Returns:
-	#	Nothing.
-	#
 	############################################################################
 	_registerEvents = ->
 
 		# When the login button is clicked
-		$('#login-btn').click (event) ->
+		$('.login-page .login-btn').click (event) ->
 
 			# Extract email and password
-			email = $('#login-email-input').val()
-			password = $('#login-password-input').val()
+			email    = $('.login-page #email-input').val()
+			password = $('.login-page #password-input').val()
 
 			# Attempt to fetch an access token via the API
 			api.authenticateUser email, password, (json) ->
@@ -84,16 +63,19 @@ define ['strings', 'storage', 'utils', 'api', 'nav', 'css'], (strings, storage, 
 
 					api.ensureDictionary 'fr', (json) ->
 						if json['success']
-							_nav.loadPage 'overview'
+							console.log("success")
+							_nav.loadPage('overview')
 						else
 							# Error ensuring dictionary
-							$('#login-error').html(strings.getString('unexpectedFailure'))
+							$('.login-page .error').html(strings.getString('unexpectedFailure'))
 				else
 					# Error authenticating user
-					$('#login-error').html(strings.getString('loginFailed'))
+					#$('.login-page .error').html(strings.getString('loginFailed'))
+					_nav.showAlert(strings.getString('loginFailed'))
 
 		# When the signup button is clicked
-		$('#login-signup-btn').click (event) ->
+		$('.login-page .signup-btn').click (event) ->
+			console.log("clicked")
 			_nav.loadPage('signup')
 
 
@@ -103,17 +85,11 @@ define ['strings', 'storage', 'utils', 'api', 'nav', 'css'], (strings, storage, 
 	############################################################################
 	return {
 
-		preloadPage: ->
-			_nav = require('nav')
-			_preloadPage()
-
-
 		refreshPage: ->
 			_refreshPage()
 
-
-		loadPage: (params) ->
-			_loadPage(params)
-
+		loadPage: (template) ->
+			_nav = require('nav')
+			_loadPage(template)
 
 	}

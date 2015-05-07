@@ -1,24 +1,16 @@
-define ['utils'], (utils) ->
+define ['utils', 'constants'], (utils, constants) ->
 
 
 	############################################################################
 	# UI constants
 	#
 	############################################################################
-	MAX_PAGE_WIDTH  = 400
+	MAX_PAGE_WIDTH  = 800
 	MAX_PAGE_ASPECT = 1.5
 
 
 	############################################################################
 	# _getHeaderHeight
-	#
-	#	Gets the global height of the page footer div, based on the app width
-	#
-	# Parameters:
-	#	None
-	#	
-	# Returns:
-	#	Nothing
 	#
 	############################################################################
 	_getHeaderHeight = ->
@@ -28,15 +20,6 @@ define ['utils'], (utils) ->
 	############################################################################
 	# _getContentHeight
 	#
-	#	Gets the global height of the page content div, based on the app height
-	#	and the heights of the header and footer
-	#
-	# Parameters:
-	#	None
-	#	
-	# Returns:
-	#	Nothing
-	#
 	############################################################################
 	_getContentHeight = ->
 		utils.appHeight() - _getHeaderHeight() - _getFooterHeight()
@@ -45,57 +28,51 @@ define ['utils'], (utils) ->
 	############################################################################
 	# _getFooterHeight
 	#
-	#	Gets the global height of the page footer div, based on the app width
-	#
-	# Parameters:
-	#	None
-	#	
-	# Returns:
-	#	Nothing
-	#
 	############################################################################
 	_getFooterHeight = ->
 		utils.appWidth() / 5
 
 
 	############################################################################
-	# _formatPageDimensions
-	#
-	#	Gets the global height of the page footer div, based on the app width
-	#
-	# Parameters:
-	#	None
-	#	
-	# Returns:
-	#	Nothing
+	# _getAlertHeight
 	#
 	############################################################################
-	_formatPageDimensions = ->
+	_getAlertHeight = ->
+		utils.stripNumeric($(".alert-div").css("height"))
+
+
+	############################################################################
+	# _formatPageDimensions
+	#
+	############################################################################
+	_formatPageDimensions = (page, transition = true) ->
 
 		# Compute the page width, height, and position
 		pageWidth  = Math.min(MAX_PAGE_WIDTH, utils.windowWidth())
-		pageHeight = Math.min(pageWidth * MAX_PAGE_ASPECT, utils.windowHeight())
-		pageX      = (utils.windowWidth() - pageWidth) / 2
-		pageY      = (utils.windowHeight() - pageHeight) / 2
+		pageHeight = utils.windowHeight()
+		marginWidth = (utils.windowWidth() - pageWidth) / 2
 
 		# Set the page width, height, and position using CSS
 		$(".page").css('width', utils.withUnit(pageWidth, 'px'))
 		$(".page").css('height', utils.withUnit(pageHeight, 'px'))
-		$(".page").css('left', utils.withUnit(pageX, 'px'))
-		$(".page").css('top', utils.withUnit(pageY, 'px'))
+		$(".page").css('margin-left', utils.withUnit(marginWidth, 'px'))
+		$(".page").css('margin-right', utils.withUnit(marginWidth, 'px'))
+
+		pageIndex = 0
+		for i in [0..constants.pages.length]
+			if constants.pages[i] == page
+				pageIndex = i
+
+		if transition
+			$(".page-container").css('width', utils.withUnit(utils.windowWidth() * constants.pages.length, 'px'))
+			$(".page-container").animate { "margin-left": utils.withUnit(-1 * pageIndex * utils.windowWidth(), 'px') }, 500, ->
+				console.log("done")
+		else
+			$(".page-container").css("margin-left", utils.withUnit(-1 * pageIndex * utils.windowWidth(), 'px'))
 
 
 	############################################################################
 	# _formatGlobalElements
-	#
-	#	Formats the elements, such as headers and footers, that are consistent
-	#	across pages and based on global CSS properties
-	#
-	# Parameters:
-	#	None
-	#	
-	# Returns:
-	#	Nothing
 	#
 	############################################################################
 	_formatGlobalElements = ->
@@ -125,8 +102,12 @@ define ['utils'], (utils) ->
 			_getFooterHeight()
 
 
-		formatPageDimensions: ->
-			_formatPageDimensions()
+		getAlertHeight: ->
+			_getAlertHeight()
+
+
+		formatPageDimensions: (page, transition) ->
+			_formatPageDimensions(page, transition)
 
 
 		formatGlobalElements: ->

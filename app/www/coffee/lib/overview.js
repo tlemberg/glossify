@@ -2,30 +2,90 @@
 (function() {
   var indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
-  define(['utils', 'storage', 'nav', 'css', 'deck'], function(utils, storage, nav, css, deck) {
-    var PICKER_TILE_MARGIN, _createEmptyProgress, _loadPage, _nav, _preloadPage, _refreshPage, _registerEvents, _setPickerHtml, _setSection;
+  define(['utils', 'storage', 'nav', 'css', 'deck', 'stack', 'hbs!../../hbs/src/box-list'], function(utils, storage, nav, css, deck, stack, boxListTemplate) {
+    var PICKER_TILE_MARGIN, _createEmptyProgress, _getBoxes, _loadBoxList, _loadNavHeader, _loadPage, _nav, _refreshPage, _registerEvents, _setPickerHtml, _setSection;
     _nav = void 0;
     PICKER_TILE_MARGIN = 10;
-    _preloadPage = function() {
-      return console.log('preload');
-    };
-    _refreshPage = function() {
-      return console.log('refresh');
-    };
-    _loadPage = function(params) {
-      var lang, section, userProfile;
+    _loadPage = function(template) {
+      var dictionary, lang, templateArgs, userProfile;
       lang = storage.getLanguage();
       userProfile = storage.getUserProfile();
       if (indexOf.call(Object.keys(userProfile['langs']), lang) < 0) {
         _createEmptyProgress();
       }
-      $('#overview-header').html('FRENCH');
-      section = storage.getSection();
-      if (!section) {
-        section = 1;
+      if (storage.getSection() == null) {
+        storage.setSection(1);
       }
-      _setSection(section);
+      userProfile = storage.getUserProfile();
+      dictionary = storage.getDictionary(lang);
+      templateArgs = {
+        sections: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+      };
+      $(".overview-page").html(template(templateArgs));
+      _loadBoxList(false);
+      _loadNavHeader();
+      _nav.showBackBtn("Logout", function(event) {
+        storage.logout();
+        return _nav.loadPage('login');
+      });
       return _registerEvents();
+    };
+    _refreshPage = function() {
+      return console.log('refresh');
+    };
+    _loadNavHeader = function() {
+      var maxIndex, minIndex, s, section, sectionInterval;
+      section = storage.getSection();
+      sectionInterval = stack.getSectionInterval(section);
+      minIndex = sectionInterval['min'] + 1;
+      maxIndex = sectionInterval['max'] + 1;
+      s = "Cards " + minIndex + " through " + maxIndex;
+      return $(".overview-page .interval-text").html(s);
+    };
+    _loadBoxList = function(transition) {
+      var dictionary, lang, matchHeight, matchWidth, section, templateArgs, userProfile;
+      if (transition == null) {
+        transition = true;
+      }
+      userProfile = storage.getUserProfile();
+      lang = storage.getLanguage();
+      dictionary = storage.getDictionary(lang);
+      section = storage.getSection();
+      templateArgs = {
+        boxes: stack.getBoxes(userProfile, dictionary, section, lang, 100)
+      };
+      $(".overview-page .box-list-" + section).html(boxListTemplate(templateArgs));
+      $(".overview-page .box-list-" + section).css("width", utils.withUnit(utils.windowWidth(), 'px'));
+      $(".overview-page .box-list-container").css("width", utils.withUnit(utils.windowWidth() * 10, 'px'));
+      matchWidth = $(".overview-page .box-list-" + section).css("width");
+      matchHeight = $(".overview-page .box-list-" + section).css("height");
+      $(".overview-page .box-list").css("width", matchWidth);
+      $(".overview-page .box-list").css("height", matchHeight);
+      $(".box-list-container .box-div").off('click');
+      $(".box-list-" + section + " .box-div").click(function(event) {
+        var index;
+        index = $(this).data('index');
+        storage.setBox(index);
+        return _nav.loadPage('study');
+      });
+      console.log(transition);
+      console.log(utils.withUnit(utils.windowWidth(), 'px'));
+      if (transition) {
+        return $(".box-list-container").animate({
+          "margin-left": utils.withUnit(-1 * (section - 1) * utils.windowWidth(), 'px')
+        }, 500, function() {
+          return console.log("animate");
+        });
+      } else {
+        return $(".box-list-container").css("margin-left", utils.withUnit(-1 * (section - 1) * utils.windowWidth(), 'px'));
+      }
+    };
+    _getBoxes = function(section, dictionary) {
+      var boxes, maxIndex, minIndex, nBoxes;
+      minIndex = (section - 1) * 1000;
+      maxIndex = section * 1000 - 1;
+      boxes = {};
+      return nBoxes = deck.pageSize() / deck.boxSize();
     };
     _setPickerHtml = function() {
       var allBlocksHtml, allRowDivsHtml, boxCards, boxIndex, boxProgress, boxes, card, containerDivHtml, containerDivs, dictionary, i, j, k, l, lang, len, len1, len2, maxIndex, maxSampleIndex, minIndex, minSampleIndex, nBoxes, pickerHtml, progress, progressList, ref, ref1, ref2, ref3, rowDivHtml, rowDivs, sampleCards, sampleStr, sampleWords, section, userProfile;
@@ -97,19 +157,15 @@
       return _nav.refreshPage();
     };
     _registerEvents = function() {
-      $('.overview-tile-link').click(function(event) {
-        var tileId;
-        event.preventDefault();
-        tileId = $(this).data("tile-id");
-        return _nav.loadPage('study', {
-          tileId: tileId
-        });
+      $('.overview-page .arrow-btn-left').click(function(event) {
+        storage.setSection(storage.getSection() - 1);
+        _loadBoxList();
+        return _loadNavHeader();
       });
-      $('#overview-btn-left').click(function(event) {
-        return _setSection(storage.getSection() - 1);
-      });
-      return $('#overview-btn-right').click(function(event) {
-        return _setSection(storage.getSection() + 1);
+      return $('.overview-page .arrow-btn-right').click(function(event) {
+        storage.setSection(storage.getSection() + 1);
+        _loadBoxList();
+        return _loadNavHeader();
       });
     };
     _createEmptyProgress = function() {
@@ -130,15 +186,12 @@
       return storage.setUserProfile(userProfile);
     };
     return {
-      preloadPage: function() {
+      loadPage: function(template) {
         _nav = require('nav');
-        return _preloadPage();
+        return _loadPage(template);
       },
       refreshPage: function() {
         return _refreshPage();
-      },
-      loadPage: function(params) {
-        return _loadPage(params);
       }
     };
   });

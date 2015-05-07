@@ -1,50 +1,119 @@
 define ->
 
+	############################################################################
+	# _stripNumeric
+	#
+	############################################################################
+	_stripNumeric = (s) ->
+		s.replace(///[^-\d\.]///g, '')
+
+
+	############################################################################
+	# _shuffle
+	#
+	############################################################################
+	_shuffle: (arr) ->
+		i = arr.length;
+		if i == 0 then return false
+
+		while --i
+			j = Math.floor(Math.random() * (i+1))
+			tempi = arr[i]
+			tempj = arr[j]
+			arr[i] = tempj
+			arr[j] = tempi
+		return arr
+
+
+	############################################################################
+	# _randomInt
+	#
+	############################################################################
+	_randomInt = (min, max) ->
+		Math.floor(Math.random() * max) + min
+
+
+	############################################################################
+	# _logout
+	#
+	############################################################################
+	_logout = ->
+		removeLocalStorageItem('user_profile')
+		removeLocalStorageItem('dictionary_fr')
+
+
+	############################################################################
+	# _withUnit
+	#
+	############################################################################
+	_withUnit = (measure, unit) ->
+		"#{ measure }#{ unit }"
+
+
+	############################################################################
+	# _appWidth
+	#
+	############################################################################
+	_appWidth = ->
+		_stripNumeric($(".page").first().css('width'));
+
+
+	############################################################################
+	# _appHeight
+	#
+	############################################################################
+	_appHeight = ->
+		_stripNumeric($(".page").first().css('height'));
+
+
+	############################################################################
+	# _windowWidth
+	#
+	############################################################################
+	_windowWidth = ->
+		window.innerWidth
+
+
+	############################################################################
+	# _windowHeight
+	#
+	############################################################################
+	_windowHeight = ->
+		window.innerHeight
+
+
+	############################################################################
+	# Exposed objects
+	#
+	############################################################################
 	return {
 
 		stripNumeric: (s) ->
-			s.replace(///[^-\d\.]///g, '')
-
+			_stripNumeric(s)
 
 		shuffle: (arr) ->
-			i = arr.length;
-			if i == 0 then return false
-
-			while --i
-				j = Math.floor(Math.random() * (i+1))
-				tempi = arr[i]
-				tempj = arr[j]
-				arr[i] = tempj
-				arr[j] = tempi
-			return arr
-
+			_shuffle(arr)
 
 		randomInt: (min, max) ->
-			Math.floor(Math.random() * max) + min
-
+			_randomInt(min, max)
 
 		logout: ->
-			removeLocalStorageItem('user_profile')
-			removeLocalStorageItem('dictionary_fr')
-
+			_logout()
 
 		withUnit: (measure, unit) ->
-			"#{ measure }#{ unit }"
-
+			_withUnit(measure, unit)
 
 		appWidth: ->
-			this.stripNumeric($(".page").first().css('width'));
-
+			_appWidth()
 
 		appHeight: ->
-			this.stripNumeric($(".page").first().css('height'));
-
+			_appHeight()
 
 		windowWidth: ->
-			window.innerWidth
+			_windowWidth()
 
 		windowHeight: ->
-			window.innerHeight
+			_windowHeight()
 
 	}
 

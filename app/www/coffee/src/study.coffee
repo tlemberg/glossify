@@ -1,4 +1,4 @@
-define ['utils', 'stack', 'storage', 'nav', 'deck', 'css', 'page'], (utils, stack, storage, nav, deck, css, page) ->
+define ['utils', 'stack', 'storage', 'nav', 'deck', 'css', 'pageview'], (utils, stack, storage, nav, deck, css, pageview) ->
 
 
 	############################################################################
@@ -15,85 +15,106 @@ define ['utils', 'stack', 'storage', 'nav', 'deck', 'css', 'page'], (utils, stac
 	# UI constants
 	#
 	############################################################################
-	BG_COLORS = ['#333333', '#ff0000', '#ff9900', '#009933', '#6600cc', '#0066ff']
+	MAX_CARD_WIDTH = 340
+	MAX_BUTTON_AREA_WIDTH = 600
+	CARD_ASPECT = 1.5
 
 
 	############################################################################
-	# preloadStudyPage
+	# _loadPage
 	#
-	#	Generates the elements of the page that only need to be built once
-	#
-	# Parameters:
-	#
-	#	userProfile: userProfile hash
-	#	dictionary : dictionary hash
-	#	params     : extra parameters
-	#	
-	# Returns:
-	#	Nothing
 	############################################################################
-	_preloadPage = ->
-		# Load the footer
-		_setStudyFooterHtml()
+	_loadPage = (template) ->
+		userProfile = storage.getUserProfile()
+		lang        = storage.getLanguage()
+		section     = storage.getSection()
+		box         = storage.getBox()
+		dictionary  = storage.getDictionary(lang)
 
-		$('.study-btn').click (event) ->
+		minIndex = minIndex = (section - 1) * deck.boxSize() + box * deck.boxSize()
+		maxIndex = minIndex + deck.boxSize()
+
+		interval = stack.getBoxInterval(section, box)
+
+		cards = userProfile['langs'][lang].slice(interval['min'], interval['max'])
+
+		console.log(cards)
+
+		# Construct a deck and store is as a module variable
+		_deck = deck.createDeck(cards, dictionary)
+
+		# Draw a card to start the deck
+		_card = deck.drawCard(_deck)
+
+		# Set other properties
+		_isFlipped = false
+
+		templateArgs =
+			buttons: [
+				{ progress: 1, text: "don't know"},
+				{ progress: 2, text: ""},
+				{ progress: 3, text: ""},
+				{ progress: 4, text: ""},
+				{ progress: 5, text: "know"},
+			]
+
+		$(".study-page").html(template(templateArgs))
+
+		_setStudyFooterCss()
+
+		_resetCard()
+
+		_nav.showBackBtn "Done", (event) ->
+			_nav.loadPage('overview')
+
+		_registerEvents()
+
+
+	############################################################################
+	# _registerEvents
+	#
+	############################################################################
+	_registerEvents = ->
+		$('.study-page .flip-btn').click (event) ->
+			_isFlipped = true
+			_resetCard()
+
+		$('.study-page .btn').click (event) ->
 			# Update progress on the card
 			_card['progress'] = $(this).data('progress')
 			deck.updateCard(_deck, _card)
+			stack.updateCards([_card])
 
 			# Draw a new card
 			_card = deck.drawCard(_deck)
 
 			# Refresh the page
-			_refreshPage()
+			_isFlipped = false
+			_resetCard()
 
-		$('#study-flip-button').click (event) ->
-			_isFlipped = true
-			_refreshPage()
-
-		$('#study-back-btn').click (event) ->
+		$('.study-page .back-btn').click (event) ->
 
 			section = storage.getSection()
 			box     = storage.getBox()
 			lang    = storage.getLanguage()
 			cards   = stack.getCards(section, box, lang)
 
-			deck.updateCards(_deck)
-
 			_nav.loadPage('overview')
 
 
 	############################################################################
-	# preloadStudyPage
+	# _resetCard
 	#
-	#	Generates the elements of the page that only need to be built once
-	#
-	# Parameters:
-	#
-	#	userProfile: userProfile hash
-	#	dictionary : dictionary hash
-	#	params     : extra parameters
-	#	
-	# Returns:
-	#	Nothing
 	############################################################################
-	_refreshPage = ->
-		_setStudyFooterCss()
-
-		_setHeaderCss()
-
-		# Change the height of the content pane
-		_refreshContentPane()
-
-		# Set progress counter
-		_setProgressCounter()
-
-		$('.study-footer').css('height', page.getFooterHeight())
-
-		$('.study-content').css('border-color', BG_COLORS[_card['progress']])
-
+	_resetCard = ->
 		# Set the text to match the card
 		_setTopText(_card['phrase']['base'])
+
+		# Set the border color to indicate progress
+		progress = _card['progress']
+		for i in [0..5]
+			$('.study-page .card').removeClass("card-progress-#{ i }")
+		$('.study-page .card').addClass("card-progress-#{ progress }")
 
 		if not _isFlipped
 			# Build the flip buton UI and show it
@@ -108,28 +129,39 @@ define ['utils', 'stack', 'storage', 'nav', 'deck', 'css', 'page'], (utils, stac
 
 
 	############################################################################
-	# _loadPage
+	# _setTopText
 	#
 	############################################################################
-	_loadPage = ->
-		userProfile = storage.getUserProfile()
-		lang        = storage.getLanguage()
-		section     = storage.getSection()
-		box         = storage.getBox()
-		dictionary  = storage.getDictionary(lang)
+	_setTopText = (text) ->
+		$('.study-page .card-top-text').html(text)
 
-		minIndex = minIndex = (section - 1) * deck.boxSize() + box * deck.boxSize()
-		maxIndex = minIndex + deck.boxSize()
-		cards = userProfile['langs'][lang].slice(minIndex, maxIndex)
 
-		# Construct a deck and store is as a module variable
-		_deck = deck.createDeck(cards, dictionary)
+	############################################################################
+	# _setBottomText
+	#
+	############################################################################
+	_setBottomText = (text) ->
+		$('.study-page .card-bottom-text').html(text)
 
-		# Draw a card to start the deck
-		_card = deck.drawCard(_deck)
 
-		# Set other properties
-		_isFlipped = false
+	############################################################################
+	# _refreshPage
+	#
+	############################################################################
+	_refreshPage = ->
+
+		_setStudyFooterCss()
+
+		_setHeaderCss()
+
+		# Change the height of the content pane
+		_refreshContentPane()
+
+		# Set progress counter
+		_setProgressCounter()
+
+		$('.study-footer').css('height', page.getFooterHeight())
+
 
 
 	############################################################################
@@ -154,29 +186,13 @@ define ['utils', 'stack', 'storage', 'nav', 'deck', 'css', 'page'], (utils, stac
 
 
 	############################################################################
-	# _setTopText
-	#
-	############################################################################
-	_setTopText = (text) ->
-		$('#study-top-text').html(text)
-
-
-	############################################################################
-	# _setBottomText
-	#
-	############################################################################
-	_setBottomText = (text) ->
-		$('#study-bottom-text').html(text)
-
-
-	############################################################################
 	# _showFlipButton
 	#
 	############################################################################
 	_showFlipButton = ->
-		$('#study-flip-btn-container').show()
-		$('#study-bottom-text').hide()
-		$('#study-btn-container').hide()
+		$('.study-page .flip-btn').show()
+		$('.study-page .card-bottom-text').hide()
+		$('.study-page .btn-container').hide()
 
 
 	############################################################################
@@ -184,9 +200,9 @@ define ['utils', 'stack', 'storage', 'nav', 'deck', 'css', 'page'], (utils, stac
 	#
 	############################################################################
 	_hideFlipButton = ->
-		$('#study-flip-btn-container').hide()
-		$('#study-bottom-text').show()
-		$('#study-btn-container').show()
+		$('.study-page .flip-btn').hide()
+		$('.study-page .card-bottom-text').show()
+		$('.study-page .btn-container').show()
 
 
 	############################################################################
@@ -234,11 +250,24 @@ define ['utils', 'stack', 'storage', 'nav', 'deck', 'css', 'page'], (utils, stac
 	#
 	############################################################################
 	_setStudyFooterCss = ->
-		btnWidth = page.getFooterHeight()
+		cardWidth = Math.min(MAX_CARD_WIDTH, utils.windowWidth())
+		cardHeight = cardWidth * CARD_ASPECT
+
+		$('.study-page .card-container').css('width', cardWidth);
+
+		#$('.study-page .card').css('width', cardWidth)
+		$('.study-page .card').css('height', cardHeight)
+
+		btnWidth = (cardWidth - 20) / 5
 
 		# Set the tile width and heights
-		$('.study-btn').css('width', btnWidth)
-		$('.study-btn').css('height', btnWidth)
+		$('.study-page .btn').css('width', btnWidth)
+		$('.study-page .btn').css('height', btnWidth)
+		$('.study-page .btn').css('margin-top', '5px')
+		$('.study-page .btn').css('margin-right', '5px')
+		$('.study-page .btn-5').css('margin-right', '0px')
+
+		$('.study-page .flip-btn').css('height', btnWidth)
 
 
 	############################################################################
@@ -262,17 +291,12 @@ define ['utils', 'stack', 'storage', 'nav', 'deck', 'css', 'page'], (utils, stac
 	############################################################################
 	return {
 
-		preloadPage: ->
+		loadPage: (template) ->
 			_nav = require('nav')
-			_preloadPage()
-
+			_loadPage(template)
 
 		refreshPage: ->
 			_refreshPage()
-
-
-		loadPage: (params) ->
-			_loadPage(params)
 
 
 	}

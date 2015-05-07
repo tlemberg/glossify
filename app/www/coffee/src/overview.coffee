@@ -1,5 +1,21 @@
-define ['utils', 'storage', 'nav', 'css', 'deck'], (utils, storage, nav, css, deck) ->
-
+define [
+	'utils',
+	'storage',
+	'nav',
+	'css',
+	'deck',
+	'stack',
+	'hbs!../../hbs/src/box-list',
+],
+(
+	utils,
+	storage,
+	nav,
+	css,
+	deck,
+	stack,
+	boxListTemplate,
+) ->
 
 	############################################################################
 	# Module properties
@@ -16,50 +32,10 @@ define ['utils', 'storage', 'nav', 'css', 'deck'], (utils, storage, nav, css, de
 
 
 	############################################################################
-	# _preloadPage
-	#
-	#	Preload the page
-	#
-	# Parameters:
-	#	None
-	#	
-	# Returns:
-	#	Nothing.
+	# _loadPage
 	#
 	############################################################################
-	_preloadPage = ->
-		console.log('preload')
-
-
-	############################################################################
-	# _preloadPage
-	#
-	#	Preload the page
-	#
-	# Parameters:
-	#	None
-	#	
-	# Returns:
-	#	Nothing.
-	#
-	############################################################################
-	_refreshPage = ->
-		console.log('refresh')
-
-
-	############################################################################
-	# _preloadPage
-	#
-	#	Preload the page
-	#
-	# Parameters:
-	#	None
-	#	
-	# Returns:
-	#	Nothing.
-	#
-	############################################################################
-	_loadPage = (params) ->
+	_loadPage = (template) ->
 
 		# Ensure progress is here
 		lang = storage.getLanguage()
@@ -67,30 +43,109 @@ define ['utils', 'storage', 'nav', 'css', 'deck'], (utils, storage, nav, css, de
 		if lang not in Object.keys(userProfile['langs'])
 			_createEmptyProgress()
 
-		# Build header
-		$('#overview-header').html('FRENCH')
+		# Ensure a section exists
+		if not storage.getSection()?
+			storage.setSection(1)
 
-		# Build footer
-		section = storage.getSection()
-		if not section
-			section = 1
+		# Build args
+		userProfile = storage.getUserProfile()
+		dictionary  = storage.getDictionary(lang)
 
-		_setSection(section)
+		templateArgs =
+			sections: [1..10]
+		$(".overview-page").html(template(templateArgs))
+
+		_loadBoxList(false)
+		_loadNavHeader()
+
+		# _setSection(section)
+
+		_nav.showBackBtn "Logout", (event) ->
+			storage.logout()
+			_nav.loadPage('login')
 
 		# Register page events
 		_registerEvents()
+
+
+	############################################################################
+	# _refreshPage
+	#
+	############################################################################
+	_refreshPage = ->
+		console.log('refresh')
+
+
+	_loadNavHeader = ->
+		section = storage.getSection()
+		sectionInterval = stack.getSectionInterval(section)
+
+		minIndex = sectionInterval['min'] + 1
+		maxIndex = sectionInterval['max'] + 1
+
+		s = "Cards #{minIndex} through #{maxIndex}"
+
+		$(".overview-page .interval-text").html(s)
+
+
+	############################################################################
+	# _loadBoxList
+	#
+	############################################################################
+	_loadBoxList = (transition = true) ->
+		# Get state
+		userProfile = storage.getUserProfile()
+		lang        = storage.getLanguage()
+		dictionary  = storage.getDictionary(lang)
+		section     = storage.getSection()
+
+		# Construct arguments
+		templateArgs =
+			boxes : stack.getBoxes(userProfile, dictionary, section, lang, 100)
+
+		# Render template
+		$(".overview-page .box-list-#{section}").html(boxListTemplate(templateArgs))
+		$(".overview-page .box-list-#{section}").css("width", utils.withUnit(utils.windowWidth(), 'px'))
+
+		$(".overview-page .box-list-container").css("width", utils.withUnit(utils.windowWidth() * 10, 'px'))
+
+		matchWidth = $(".overview-page .box-list-#{section}").css("width")
+		matchHeight = $(".overview-page .box-list-#{section}").css("height")
+		$(".overview-page .box-list").css("width", matchWidth)
+		$(".overview-page .box-list").css("height", matchHeight)
+
+		# Register events
+		$(".box-list-container .box-div").off('click')
+		$(".box-list-#{section} .box-div").click (event) ->
+			index = $(this).data('index')
+			storage.setBox(index)
+
+			_nav.loadPage('study')
+
+		console.log(transition)
+		console.log(utils.withUnit(utils.windowWidth(), 'px'))
+
+		if transition
+			$(".box-list-container").animate { "margin-left": utils.withUnit(-1 * (section - 1) * utils.windowWidth(), 'px') }, 500, ->
+				console.log("animate")
+		else
+			$(".box-list-container").css("margin-left", utils.withUnit(-1 * (section - 1) * utils.windowWidth(), 'px'))
 		
 
 	############################################################################
+	# _getBoxes
+	#
+	############################################################################
+	_getBoxes = (section, dictionary) ->
+		minIndex = (section - 1) * 1000
+		maxIndex = section * 1000 - 1
+
+		boxes = {}
+		nBoxes = deck.pageSize() / deck.boxSize()
+
+
+	############################################################################
 	# _setPickerHtml
-	#
-	#	Set the picker's html
-	#
-	# Parameters:
-	#	None
-	#	
-	# Returns:
-	#	Nothing.
 	#
 	############################################################################
 	_setPickerHtml = ->
@@ -180,31 +235,20 @@ define ['utils', 'storage', 'nav', 'css', 'deck'], (utils, storage, nav, css, de
 	############################################################################
 	# _registerEvents
 	#
-	#	Register page events
-	#
-	# Parameters:
-	#	None
-	#	
-	# Returns:
-	#	Nothing.
-	#
 	############################################################################
 	_registerEvents = ->
 
-		# Clicking on a tile on the overview page
-		$('.overview-tile-link').click (event) ->
-			event.preventDefault();
-			tileId = $(this).data("tile-id")
 
-			_nav.loadPage 'study',
-				tileId     : tileId
-
-		$('#overview-btn-left').click (event) ->
-			_setSection(storage.getSection() - 1)
+		$('.overview-page .arrow-btn-left').click (event) ->
+			storage.setSection(storage.getSection() - 1)
+			_loadBoxList()
+			_loadNavHeader()
 
 
-		$('#overview-btn-right').click (event) ->
-			_setSection(storage.getSection() + 1)
+		$('.overview-page .arrow-btn-right').click (event) ->
+			storage.setSection(storage.getSection() + 1)
+			_loadBoxList()
+			_loadNavHeader()
 
 
 	############################################################################
@@ -234,17 +278,11 @@ define ['utils', 'storage', 'nav', 'css', 'deck'], (utils, storage, nav, css, de
 	############################################################################
 	return {
 
-		preloadPage: ->
+		loadPage: (template) ->
 			_nav = require('nav')
-			_preloadPage()
-
+			_loadPage(template)
 
 		refreshPage: ->
 			_refreshPage()
-
-
-		loadPage: (params) ->
-			_loadPage(params)
-
 
 	}

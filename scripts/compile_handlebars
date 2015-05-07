@@ -1,0 +1,5 @@
+#!/bin/bash
+
+APPDIR=$PROJECT_HOME/app/www/handlebars
+
+handlebars $APPDIR/src/ > $APPDIR/lib/templates.js

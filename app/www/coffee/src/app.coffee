@@ -2,25 +2,33 @@ requirejs.config
 	baseUrl: 'coffee/lib',
 	paths:
 		jquery: '../../js/jquery-2.1.3.min'
+		hbs: '../../require-handlebars-plugin/hbs'
+		
 
-requirejs ['jquery', 'storage', 'strings', 'utils', 'deck', 'api', 'nav', 'css', 'login', 'signup', 'manage', 'overview', 'study'], ($, storage, strings, utils, deck, api, nav, css, login, signup, manage, overview, study) ->
+requirejs [
+	'jquery',
+	'nav',
+	'storage',
+], ($, nav, storage) ->
 
+
+	############################################################################
+	# ready
+	#
+	############################################################################
 	$(document).ready (event) ->
-		#logout()
-
-		#createUser 'clemberg10@gmail.com', 'gpass', (r) ->
-		#	console.log(r)
-
-		#fetchAccessToken 'clemberg10@gmail.com', 'gpass', (token) ->
-		#	addLanguage 'clemberg10@gmail.com', 'fr', token, (r) ->
-		#		console.log(r)
+		nav.initPages()
 
 		userProfile = storage.getUserProfile()
 		if userProfile?
-			nav.preloadPages('overview')
+			nav.loadPage('overview')
 		else
-			nav.preloadPages('login')
+			nav.loadPage('login')		
+		
 
-
+	############################################################################
+	# resize
+	#
+	############################################################################
 	$(window).resize (event) ->
 		nav.refreshPage()

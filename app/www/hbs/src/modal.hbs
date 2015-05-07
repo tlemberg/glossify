@@ -1,0 +1,14 @@
+<div class="modal-block">
+	<div class="custom-html">
+		{{html}}
+	</div>
+	{{#if isAjax}}
+	<div class="ajax-loader">
+		<img class="ajax-loader-img" src="img/ajax-loader.gif" />
+	</div>
+	{{else}}
+	<div class="btn">
+		Close
+	</div>
+	{{/if}}
+</div>

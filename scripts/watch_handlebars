@@ -1,0 +1,5 @@
+#!/bin/bash
+
+APPDIR=$PROJECT_HOME/app/www/handlebars
+
+fswatch-run $APPDIR/src $PROJECT_HOME/scripts/compile_handlebars

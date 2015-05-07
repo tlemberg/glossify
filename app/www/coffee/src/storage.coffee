@@ -5,6 +5,7 @@ define ['utils'], (utils) ->
 	# Storage key constants
 	#
 	############################################################################
+	PAGE_KEY         = 'page'
 	ACCESS_TOKEN_KEY = 'token'
 	USER_PROFILE_KEY = 'user_profile'
 	DICTIONARY_KEY   = 'dictionary'
@@ -30,9 +31,31 @@ define ['utils'], (utils) ->
 
 
 	############################################################################
+	# Special functions
+	#
+	############################################################################
+	_logout = ->
+		_removeLocalStorageItem(PAGE_KEY)
+		_removeLocalStorageItem(ACCESS_TOKEN_KEY)
+		_removeLocalStorageItem(USER_PROFILE_KEY)
+		_removeLocalStorageItem(DICTIONARY_KEY)
+		_removeLocalStorageItem(LANGUAGE_KEY)
+		_removeLocalStorageItem(SECTION_KEY)
+		_removeLocalStorageItem(BOX_KEY)
+
+
+	############################################################################
 	# Key-specific getters and setters
 	#
 	############################################################################
+	_getPage = ->
+		_getLocalStorageItem(PAGE_KEY)
+
+
+	_setPage = (v) ->
+		_setLocalStorageItem(PAGE_KEY, v)
+
+
 	_getAccessToken = ->
 		_getLocalStorageItem(ACCESS_TOKEN_KEY)
 
@@ -88,49 +111,47 @@ define ['utils'], (utils) ->
 	############################################################################
 	return {
 
+		logout: ->
+			_logout()
+
+		getPage: ->
+			_getPage()
+
+		setPage: (v) ->
+			_setPage(v)
+
 		getAccessToken: ->
 			_getAccessToken()
-
 
 		setAccessToken: (v) ->
 			_setAccessToken(v)
 
-
 		getUserProfile: ->
 			_getUserProfile()
-
 
 		setUserProfile: (v) ->
 			_setUserProfile(v)
 
-
 		getLanguage: ->
 			_getLanguage()
-
 
 		setLanguage: (v) ->
 			_setLanguage(v)
 
-
 		getDictionary: (lang) ->
 			_getDictionary(lang)
-
 
 		setDictionary: (lang, v) ->
 			_setDictionary(lang, v)
 
-
 		getSection: ->
 			_getSection()
-
 
 		setSection: (v) ->
 			_setSection(v)
 
-
 		getBox: ->
 			_getBox()
-
 
 		setBox: (v) ->
 			_setBox(v)

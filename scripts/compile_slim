@@ -1,0 +1,13 @@
+#!/bin/bash
+
+APPDIR=$PROJECT_HOME/app/www/slim
+TMPDIR=$PROJECT_HOME/scripts/tmp
+
+mkdir $TMPDIR
+mkdir $TMPDIR/pages
+
+slimrb $APPDIR/app.slim > $TMPDIR/app.css
+slimrb $APPDIR/pages/*.slim > $TMPDIR/pages/.css
+
+cp $SHAREDDIR/lib/shared.css $APPDIR/lib/shared.css
+cp $SHAREDDIR/lib/shared.css $WEBDIR/lib/shared.css
