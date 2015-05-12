@@ -28,6 +28,12 @@
         storage.logout();
         return _nav.loadPage('login');
       });
+      console.log("FIXINGS");
+      console.log(userProfile['confirmed']);
+      if (!userProfile['confirmed']) {
+        console.log("SHOWING ALERT");
+        _nav.showAlert("You will need to check your email to confirm your email address and fully activate yout account.");
+      }
       return _registerEvents();
     };
     _refreshPage = function() {

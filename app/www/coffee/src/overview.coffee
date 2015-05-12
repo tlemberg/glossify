@@ -64,6 +64,12 @@ define [
 			storage.logout()
 			_nav.loadPage('login')
 
+		console.log("FIXINGS")
+		console.log(userProfile['confirmed'])
+		if not userProfile['confirmed']
+			console.log("SHOWING ALERT")
+			_nav.showAlert("You will need to check your email to confirm your email address and fully activate yout account.")
+
 		# Register page events
 		_registerEvents()
 

@@ -71,6 +71,8 @@ define [
 	#
 	############################################################################
 	_showAlert = (message) ->
+		$(".alert-div").finish()
+
 		$(".alert-div").html(alertTemplate({ message: message }))
 		$(".alert-div").css("visibility", "visible");
 

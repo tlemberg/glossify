@@ -13,7 +13,6 @@
     _registerEvents = function() {
       return $('.signup-page .signup-btn').click(function(event) {
         var email, password1, password2;
-        console.log("HIHIHI");
         email = $('.signup-page .email-input').val();
         password1 = $('.signup-page .password-input-1').val();
         password2 = $('.signup-page .password-input-2').val();
@@ -48,7 +47,7 @@
       return email.match(/^([\w.-]+)@([\w.-]+)\.([a-zA-Z.]{2,6})$/i) != null;
     };
     _validatePassword = function(password1, password2) {
-      return password1 === password2;
+      return password1 !== '' && password1 === password2;
     };
     return {
       refreshPage: function() {

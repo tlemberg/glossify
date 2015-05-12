@@ -9,7 +9,7 @@ requirejs [
 	'jquery',
 	'nav',
 	'storage',
-], ($, nav, storage) ->
+], ($, nav, storage, url) ->
 
 
 	############################################################################
@@ -19,11 +19,10 @@ requirejs [
 	$(document).ready (event) ->
 		nav.initPages()
 
-		userProfile = storage.getUserProfile()
-		if userProfile?
+		if storage.isLoggedIn()
 			nav.loadPage('overview')
 		else
-			nav.loadPage('login')		
+			nav.loadPage('login')
 		
 
 	############################################################################

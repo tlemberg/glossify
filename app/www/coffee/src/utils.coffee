@@ -83,6 +83,20 @@ define ->
 
 
 	############################################################################
+	# _getUrlParameter
+	#
+	############################################################################
+	_getUrlParameter = (sParam) ->
+		sPageURL = window.location.search.substring(1)
+		sURLVariables = sPageURL.split('&')
+		for i in [0..sURLVariables.length-1]
+			sParameterName = sURLVariables[i].split('=');
+			if sParameterName[0] == sParam
+				raw = sParameterName[1]
+				return raw.replace(/\//, '')
+
+
+	############################################################################
 	# Exposed objects
 	#
 	############################################################################
@@ -114,6 +128,9 @@ define ->
 
 		windowHeight: ->
 			_windowHeight()
+
+		getUrlParameter: (sParam) ->
+			_getUrlParameter(sParam)
 
 	}
 

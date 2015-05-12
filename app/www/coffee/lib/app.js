@@ -8,12 +8,10 @@
     }
   });
 
-  requirejs(['jquery', 'nav', 'storage'], function($, nav, storage) {
+  requirejs(['jquery', 'nav', 'storage'], function($, nav, storage, url) {
     $(document).ready(function(event) {
-      var userProfile;
       nav.initPages();
-      userProfile = storage.getUserProfile();
-      if (userProfile != null) {
+      if (storage.isLoggedIn()) {
         return nav.loadPage('overview');
       } else {
         return nav.loadPage('login');

@@ -32,6 +32,10 @@ define [
 
 		$(".login-page").html(template())
 
+		if utils.getUrlParameter('action') == 'activationsuccessful' and !storage.getAccountConfirmed()?
+			_nav.showAlert("Your have succesfully confirmed your account")
+			storage.setAccountConfirmed(true)
+
 		_registerEvents()
 
 

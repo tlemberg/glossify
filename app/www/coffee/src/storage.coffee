@@ -12,6 +12,7 @@ define ['utils'], (utils) ->
 	LANGUAGE_KEY     = 'lang'
 	SECTION_KEY      = 'section'
 	BOX_KEY          = 'box'
+	ACCOUNT_CONFIRMED_KEY = 'account_confirmed'
 
 
 	############################################################################
@@ -104,6 +105,24 @@ define ['utils'], (utils) ->
 		_setLocalStorageItem(BOX_KEY, v)
 
 
+	_getAccountConfirmed = ->
+		_getLocalStorageItem(ACCOUNT_CONFIRMED_KEY)
+
+
+	_setAccountConfirmed = (v) ->
+		_setLocalStorageItem(ACCOUNT_CONFIRMED_KEY, v)
+
+
+	_isLoggedIn = ->
+		userProfile = _getUserProfile()
+		lang        = _getLanguage()
+		if userProfile? and lang?
+			dictionary  = _getDictionary()
+			if dictionary?
+				return true
+		return false
+
+
 
 	############################################################################
 	# Exposed objects
@@ -155,6 +174,15 @@ define ['utils'], (utils) ->
 
 		setBox: (v) ->
 			_setBox(v)
+
+		getAccountConfirmed: ->
+			_getAccountConfirmed()
+
+		setAccountConfirmed: (v) ->
+			_setAccountConfirmed(v)
+
+		isLoggedIn: ->
+			_isLoggedIn()
 
 	}
 

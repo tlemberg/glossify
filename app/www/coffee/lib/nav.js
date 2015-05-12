@@ -26,6 +26,7 @@
       return pageview.formatPageDimensions(page, false);
     };
     _showAlert = function(message) {
+      $(".alert-div").finish();
       $(".alert-div").html(alertTemplate({
         message: message
       }));

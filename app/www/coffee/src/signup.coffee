@@ -50,8 +50,6 @@ define [
 	_registerEvents = ->
 		$('.signup-page .signup-btn').click (event) ->
 
-			console.log("HIHIHI")
-
 			# Collect inputs from the UI
 			email     = $('.signup-page .email-input').val()
 			password1 = $('.signup-page .password-input-1').val()
@@ -96,7 +94,7 @@ define [
 	#
 	############################################################################
 	_validatePassword = (password1, password2) ->
-		password1 == password2
+		password1 != '' and password1 == password2
 
 
 	############################################################################
