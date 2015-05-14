@@ -31,16 +31,22 @@ db = DBConnect()
 
 def Main() :
 
+	# Remove existing entries
+	for language_code in language_key_map.values():
+		db.sections.remove({
+			"lang": language_code,
+		})
+
 	# Get the total phrase counts as a list of dictionaries
-	valid_phrases_map = get_valid_phrase_map(db)
+	#valid_phrases_map = get_valid_phrase_map(db)
 
 	# Parse the pages of the xml file specified as an cmd-line argument
 	parse_pages(
 		xml_file       = args.filename_in,
-		valid_phrases  = valid_phrases_map,
+		valid_phrases  = None, #valid_phrases_map,
 		process_text_f = process_text,
 		show_progress  = True,
-		max_pages      = 20000
+		max_pages      = None
 	)
 
 
@@ -56,42 +62,37 @@ def process_text(base, page_id, text):
 	accumulator = None
 
 	# Create a hash from the raw text
-	for line in text.split("\n"):
+	if text:
+		for line in text.split("\n"):
 
-		# If an accumulator exists, add the current line to the accumulator
-		if accumulator is not None:
-			accumulator.append(line)
+			# If an accumulator exists, add the current line to the accumulator
+			if accumulator is not None:
+				accumulator.append(line)
 
-		# Check if the language section has changed
-		m = re.search(r'^==([A-Za-z\s]+)==$', line)
-		if m:
-			# If the current language key is in the list of valid keys, add the accumulator to the sections dictionary
-			if accumulator is not None and language_key in valid_language_keys:
-				sections[language_key] = accumulator[:-1]
+			# Check if the language section has changed
+			m = re.search(r'^==([A-Za-z\s]+)==$', line)
+			if m:
+				# If the current language key is in the list of valid keys, add the accumulator to the sections dictionary
+				if accumulator is not None and language_key in valid_language_keys:
+					sections[language_key] = accumulator[:-1]
 
-			# Specify the new language key and reset the accumulator
-			language_key = m.group(1)
-			accumulator = []
-	
-	if accumulator is not None and language_key in valid_language_keys:
-		sections[language_key] = accumulator
+				# Specify the new language key and reset the accumulator
+				language_key = m.group(1)
+				accumulator = []
+		
+		if accumulator is not None and language_key in valid_language_keys:
+			sections[language_key] = accumulator
 
-	# Iterate through the sections and write them to the database
-	for (k, v) in sections.iteritems():
-		write_section(k, base, "\n".join(v))
-		pass
+		# Iterate through the sections and write them to the database
+		for (k, v) in sections.iteritems():
+			write_section(k, base, "\n".join(v))
+			pass
 
 
 def write_section(language_key, base, text):
 
 	# Return if the language key isn't in the map
 	if language_key not in language_key_map: return
-
-	# Remove existing entries
-	db.sections.remove({
-		"lang": language_key_map[language_key],
-		"base": base,
-	})
 
 	# Insert all of the new entries
 	new_id = db.sections.insert({

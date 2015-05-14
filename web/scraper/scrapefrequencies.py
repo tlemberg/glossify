@@ -5,7 +5,7 @@ from xml.etree.ElementTree import iterparse
 from pprint import PrettyPrinter
 import re
 from pymongo import MongoClient
-from scraperutils import parse_pages
+from scraperutils import *
 
 dumper = PrettyPrinter(indent=4, depth=6)
 
@@ -16,9 +16,18 @@ alphabet = {
 
 invalidcharpattern = "\"|\(|\)|\[|\]|\{|\}|\<|\>|!|&|?|%|+|:|;«»"
 
+language_code = 'fr'
+
+# Connect to the DB
+db = DBConnect()
+
 def Main():
+	db.phrase_counts.remove({
+		'lang': language_code,
+	})
+
 	parse_pages("/data/wikidumps/frwiki-latest-pages-articles1.xml",
-		max_pages      = 100,
+		max_pages      = None,
 		process_text_f = process_text,
 		show_progress  = True)
 
@@ -71,7 +80,7 @@ def _AnalyzeSentence(text, phrasehash) :
 				re.sub(r"^([%s])" % invalidcharpattern, r"\1", phrase)
 				re.sub(r"([%s])$" % invalidcharpattern, r"\1", phrase)
 				phrase = phrase.replace(u"\u2018", "'").replace(u"\u2019", "'").replace(u"\u201c","\"").replace(u"\u201d", "\"")
-				phrase = phrase.lower()
+				phrase = phrase.lower().strip('\'\"-,.:;!?')
 
 				# Valdidate the phrase
 				if re.search(r"[%s]" % invalidcharpattern, phrase): continue
@@ -92,23 +101,25 @@ def _InsertPageMetadata(pageid, pagetitle) :
 	pass
 
 def _InsertWordCounts(phrasehash, pageid) :
-	client = MongoClient('localhost', 27017)
-	db = client.tenk
 
-	db.phrasecounts.remove({ "phraselength": { "$exists": False } })
-	db.phrasecounts.remove({ "pageid": { "$exists": False } })
-	db.phrasecounts.remove({ "pageid": pageid })
+	obj = {}
+	for phrase in phrasehash.keys():
+		phraselength = "%s" % phrasehash[phrase]["phraselength"]
+		count        = phrasehash[phrase]["count"]
 
-	# Prepeare data for a bulk insert into the DB
-	newcounts = [{
-		"phrase":       phrase,
-		"phraselength": phrasehash[phrase]["phraselength"],
-		"count" :       phrasehash[phrase]["count"],
-		"pageid":       pageid,
-	} for phrase in phrasehash.keys()]
+		if count >= 2:
+			if phraselength not in obj:
+				obj[phraselength] = {}
+			obj[phraselength][phrase] = phrasehash[phrase]["count"]
 
 	# Perform the bulk insert
-	db.phrasecounts.insert(newcounts)
+	try:
+		db.phrase_counts.insert({
+			"lang"  : language_code,
+			"counts": obj,
+		})
+	except:
+		print "A document failed to insert"
 
 
 Main()

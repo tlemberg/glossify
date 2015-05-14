@@ -29,6 +29,7 @@ for phrase in l:
 		'lang': phrase['lang'],
 		'base': phrase['base'],
 		'txs' : phrase['txs'],
+		'_id' : str(phrase['_id']),
 	}
 
 obj = {

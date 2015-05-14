@@ -7,6 +7,7 @@ from flask_mail import Message
 
 from itsdangerous import TimedJSONWebSignatureSerializer as TimedSerializer
 from passlib.hash import sha256_crypt
+import boto.ses
 
 
 # Secret key
@@ -75,25 +76,19 @@ def get_auth_token():
 
 	# Return the result
 	if user_profile is not None:
-		if user_profile['confirmed']:
-			if verify_password(user_profile, password):
-				token = generate_auth_token(email)
-				return json_result({
-					'success': 1,
-					'result' : {
-						'token'      : token,
-						'userProfile': user_profile,
-					},
-				})
-			else:
-				return json_result({
-					'success': 0,
-					'error'  : 'email/password incorrect',
-				})
+		if verify_password(user_profile, password):
+			token = generate_auth_token(email)
+			return json_result({
+				'success': 1,
+				'result' : {
+					'token'      : token,
+					'userProfile': user_profile,
+				},
+			})
 		else:
 			return json_result({
 				'success': 0,
-				'error'  : 'user not yet activated',
+				'error'  : 'email/password incorrect',
 			})
 	else:
 		return json_result({
@@ -115,18 +110,31 @@ def create_user():
 	# Do SQL work
 	try:
 		password_hash = sha256_crypt.encrypt(password)
-		mongo.db.user_profiles.insert({
-			'email'    : email,
-			'password' : password_hash,
-			'active'   : 1,
-			'confirmed': 0,
-		})
 
-		send_activation_email(email)
-		
-		return json_result({
-			'success': 1,
-		})
+		# Check that no user already exists with that email
+		if mongo.db.user_profiles.find_one({ 'email': email }) == None:
+
+			mongo.db.user_profiles.insert({
+				'email'    : email,
+				'password' : password_hash,
+				'active'   : 1,
+				'confirmed': 0,
+				'langs'    : {},
+			})
+
+			send_activation_email(email)
+			
+			return json_result({
+				'success': 1,
+			})
+
+		else:
+
+			return json_result({
+				'success': 0,
+				'error'  : 'user already exists with that email',
+			})
+
 	except:
 		traceback.print_exc(file=sys.stdout)
 		return json_result({
@@ -167,7 +175,7 @@ def activate_user():
 	confirm_user_profile(user_profile)
 
 	# Return success
-	return redirect("%s?action=activationsuccessful" % app_domain)
+	return redirect("http://192.168.0.108:8000?action=activationsuccessful")
 
 
 ################################################################################
@@ -181,16 +189,16 @@ def send_activation_email(email):
 	msg = s.dumps(email)
 	activation_link = url_for('activate_user', msg=msg, _external=True)
 
-	# Construct the email
-	msg = Message("Activate your TenK account",
-		sender     = "noreply@glossify.net",
-		recipients = [email],
+	conn = boto.ses.connect_to_region('us-west-2')
+	conn.verify_email_address('noreply@glossify.net')
+	conn.send_email(
+		'noreply@glossify.net',
+		'Activate your glossify account',
+		'',
+		[email],
+		html_body="Click <a href='%s'>here</a> to activate your account." % activation_link,
 	)
-	msg.html = "Click <a href='%s'>here</a> to activate your account." % activation_link
-	
-	# Send the email
-	print msg
-	# mail.send(msg)
+
 
 ################################################################################
 # confirm_user_profile

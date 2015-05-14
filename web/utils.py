@@ -38,4 +38,4 @@ mail = Mail(app)
 
 # Domains
 web_domain = 'glossify.net'
-app_domain = 'http://glossify.net.s3-website-us-west-2.amazonaws.com/'
+app_domain = '192.168.0.108:8000'
