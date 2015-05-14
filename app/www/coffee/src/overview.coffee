@@ -58,16 +58,11 @@ define [
 		_loadBoxList(false)
 		_loadNavHeader()
 
-		# _setSection(section)
-
 		_nav.showBackBtn "Logout", (event) ->
 			storage.logout()
 			_nav.loadPage('login')
 
-		console.log("FIXINGS")
-		console.log(userProfile['confirmed'])
 		if not userProfile['confirmed']
-			console.log("SHOWING ALERT")
 			_nav.showAlert("You will need to check your email to confirm your email address and fully activate yout account.")
 
 		# Register page events
@@ -91,6 +86,16 @@ define [
 
 		s = "Cards #{minIndex} through #{maxIndex}"
 
+		if section == 1
+			$('.overview-page .arrow-btn-left').hide()
+			$('.overview-page .arrow-btn-right').show()
+		else if section == 10
+			$('.overview-page .arrow-btn-left').show()
+			$('.overview-page .arrow-btn-right').hide()
+		else
+			$('.overview-page .arrow-btn-left').show()
+			$('.overview-page .arrow-btn-right').show()
+
 		$(".overview-page .interval-text").html(s)
 
 
@@ -104,10 +109,11 @@ define [
 		lang        = storage.getLanguage()
 		dictionary  = storage.getDictionary(lang)
 		section     = storage.getSection()
+		plan        = storage.getPlan(lang)
 
 		# Construct arguments
 		templateArgs =
-			boxes : stack.getBoxes(userProfile, dictionary, section, lang, 100)
+			boxes : stack.getBoxes(plan, dictionary, section, lang, 100)
 
 		# Render template
 		$(".overview-page .box-list-#{section}").html(boxListTemplate(templateArgs))
@@ -128,26 +134,11 @@ define [
 
 			_nav.loadPage('study')
 
-		console.log(transition)
-		console.log(utils.withUnit(utils.windowWidth(), 'px'))
-
 		if transition
 			$(".box-list-container").animate { "margin-left": utils.withUnit(-1 * (section - 1) * utils.windowWidth(), 'px') }, 500, ->
 				console.log("animate")
 		else
 			$(".box-list-container").css("margin-left", utils.withUnit(-1 * (section - 1) * utils.windowWidth(), 'px'))
-		
-
-	############################################################################
-	# _getBoxes
-	#
-	############################################################################
-	_getBoxes = (section, dictionary) ->
-		minIndex = (section - 1) * 1000
-		maxIndex = section * 1000 - 1
-
-		boxes = {}
-		nBoxes = deck.pageSize() / deck.boxSize()
 
 
 	############################################################################
@@ -215,26 +206,6 @@ define [
 		"""
 
 		$('#overview-content').html(pickerHtml)
-		_nav.refreshPage()
-
-
-	############################################################################
-	# _setSection
-	#
-	############################################################################
-	_setSection = (section) ->
-
-		storage.setSection(section)
-		$('#overview-display').html(section)
-
-		# Create the picker
-		_setPickerHtml()
-
-		$('.overview-block-row-link').click (event) ->
-			index = $(this).data('index')
-			storage.setBox(index)
-			_nav.loadPage('study')
-
 		_nav.refreshPage()
 
 

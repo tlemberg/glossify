@@ -3,35 +3,64 @@
   var indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
   define(['utils', 'storage'], function(utils, storage) {
-    var BOX_SIZE, DICTIONARY_SIZE, MAX_BUFFER, PAGE_SIZE, refreshPool;
+    var MAX_BUFFER, _createDeck, _drawPhrase, _refreshDeck;
     MAX_BUFFER = 3;
-    BOX_SIZE = 100;
-    PAGE_SIZE = 1000;
-    DICTIONARY_SIZE = 10000;
-    refreshPool = function(deck) {
-      var a, card, fn, i, j, k, len, maxPenalty, p, penalty, pool, poolCards, ref, totalPenalty;
+    _createDeck = function(phraseIds) {
+      var deck, dictionary, j, lang, len, phraseId, phraseList, phraseMap;
+      lang = storage.getLanguage();
+      dictionary = storage.getDictionary(lang);
+      phraseList = (function() {
+        var j, len, results;
+        results = [];
+        for (j = 0, len = phraseIds.length; j < len; j++) {
+          phraseId = phraseIds[j];
+          results.push(dictionary['dictionary'][phraseId]);
+        }
+        return results;
+      })();
+      phraseMap = {};
+      for (j = 0, len = phraseIds.length; j < len; j++) {
+        phraseId = phraseIds[j];
+        phraseMap[phraseId] = dictionary[phraseId];
+      }
+      deck = {
+        lang: dictionary['lang'],
+        phraseList: phraseList,
+        phraseMap: phraseMap,
+        buffer: []
+      };
+      _refreshDeck(deck);
+      return deck;
+    };
+    _refreshDeck = function(deck) {
+      var a, fn, i, j, k, lang, len, maxPenalty, p, penalty, phrase, pool, poolPhrases, ref, totalPenalty;
+      lang = storage.getLanguage();
       totalPenalty = 0;
-      maxPenalty = deck.cards.length;
-      poolCards = [];
+      maxPenalty = deck['phraseList'].length;
+      poolPhrases = [];
       i = 0;
       while (totalPenalty < maxPenalty) {
-        card = deck['cards'][i];
-        penalty = 6 - card['progress'];
+        console.log(totalPenalty);
+        console.log(maxPenalty);
+        phrase = deck['phraseList'][i];
+        penalty = 6 - storage.getProgress(phrase['_id']);
         totalPenalty += penalty;
         if (totalPenalty > maxPenalty) {
           break;
         }
-        poolCards.push(card);
+        poolPhrases.push(phrase);
         i += 1;
       }
+      console.log("POOL");
+      console.log(poolPhrases);
       p = 0;
       pool = {};
-      for (j = 0, len = poolCards.length; j < len; j++) {
-        card = poolCards[j];
-        penalty = 6 - card['progress'];
+      for (j = 0, len = poolPhrases.length; j < len; j++) {
+        phrase = poolPhrases[j];
+        penalty = 6 - storage.getProgress(phrase['_id']);
         fn = function(a) {
           p += 1;
-          return pool[p] = card;
+          return pool[p] = phrase;
         };
         for (a = k = 0, ref = penalty - 1; 0 <= ref ? k <= ref : k >= ref; a = 0 <= ref ? ++k : --k) {
           fn(a);
@@ -40,60 +69,28 @@
       deck['pool'] = pool;
       return deck['poolSize'] = Object.keys(pool).length;
     };
+    _drawPhrase = function(deck) {
+      var p, phrase;
+      console.log(deck);
+      while ((phrase == null) || indexOf.call(deck['buffer'], phrase) >= 0) {
+        p = utils.randomInt(0, deck['poolSize'] - 1);
+        phrase = deck['pool'][p];
+      }
+      deck['buffer'].push(phrase);
+      if (deck['buffer'].length > MAX_BUFFER) {
+        deck['buffer'].shift();
+      }
+      return phrase;
+    };
     return {
-      createDeck: function(cards, dictionary) {
-        var card, cardList, cardMap, deck, j, len;
-        cardList = (function() {
-          var j, len, results;
-          results = [];
-          for (j = 0, len = cards.length; j < len; j++) {
-            card = cards[j];
-            results.push({
-              phrase_id: card['phrase_id'],
-              phrase: dictionary['dictionary'][card['phrase_id']],
-              progress: card['progress']
-            });
-          }
-          return results;
-        })();
-        cardMap = {};
-        for (j = 0, len = cardList.length; j < len; j++) {
-          card = cardList[j];
-          cardMap[card['phrase_id']] = card;
-        }
-        deck = {
-          lang: dictionary['lang'],
-          cards: cardList,
-          cardMap: cardMap,
-          buffer: []
-        };
-        refreshPool(deck);
-        return deck;
+      createDeck: function(phraseIds) {
+        return _createDeck(phraseIds);
       },
-      drawCard: function(deck) {
-        var card, p;
-        while ((card == null) || indexOf.call(deck['buffer'], card) >= 0) {
-          p = utils.randomInt(0, deck['poolSize'] - 1);
-          card = deck['pool'][p];
-        }
-        deck['buffer'].push(card);
-        if (deck['buffer'].length > MAX_BUFFER) {
-          deck['buffer'].shift();
-        }
-        return card;
+      refreshDeck: function(deck) {
+        return _refreshDeck(deck);
       },
-      updateCard: function(deck, card) {
-        deck['cards'][card['phrase_id']] = card;
-        return refreshPool(deck);
-      },
-      boxSize: function() {
-        return BOX_SIZE;
-      },
-      pageSize: function() {
-        return PAGE_SIZE;
-      },
-      dictionarySize: function() {
-        return DICTIONARY_SIZE;
+      drawPhrase: function(deck) {
+        return _drawPhrase(deck);
       }
     };
   });

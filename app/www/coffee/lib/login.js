@@ -24,8 +24,19 @@
             storage.setLanguage('fr');
             return api.ensureDictionary('fr', function(json) {
               if (json['success']) {
-                console.log("success");
-                return _nav.loadPage('overview');
+                return api.getProgress(function(json) {
+                  if (json['success']) {
+                    return api.getPlan(function(json) {
+                      if (json['success']) {
+                        return _nav.loadPage('overview');
+                      } else {
+                        return $('.login-page .error').html(strings.getString('unexpectedFailure'));
+                      }
+                    });
+                  } else {
+                    return $('.login-page .error').html(strings.getString('unexpectedFailure'));
+                  }
+                });
               } else {
                 return $('.login-page .error').html(strings.getString('unexpectedFailure'));
               }

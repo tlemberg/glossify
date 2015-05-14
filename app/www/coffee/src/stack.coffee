@@ -25,7 +25,7 @@ define ['utils', 'storage'], (utils, storage) ->
 	#
 	############################################################################
 	_getBoxInterval = (section, box) ->
-		minIndex = minIndex = (section - 1) * SECTION_SIZE
+		minIndex = (section - 1) * SECTION_SIZE + box * boxSize
 		maxIndex = minIndex + boxSize
 
 		return {
@@ -35,33 +35,35 @@ define ['utils', 'storage'], (utils, storage) ->
 
 
 	############################################################################
-	# _getCards
+	# _getPhraseIds
 	#
 	############################################################################
-	_getCards = (userProfile, section, boxIndex, lang) ->
+	_getPhraseIds = (plan, section, boxIndex, lang) ->
 		minIndex = minIndex = (section - 1) * SECTION_SIZE + boxIndex * boxSize
 		maxIndex = minIndex + boxSize
 
-		userProfile['langs'][lang].slice(minIndex, maxIndex)
+		plan.slice(minIndex, maxIndex)
 
 
 	############################################################################
 	# _getBoxes
 	#
 	############################################################################
-	_getBoxes = (userProfile, dictionary, section, lang, cardsPerBox) ->
+	_getBoxes = (plan, dictionary, section, lang, cardsPerBox) ->
 		nBoxes = SECTION_SIZE / cardsPerBox
 
 		boxes = []
 
 		for boxIndex in [0..nBoxes-1]
-			cards = _getCards(userProfile, section, boxIndex, lang)
+			phraseIds = _getPhraseIds(plan, section, boxIndex, lang)
 
-			sampleCards = cards[0..3]
-			sampleWords = (dictionary['dictionary'][card['phrase_id']]['base'] for card in sampleCards)
+			console.log(phraseId)
+
+			samplePhraseIds = phraseIds[0..3]
+			sampleWords = (dictionary['dictionary'][phraseId]['base'] for phraseId in samplePhraseIds)
 			sample = sampleWords.join(', ') + "..."
 
-			percent = _getProgressPercentage(cards)
+			percent = _getProgressPercentage(phraseIds)
 
 			box =
 				sample : sample
@@ -77,49 +79,16 @@ define ['utils', 'storage'], (utils, storage) ->
 	# _getProgressPercentage
 	#
 	############################################################################
-	_getProgressPercentage = (cards) ->
+	_getProgressPercentage = (phraseIds) ->
 
-		maxProgress = 5 * cards.length
+		maxProgress = 5 * phraseIds.length
 
 		# Compute the total progress
 		totalProgress = 0
-		for card in cards
-			totalProgress += card['progress']
-
-		console.log("total")
-		console.log(totalProgress)
+		for phraseId in phraseIds
+			totalProgress += storage.getProgress(phraseId)
 
 		Math.floor(totalProgress / maxProgress * 100)
-
-
-	############################################################################
-	# _updateCards
-	#
-	############################################################################
-	_updateCards = (cards) ->
-		# Get the user profile and language
-		userProfile = storage.getUserProfile()
-		lang        = storage.getLanguage()
-
-		console.log(cards)
-
-		# Create mapping
-		cardMap = {}
-		for card in cards
-			cardMap[card['phrase_id']] = card
-
-		# Iterate over progress in user profile
-		i = 0
-		oldCards = userProfile['langs'][lang]
-		for i in [0..oldCards.length-1]
-			oldCard = userProfile['langs'][lang][i]
-			newCard = cardMap[oldCard['phrase_id']]
-			if newCard?
-				console.log("UPDATING")
-				userProfile['langs'][lang][i]['progress'] = newCard['progress']
-
-		# Save the new object
-		storage.setUserProfile(userProfile)
 			
 
 	############################################################################
@@ -136,19 +105,11 @@ define ['utils', 'storage'], (utils, storage) ->
 			_getBoxInterval(section, box)
 
 
-		getCards: (section, box, lang) ->
-			_getCards(section, box, lang)
+		getPhraseIds: (section, box, lang) ->
+			_getPhraseIds(section, box, lang)
 
 
 		getBoxes: (userProfile, dictionary, section, lang, cardsPerBox) ->
 			_getBoxes(userProfile, dictionary, section, lang, cardsPerBox)
-
-
-		getProgressPercentage: (cards) ->
-			_getProgressPercentage(cards)
-
-		updateCards: (cards) ->
-			_updateCards(cards)
-
 
 	}

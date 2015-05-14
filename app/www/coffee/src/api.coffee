@@ -8,6 +8,7 @@ define ['utils', 'storage', 'nav', 'strings'], (utils, storage, nav, strings) ->
 	URL_BASE = 'http://52.10.65.123:5000/api/'
 	_nav = undefined
 
+
 	############################################################################
 	# _apiUrl
 	#
@@ -34,17 +35,9 @@ define ['utils', 'storage', 'nav', 'strings'], (utils, storage, nav, strings) ->
 	############################################################################
 	# _createUser
 	#
-	#	Creates a user on the server and executes a response handler
-	#
-	# Parameters:
-	#	None
-	#	
-	# Returns:
-	#	Nothing. Executes the response handler.
-	#
 	############################################################################
 	_createUser = (email, password, handler) ->
-		_nav.showModal("Creating user", "ajax", 1000)
+		_nav.showModal("Creating user", "ajax", 100)
 
 		# Send the remote call
 		$.ajax
@@ -63,21 +56,9 @@ define ['utils', 'storage', 'nav', 'strings'], (utils, storage, nav, strings) ->
 	############################################################################
 	# _authenticateUser
 	#
-	#	Requests an access token and userProfile, which are then placed in
-	#	localStorage if sucessful. A handler is executed in failure or success
-	#
-	# Parameters:
-	#
-	#	email		the user's email
-	#	password	the user's password
-	#	handler		the handler to execute on success/failure of the remote call
-	#	
-	# Returns:
-	#	Nothing. Executes the response handler.
-	#
 	############################################################################
 	_authenticateUser = (email, password, handler) ->
-		_nav.showModal("Signing in", "ajax", 1000)
+		_nav.showModal("Signing in", "ajax", 100)
 		$.ajax
 			url      : _apiUrl('authenticate-user')
 			method   : "POST"
@@ -97,18 +78,9 @@ define ['utils', 'storage', 'nav', 'strings'], (utils, storage, nav, strings) ->
 	############################################################################
 	# _fetchDictionary
 	#
-	#	Requests a dictionary from the server and executes a response handler
-	#
-	# Parameters:
-	#
-	#	lang		the 2-digit language code for the dictionary to request
-	#	
-	# Returns:
-	#	Nothing. Executes the response handler.
-	#
 	############################################################################
 	_fetchDictionary = (lang, handler) ->
-		_nav.showModal("Downloading dictionary", "ajax", 1000)
+		_nav.showModal("Downloading dictionary", "ajax", 100)
 
 		# Prepare some variables
 		token = storage.getAccessToken()
@@ -133,17 +105,9 @@ define ['utils', 'storage', 'nav', 'strings'], (utils, storage, nav, strings) ->
 	############################################################################
 	# _updateUserProfile
 	#
-	#	Updates a userProfile on the server and executes a response handler
-	#
-	# Parameters:
-	#	None
-	#	
-	# Returns:
-	#	Nothing. Executes the response handler.
-	#
 	############################################################################
 	_updateUserProfile = (handler) ->
-		_nav.showModal("Updating user profile", "ajax", 1000)
+		_nav.showModal("Updating user profile", "ajax", 100)
 
 		# Prepare some variables
 		userProfile = storage.getUserProfile()
@@ -171,18 +135,6 @@ define ['utils', 'storage', 'nav', 'strings'], (utils, storage, nav, strings) ->
 	############################################################################
 	# _ensureDictionary
 	#
-	#	Ensures that a dictionary exists in local storage. If there is already
-	#	an up-to-date version of the dictionary in localStorage, then this
-	#	method takes no action and executes the handler. Otherwise, it fetches
-	#	a new copy of the dictionary, stores it in localStorage, and then
-	#	executes the handler.
-	#
-	# Parameters:
-	#	None
-	#	
-	# Returns:
-	#	Nothing. Executes the response handler.
-	#
 	############################################################################
 	_ensureDictionary = (lang, handler) ->
 		# Attempt to get the dictionary from memory
@@ -199,14 +151,6 @@ define ['utils', 'storage', 'nav', 'strings'], (utils, storage, nav, strings) ->
 	############################################################################
 	# _addLanguage
 	#
-	#	Adds a language on the server and executes a response handler
-	#
-	# Parameters:
-	#	None
-	#	
-	# Returns:
-	#	Nothing. Executes the response handler.
-	#
 	############################################################################
 	_addLanguage = (lang, handler) ->
 
@@ -217,6 +161,93 @@ define ['utils', 'storage', 'nav', 'strings'], (utils, storage, nav, strings) ->
 			timeout  : 10 * 1000
 			success  : (json) ->
 				handler(json)
+
+
+	############################################################################
+	# _updateProgress
+	#
+	############################################################################
+	_updateProgress = (handler) ->
+		# Show the modal after a certain amount of load time
+		_nav.showModal("Saving your progress history", "ajax", 1000)
+
+		# Construct the data
+		data =
+			lang            : storage.getLanguage()
+			progress_updates: JSON.stringify(storage.getProgressUpdates())
+
+		# Send the query
+		$.ajax
+			url      : _apiUrl('update-progress', authenticated = true)
+			method   : "POST"
+			data     : data
+			dataType : 'json'
+			timeout  : 10 * 1000
+			success  : (json) ->
+				_nav.hideModal()
+				if json['success']
+					storage.clearCardUpdates()
+				handler(json)
+			error    : (jqXHR, textStatus, thownError) ->
+				_nav.showModal(strings.getString("ajaxError"), "alert")
+
+
+	############################################################################
+	# _getProgress
+	#
+	############################################################################
+	_getProgress = (handler) ->
+		# Show the modal after a certain amount of load time
+		_nav.showModal("Downloading your progress history", "ajax", 1000)
+
+		# Construct the data
+		lang = storage.getLanguage()
+		data =
+			lang: lang
+
+		# Send the query
+		$.ajax
+			url      : _apiUrl('get-progress', authenticated = true)
+			method   : "POST"
+			data     : data
+			dataType : 'json'
+			timeout  : 10 * 1000
+			success  : (json) ->
+				_nav.hideModal()
+				if json['success']
+					storage.setProgress(lang, json['result'])
+				handler(json)
+			error    : (jqXHR, textStatus, thownError) ->
+				_nav.showModal(strings.getString("ajaxError"), "alert")
+
+
+	############################################################################
+	# _getPlan
+	#
+	############################################################################
+	_getPlan = (handler) ->
+		# Show the modal after a certain amount of load time
+		_nav.showModal("Downloading dictionary", "ajax", 100)
+
+		# Construct the data
+		lang = storage.getLanguage()
+		data =
+			lang: lang
+
+		# Send the query
+		$.ajax
+			url      : _apiUrl('get-plan', authenticated = true)
+			method   : "POST"
+			data     : data
+			dataType : 'json'
+			timeout  : 10 * 1000
+			success  : (json) ->
+				_nav.hideModal()
+				if json['success']
+					storage.setPlan(lang, json['result'])
+				handler(json)
+			error    : (jqXHR, textStatus, thownError) ->
+				_nav.showModal(strings.getString("ajaxError"), "alert")
 
 
 	############################################################################
@@ -248,6 +279,21 @@ define ['utils', 'storage', 'nav', 'strings'], (utils, storage, nav, strings) ->
 		updateUserProfile: (handler) ->
 			_nav = require("nav")
 			_updateUserProfile(handler)
+
+
+		updateProgress: (handler) ->
+			_nav = require("nav")
+			_updateProgress(handler)
+
+
+		getProgress: (handler) ->
+			_nav = require("nav")
+			_getProgress(handler)
+
+
+		getPlan: (handler) ->
+			_nav = require("nav")
+			_getPlan(handler)
 
 
 		apiSummary: ->

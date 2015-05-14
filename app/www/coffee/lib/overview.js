@@ -3,7 +3,7 @@
   var indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
   define(['utils', 'storage', 'nav', 'css', 'deck', 'stack', 'hbs!../../hbs/src/box-list'], function(utils, storage, nav, css, deck, stack, boxListTemplate) {
-    var PICKER_TILE_MARGIN, _createEmptyProgress, _getBoxes, _loadBoxList, _loadNavHeader, _loadPage, _nav, _refreshPage, _registerEvents, _setPickerHtml, _setSection;
+    var PICKER_TILE_MARGIN, _createEmptyProgress, _loadBoxList, _loadNavHeader, _loadPage, _nav, _refreshPage, _registerEvents, _setPickerHtml;
     _nav = void 0;
     PICKER_TILE_MARGIN = 10;
     _loadPage = function(template) {
@@ -28,10 +28,7 @@
         storage.logout();
         return _nav.loadPage('login');
       });
-      console.log("FIXINGS");
-      console.log(userProfile['confirmed']);
       if (!userProfile['confirmed']) {
-        console.log("SHOWING ALERT");
         _nav.showAlert("You will need to check your email to confirm your email address and fully activate yout account.");
       }
       return _registerEvents();
@@ -46,10 +43,20 @@
       minIndex = sectionInterval['min'] + 1;
       maxIndex = sectionInterval['max'] + 1;
       s = "Cards " + minIndex + " through " + maxIndex;
+      if (section === 1) {
+        $('.overview-page .arrow-btn-left').hide();
+        $('.overview-page .arrow-btn-right').show();
+      } else if (section === 10) {
+        $('.overview-page .arrow-btn-left').show();
+        $('.overview-page .arrow-btn-right').hide();
+      } else {
+        $('.overview-page .arrow-btn-left').show();
+        $('.overview-page .arrow-btn-right').show();
+      }
       return $(".overview-page .interval-text").html(s);
     };
     _loadBoxList = function(transition) {
-      var dictionary, lang, matchHeight, matchWidth, section, templateArgs, userProfile;
+      var dictionary, lang, matchHeight, matchWidth, plan, section, templateArgs, userProfile;
       if (transition == null) {
         transition = true;
       }
@@ -57,8 +64,9 @@
       lang = storage.getLanguage();
       dictionary = storage.getDictionary(lang);
       section = storage.getSection();
+      plan = storage.getPlan(lang);
       templateArgs = {
-        boxes: stack.getBoxes(userProfile, dictionary, section, lang, 100)
+        boxes: stack.getBoxes(plan, dictionary, section, lang, 100)
       };
       $(".overview-page .box-list-" + section).html(boxListTemplate(templateArgs));
       $(".overview-page .box-list-" + section).css("width", utils.withUnit(utils.windowWidth(), 'px'));
@@ -74,8 +82,6 @@
         storage.setBox(index);
         return _nav.loadPage('study');
       });
-      console.log(transition);
-      console.log(utils.withUnit(utils.windowWidth(), 'px'));
       if (transition) {
         return $(".box-list-container").animate({
           "margin-left": utils.withUnit(-1 * (section - 1) * utils.windowWidth(), 'px')
@@ -85,13 +91,6 @@
       } else {
         return $(".box-list-container").css("margin-left", utils.withUnit(-1 * (section - 1) * utils.windowWidth(), 'px'));
       }
-    };
-    _getBoxes = function(section, dictionary) {
-      var boxes, maxIndex, minIndex, nBoxes;
-      minIndex = (section - 1) * 1000;
-      maxIndex = section * 1000 - 1;
-      boxes = {};
-      return nBoxes = deck.pageSize() / deck.boxSize();
     };
     _setPickerHtml = function() {
       var allBlocksHtml, allRowDivsHtml, boxCards, boxIndex, boxProgress, boxes, card, containerDivHtml, containerDivs, dictionary, i, j, k, l, lang, len, len1, len2, maxIndex, maxSampleIndex, minIndex, minSampleIndex, nBoxes, pickerHtml, progress, progressList, ref, ref1, ref2, ref3, rowDivHtml, rowDivs, sampleCards, sampleStr, sampleWords, section, userProfile;
@@ -148,18 +147,6 @@
       allBlocksHtml = containerDivs.join('');
       pickerHtml = "" + allBlocksHtml;
       $('#overview-content').html(pickerHtml);
-      return _nav.refreshPage();
-    };
-    _setSection = function(section) {
-      storage.setSection(section);
-      $('#overview-display').html(section);
-      _setPickerHtml();
-      $('.overview-block-row-link').click(function(event) {
-        var index;
-        index = $(this).data('index');
-        storage.setBox(index);
-        return _nav.loadPage('study');
-      });
       return _nav.refreshPage();
     };
     _registerEvents = function() {
