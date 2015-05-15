@@ -1,0 +1,7 @@
+#!/bin/bash
+
+echo "Compiling HBS"
+
+WEBDIR=$PROJECT_HOME/web/static/coffee
+
+handlebars $WEBDIR/src/ > $WEBDIR/lib/templates.js

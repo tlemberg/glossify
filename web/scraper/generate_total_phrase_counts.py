@@ -42,7 +42,7 @@ def get_total_phrase_counts(db):
 					count_map[base]['count'] += count
 
 	# Grab the total phrase counts as a list and sort them
-	total_phrase_counts = count_map.values()
+	total_phrase_counts = [v for v in count_map.values() if v['count'] > 10]
 	total_phrase_counts = sorted(total_phrase_counts, key=lambda phrase_count: phrase_count['count'], reverse=True)
 
 	# Assign a rank to every phrase count in the list
@@ -52,7 +52,7 @@ def get_total_phrase_counts(db):
 		rank += 1
 
 	# Write more than the desired 10k phrases, because some will be invalid
-	return total_phrase_counts[:20000]
+	return total_phrase_counts
 
 
 def write_total_phrase_counts(db, total_phrase_counts):

@@ -1,0 +1,7 @@
+#!/bin/bash
+
+echo "Compiling LESS"
+
+WEBDIR=$PROJECT_HOME/web/static/less
+
+find $WEBDIR/src/ -name '*.less' -exec lessc {} \; > $WEBDIR/lib/web.css

@@ -1,7 +1,130 @@
 @divColor1: #dfd;
 
-@textColor1: #fff; 
+@textColor1: #fff;
+@textColor2: #fff;
+@textColor3: #3399ff;
+
+@btnColor1: #dfd;
+@btnColor2: #3399ff;
+
+@progressColor1: #0099FF;
+@progressColor2: #66CCFF;
+@progressColor3: #CCFFFF;
+@progressColor4: #00FFCC;
+@progressColor5: #66FF33;
+
+@headerColor: #333333;
+@backgroundColor: #666666;
+
+@cardColor: #ffffff;
+@cardTextColor: #000000;
+@flipBtnColor: #333333;
+
+@alertBackgroundColor: #999999;
+@alertTextColor: #00FFCC;
+
+.vertical-align(@ty: 50%) {
+  position: relative;
+  top: @ty;
+  -webkit-transform: translateY(-@ty);
+  -ms-transform: translateY(-@ty);
+  transform: translateY(-@ty);
+}
+
+body {
+	width: 100%;
+	height: 100%;
+	margin: 0px;
+	padding: 0px;
+	color: @textColor1;
+	font-family: Helvetica Neue, Helvetica, Arial, sans-serif;
+	background-color: @backgroundColor;
+}
 
 .header {
-	
+	width: 100%;
+	height: 60px;
+	text-align: center;
+	background-color: @headerColor;
+	position: relative;
+	z-index: 2;
+}
+
+.header-group-left {
+	float: left;
+	width: 33%;
+}
+
+.header-group-center {
+	.vertical-align;
+	font-size: 28px;
+	font-weight: bold;
+	font-style : italic;
+	cursor: pointer;
+	display: inline-block;
+	width: 34%;
+	float: left;
+}
+
+.header-group-right {
+	float: right;
+	width: 33%;
+}
+
+.header .back-btn {
+	background-color: @btnColor1;
+	color: #000000;
+	padding: 10px;
+	display: inline-block;
+	border-radius: 10px;
+	width: 60px;
+	cursor: pointer;
+	float: left;
+	margin-left: 10px;
+	margin-top: 10px;
+	visibility: hidden;
+}
+
+.phrase-head-left {
+	float: left;
+}
+
+.phrase-head-right {
+	float: right;
+}
+
+.tx-list {
+	list-style-type: none;
+	padding: 0px;
+}
+
+.tx-div {
+	height: 46px;
+	padding-left: 12px;
+	padding-top: 14px;
+	padding-right: 12px;
+	margin-left: 0px;
+}
+
+.tx-div-hidden {
+	display: none;
+}
+
+.odd {
+	background-color: #eeeeee;
+}
+
+.tx-div-left {
+	float: left;
+}
+
+.tx-div-right {
+	float: right;
+}
+
+.tx-icon {
+	width: 26px;
+	height: 26px;
+	margin-top: 1px;
+	margin-right: 6px;
 }

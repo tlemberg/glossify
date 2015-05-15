@@ -1,0 +1,7 @@
+#!/bin/bash
+
+echo "Compiling COFFEE"
+
+WEBDIR=$PROJECT_HOME/web/static/coffee
+
+coffee --compile --output $WEBDIR/lib/ $WEBDIR/src/

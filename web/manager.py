@@ -13,7 +13,9 @@ from utils import app, mongo
 
 @app.route('/')
 def hello_world():
-	return 'Hello World!'
+	
+	# Pass the translation to the template
+	return render_template('login.html')
 
 
 @app.route('/phrases')

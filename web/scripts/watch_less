@@ -1,0 +1,4 @@
+#!/bin/bash
+WEBDIR=$PROJECT_HOME/web/static/less
+
+watchmedo shell-command --command=$PROJECT_HOME/web/scripts/compile_less $WEBDIR/src 

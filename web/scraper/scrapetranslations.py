@@ -34,34 +34,39 @@ valid_section_keys = [
 # Connect to the database and get a list of phrases
 db = DBConnect()
 
+language_code = 'fr'
+
 
 # Make a rank map
 rank_map = {}
-for doc in db.total_phrase_counts.find({}, { 'phrase': 1, 'rank': 1 }):
-	rank_map[doc['phrase']] = doc['rank']
+for doc in db.total_phrase_counts.find({ 'lang': language_code }, { 'base': 1, 'rank': 1 }):
+	rank_map[doc['base']] = doc['rank']
 
 print "Rank map complete!"
 
 
 def Main() :
-	# Construct a list of the base words to translate, then interate over it
-	if args.base is not None:
-		bases = [args.base]
-	else:
-		bases = get_section_bases(db, "fr")
 
-	for base in bases:
-		# Get the text for that base
-		text = get_section_text(db,
-			lang = "fr",
-			base = base)
+	db.phrases.remove({ "lang": language_code })
 
-		# Get the translations
-		doc = process_text(base, text)
+	phrase_counts = db.total_phrase_counts.find({ 'lang': language_code }, { 'base': 1, 'rank': 1 })
+	for phrase_count in phrase_counts:
+		base = phrase_count["base"]
+		section = db.sections.find_one({ 'base': base }, { "text": 1 })
+		if section == None:
+			section = db.sections.find_one({ 'base': base.title() }, { "text": 1 })
+			if section == None:
+				section = db.sections.find_one({ 'base': base.upper() }, { "text": 1 })
 
-		# Write the document if it exists
-		if doc is not None:
-			write_translations(doc)
+		if section != None:
+			text = section['text']
+
+			# Get the translations
+			doc = process_text(base, text)
+
+			# Write the document if it exists
+			if doc is not None:
+				write_translations(doc)
 
 
 def process_text(base, text):
@@ -113,8 +118,6 @@ def get_translations(lines):
 
 
 def write_translations(doc):
-	# Remove existing entries
-	db.phrases.remove({ "base": doc["base"] })
 
 	# Insert all of the new entries
 	db.phrases.insert(doc)

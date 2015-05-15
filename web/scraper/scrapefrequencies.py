@@ -27,7 +27,7 @@ def Main():
 	})
 
 	parse_pages("/data/wikidumps/frwiki-latest-pages-articles1.xml",
-		max_pages      = None,
+		max_pages      = 50000,
 		process_text_f = process_text,
 		show_progress  = True)
 

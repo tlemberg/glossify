@@ -1,0 +1,5 @@
+#!/bin/bash
+
+WEBDIR=$PROJECT_HOME/web/static/coffee
+
+watchmedo shell-command --command=$PROJECT_HOME/web/scripts/compile_coffee $WEBDIR/src
