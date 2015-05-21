@@ -1,6 +1,6 @@
-import api, manager, auth
-from utils import app
+from app.appconfig import app_instance
+from app.views     import apiviews, managerviews, authviews, uploadviews
+
 
 if __name__ == '__main__':
-	app.run(host='0.0.0.0', debug=True)
-	#app.run(host='127.0.0.1', debug=True)
+	app_instance.run(host='0.0.0.0', debug=True)

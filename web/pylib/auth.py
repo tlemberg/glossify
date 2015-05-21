@@ -1,0 +1,163 @@
+import boto.ses
+import itsdangerous
+import flask
+import passlib.hash
+
+from app.appconfig import mongo
+
+
+################################################################################
+# secret_key
+#
+################################################################################
+secret_key = '99cd44e7b746f9fa53613929e01855864b278981facd9f69'
+
+
+################################################################################
+# permissions
+#
+################################################################################
+all_permisions = [
+	'ROOT',
+	'MANAGE_USERS',
+	'MANAGE_DICTIONARY',
+]
+
+
+################################################################################
+# generate_auth_token
+#
+################################################################################
+def generate_auth_token(email, expiration = 600):
+	s = itsdangerous.TimedJSONWebSignatureSerializer(secret_key, expires_in = expiration)
+	return s.dumps({ 'email': email })
+
+
+################################################################################
+# verify_auth_token
+#
+################################################################################
+def verify_auth_token():
+
+	# Get the token either from GET or from SESSION, or else return None
+	token = flask.request.args.get('auth_token')
+	if not token:
+		try:
+			token = flask.session['token']
+		except KeyError:
+			return
+
+	s = itsdangerous.TimedJSONWebSignatureSerializer(secret_key)
+	try:
+		token_data = s.loads(token)
+	except itsdangerous.SignatureExpired:
+		return None
+	except itsdangerous.BadSignature:
+		return None
+
+	email = token_data['email']
+	user_profile = mongo.db.user_profiles.find_one({ 'email': email, 'confirmed': 1 })
+
+	return user_profile
+
+
+################################################################################
+# verify_password
+#
+################################################################################
+def verify_password(user_profile, password):
+
+	# Extract the hash from the user_profile db object
+	password_hash = user_profile['password']
+
+	# Verify that the password supplied matches the retreived hash
+	return passlib.hash.sha256_crypt.verify(password, password_hash)
+
+
+################################################################################
+# store_auth_token_in_session
+#
+################################################################################
+def store_auth_token_in_session(email, password):
+
+	print "STORING"
+
+	# Find the user
+	user_profile = mongo.db.user_profiles.find_one({ 'email': email })
+
+	# Return the result
+	if user_profile is not None:
+		if verify_password(user_profile, password):
+			token = generate_auth_token(email)
+			flask.session['token'] = token
+			return token
+
+
+################################################################################
+# validate_user
+#
+################################################################################
+def get_activation_serializer():
+	return itsdangerous.URLSafeSerializer('99cd44e7b746f9fa53613929e01855864b278981facd9f69')
+
+
+################################################################################
+# send_activation_email
+#
+################################################################################
+def send_activation_email(email):
+
+	# Get an activation link
+	s = get_activation_serializer()
+	msg = s.dumps(email)
+	activation_link = flask.url_for('activate_user', msg=msg, _external=True)
+
+	conn = boto.ses.connect_to_region('us-west-2')
+	conn.verify_email_address('noreply@glossify.net')
+	conn.send_email(
+		'noreply@glossify.net',
+		'Activate your glossify account',
+		'',
+		[email],
+		html_body="Click <a href='%s'>here</a> to activate your account." % activation_link,
+	)
+
+
+################################################################################
+# confirm_user_profile
+#
+################################################################################
+def confirm_user_profile(user_profile):
+
+	user_profile['confirmed'] = 1
+	user_profile['langs'] = {}
+
+	# Upsert the document
+	mongo.db.user_profiles.update(
+		{ 'email': user_profile['email'] },
+		user_profile,
+		upsert = True
+	)
+	
+
+################################################################################
+# get_permissions
+#
+################################################################################
+def get_permissions(user_profile):
+	if 'permissions' in user_profile:
+		return user_profile['permissions']
+	else:
+		return None
+
+
+################################################################################
+# has_permission
+#
+################################################################################
+def has_permission(user_profile, permission_name):
+	if 'permissions' in user_profile:
+		return user_profile['permissions']['ROOT'] or user_profile['permissions'][permission_name]
+	else:
+		return False
+

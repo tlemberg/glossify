@@ -2,25 +2,65 @@
 
 {% block body %}
 
-	<table class="uk-table uk-text-nowrap">
-            <thead>
-                <tr>
-                    <th>Rank</th>
-                    <th>Phrase</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for phrase_count in phrase_counts %}
-                	<tr>
-                		<td class="rankcolumn">{{ phrase_count['rank'] }}</td>
-                		<td>
-                			<a href="/phrase/{{ phrase_count['base'] }}">
-                				{{ phrase_count['base'] }}
-                			</a>
-                		</td>
-                	</tr>
-				{% endfor %}
-            </tbody>
-        </table>
+	<div class="phrases-page">
+
+		<div class="group-1">
+			<form action="/manage/phrases" method="GET">
+				show phrases
+				<input name="min-phrase" class="min-max-input" type="text" value={{ min_phrase }} />
+				to
+				<input name="max-phrase" class="min-max-input" type="text" value={{ max_phrase }} />
+				<input type="submit" value="Reload" />
+			</form>
+		</div>
+
+		<div class="group-2">
+
+			<div class="data-head">
+				<div class="data-head-content">
+					<div class="small-column">
+						Rank
+					</div>
+					<div class="large-column">
+						Phrase
+					</div>
+					<div class="extra-column">
+						Has translation?
+					</div>
+					<div class="extra-column">
+						Has section?
+					</div>
+				</div>
+			</div>
+
+			{% for phrase_count in phrase_counts %}
+				<div class="data-row">
+					<div class="data-row-content">
+						<div class="small-column">
+							{{ phrase_count['rank'] }}
+						</div>
+						<div class="large-column">
+							<a href="/manage/phrase/{{ phrase_count['base'] }}">
+								{{ phrase_count['base'] }}
+							</a>
+						</div>
+						<div class="extra-column">
+							{% if phrase_count.has_phrase %}
+								<div class="circle-mark"></div>
+							{% endif %}
+						</div>
+						<div class="extra-column">
+							{% if phrase_count.has_section %}
+								<div class="circle-mark"></div>
+							{% endif %}
+						</div>
+						<div class="clearfix"></div>
+					</div>
+				</div>
+			{% endfor %}
+
+		</div>
+
+	</div>
 
 {% endblock %}

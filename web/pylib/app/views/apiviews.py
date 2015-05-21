@@ -1,24 +1,20 @@
-from flask import Flask
-from flask import render_template
+from flask             import render_template, request, redirect
 from flask.ext.pymongo import PyMongo
-from flask import request, redirect
 
-from operator import attrgetter
-from models.phrases import get_total_phrase_counts
+from app.appconfig     import app_instance, mongo
+from app.utils         import json_result
 
-from bson.objectid import ObjectId
+from auth              import verify_auth_token
+
+import app.appconfig
 import json
-
-from utils import app, api, mongo, json_result
-
-from auth import verify_auth_token
 
 
 ################################################################################
 # get_dictionary
 #
 ################################################################################
-@app.route('/api/get-dictionary/<lang>')
+@app.appconfig.app_instance.route('/api/get-dictionary/<lang>')
 def get_dictionary(lang):
 
 	# Authenticate the user
@@ -37,7 +33,7 @@ def get_dictionary(lang):
 # get_plan
 #
 ################################################################################
-@app.route('/api/get-plan', methods=['POST'])
+@app.appconfig.app_instance.route('/api/get-plan', methods=['POST'])
 def get_plan():
 	# Authenticate the user
 	user_profile = verify_auth_token()
@@ -73,7 +69,7 @@ def get_plan():
 # add_language
 #
 ################################################################################
-@app.route('/api/add-language', methods=['POST'])
+@app.appconfig.app_instance.route('/api/add-language', methods=['POST'])
 def add_language(lang):
 	
 	# Authenticate the user
@@ -118,7 +114,7 @@ def add_language(lang):
 # get_progress
 #
 ################################################################################
-@app.route('/api/get-progress', methods=['POST'])
+@app.appconfig.app_instance.route('/api/get-progress', methods=['POST'])
 def get_progress():
 
 	# Authenticate the user
@@ -163,7 +159,7 @@ def get_progress():
 # update_progress
 #
 ################################################################################
-@app.route('/api/update-progress', methods=['POST'])
+@app.appconfig.app_instance.route('/api/update-progress', methods=['POST'])
 def update_progress():
 
 	# Authenticate the user

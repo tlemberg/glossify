@@ -2,6 +2,27 @@
 
 {% block body %}
 
-	Login
+	<script src="{{ url_for('static', filename='coffee/lib/login.js') }}"></script>
+
+	<div class="login-page">
+
+		<div class="group-1">
+			Sign in to access the glossify manager
+		</div>
+
+		<div class="group-2">
+			<div class='error'></div>
+			<form id="login-form" action="/manage/login" method="POST">
+				<div><input name="email" id="email-input" type="text" placeholder="email"/></div>
+				<div><input name="password" id="password-input" type="password" placeholder="password"/></div>
+				<a>
+					<div class="facebook-signup-btn login-btn">
+						Sign in
+					</div>
+				</a>
+			</form>
+		</div>
+
+	</div>
 
 {% endblock %}

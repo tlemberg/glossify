@@ -1,0 +1,53 @@
+{% extends "task_base.html" %}
+
+{% block body %}
+
+	<script src="{{ url_for('static', filename='coffee/lib/recording.js') }}"></script>
+	<script src="{{ url_for('static', filename='js/recorder.js') }}"></script>
+
+	<input type="hidden" id="task-id-input" value="{{ task_id }}">
+
+	<div class="recording-page">
+
+		<div class="info-group">
+			Click the record button below and then speak the phrase clearly.
+		</div>
+
+		{% for phrase in phrases %}
+
+			<div class="row row-{{ loop.index }}" data-index="{{ loop.index }}">
+
+				<div class="group-1">
+
+					Phrase {{ loop.index }} / {{ loop.length }}
+
+				</div>
+
+				<div class="group-2">
+
+					{{ phrase['base'] }}
+
+				</div>
+
+				<div class="group-3">
+
+					<div class="blue-btn record-btn">
+						Record
+					</div>
+
+					<div class="blue-btn done-btn">
+						Record
+					</div>
+
+					<div class="recording-feedback">
+					</div>
+
+				</div>
+
+			</div>
+
+		{% endfor $}
+
+	</div>
+
+{% endblock %}

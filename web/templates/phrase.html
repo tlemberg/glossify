@@ -2,67 +2,109 @@
 
 {% block body %}
 
-    <script type="text/javascript" src="{{ url_for('static', filename='js/phrase.js') }}"></script>
+	<script type="text/javascript" src="{{ url_for('static', filename='coffee/lib/phrase.js') }}"></script>
 
-    <form class="uk-form" method="post">
-        <fieldset>
+	<div class="phrase-page">
 
-            <div class="uk-container">
-                <div class="phrase-head-left">
-                    <h1>{{ phrase.base }}</h1>
-                </div>
-                <div class="phrase-head-right">
-                    <label><input id="show-deleted-checkbox" type="checkbox" {{ 'checked' if show_deleted }}>show deleted</label>
-                </div>
-            </div>
+		<form method="post">
 
-            {% for k, defs in phrase["txs"].iteritems() recursive %}
+			<div class="group-head">
+				Translations
+			</div>
 
-                <b>{{ k }}</b>
+			{% if phrase %}
 
-                <ul class="tx-list">
-                    {% for d in defs %}
-                        {% set row_id = "%s-%s" % (k, d.rank) %}
-                        <li>
-                            <div class="tx-div {{ loop.cycle('odd', 'even') }} {{ 'tx-div-hidden' if d.deleted and not show_deleted }}">
-                                <div class="tx-div-left">
-                                    <a id="tx-delete-btn-{{ row_id }}" class="tx-delete-btn" data-row-id="{{ row_id }}">
-                                        <img class="tx-icon" data-row-id="{{ row_id }}" src="{{ url_for('static', filename='img/garbage13.png') }}" />
-                                    </a>
-                                    <input type="hidden" id="tx-deleted-input-{{ row_id }}" name="tx-deleted-{{ row_id }}" value="{{ 1 if d.deleted else 0}}" />
-                                    <a id="tx-edit-btn-{{ row_id }}" class="tx-edit-btn" data-row-id="{{ row_id }}">
-                                        <img class="tx-icon" src="{{ url_for('static', filename='img/pencil124.png') }}" />
-                                    </a>
-                                    <span id="tx-span-{{ row_id }}" class="tx-span">{{ d.text }}</span>
-                                    <input id="tx-input-{{ row_id }}" class="tx-input" type="text" name="tx-{{ row_id }}" value="{{ d.text }}" />
-                                    <input type="submit" id="tx-done-btn-{{ row_id }}" class="tx-done-btn uk-button" data-row-id="{{ row_id }}" value="Done">
-                                    <input type="submit" id="tx-cancel-btn-{{ row_id }}" class="tx-cancel-btn uk-button" data-row-id="{{ row_id }}" value="Cancel">
-                                </div>
-                                <div class="tx-div-right">
-                                    <input type="hidden" id="tx-rank-input-{{ row_id }}" name="tx-rank-{{ row_id }}" value="{{ d.rank }}" />
-                                    {% if not loop.last %}
-                                    <a id="tx-down-btn-{{ row_id }}" class="tx-down-btn" data-row-id="{{ row_id }}">
-                                        <img class="tx-icon" src="{{ url_for('static', filename='img/down126.png') }}" />
-                                    </a>
-                                    {% endif %}
-                                    {% if not loop.first %}
-                                    <a id="tx-up-btn-{{ row_id }}" class="tx-up-btn" data-row-id="{{ row_id }}">
-                                        <img class="tx-icon" src="{{ url_for('static', filename='img/up7.png') }}" />
-                                    </a>
-                                    {% endif %}
-                                    <a id="tx-audio-btn-{{ row_id }}" class="tx-audio-btn" data-row-id="{{ row_id }}">
-                                        <img class="tx-icon" src="{{ url_for('static', filename='img/note54.png') }}" />
-                                    </a>
-                                </div>
-                            </div>
-                        </li>
+				<div class="group-1">
 
-                    {% endfor %}
-                </ul>
+					<div class="phrase-head-left">
+						{{ phrase.base }}
+					</div>
 
-            {% endfor %}
+					<div class="phrase-head-right">
+						<label><input id="show-deleted-checkbox" type="checkbox" {{ 'checked' if show_deleted }}>show deleted</label>
+					</div>
 
-        </fieldset>
-    </form>
+				</div>
+
+				<div class="group-2">
+
+					{% for k, defs in phrase["txs"].iteritems() recursive %}
+
+						<b>{{ k }}</b>
+
+						<ul class="tx-list">
+							{% for d in defs %}
+								{% set row_id = "%s-%s" % (k, d.rank) %}
+								<li>
+									<div class="tx-div {{ loop.cycle('odd', 'even') }} {{ 'tx-div-hidden' if d.deleted and not show_deleted }}">
+										<div class="tx-div-left">
+											<a id="tx-delete-btn-{{ row_id }}" class="tx-delete-btn" data-row-id="{{ row_id }}">
+												<img class="tx-icon" data-row-id="{{ row_id }}" src="{{ url_for('static', filename='img/garbage13.png') }}" />
+											</a>
+											<input type="hidden" id="tx-deleted-input-{{ row_id }}" name="tx-deleted-{{ row_id }}" value="{{ 1 if d.deleted else 0}}" />
+											<a id="tx-edit-btn-{{ row_id }}" class="tx-edit-btn" data-row-id="{{ row_id }}">
+												<img class="tx-icon" src="{{ url_for('static', filename='img/pencil124.png') }}" />
+											</a>
+											<span id="tx-span-{{ row_id }}" class="tx-span">{{ d.text }}</span>
+											<input id="tx-input-{{ row_id }}" class="tx-input" type="text" name="tx-{{ row_id }}" value="{{ d.text }}" />
+											<input type="submit" id="tx-done-btn-{{ row_id }}" class="tx-done-btn uk-button" data-row-id="{{ row_id }}" value="Done">
+											<input type="submit" id="tx-cancel-btn-{{ row_id }}" class="tx-cancel-btn uk-button" data-row-id="{{ row_id }}" value="Cancel">
+										</div>
+										<div class="tx-div-right">
+											<input type="hidden" id="tx-rank-input-{{ row_id }}" name="tx-rank-{{ row_id }}" value="{{ d.rank }}" />
+											{% if not loop.last %}
+											<a id="tx-down-btn-{{ row_id }}" class="tx-down-btn" data-row-id="{{ row_id }}">
+												<img class="tx-icon" src="{{ url_for('static', filename='img/down126.png') }}" />
+											</a>
+											{% endif %}
+											{% if not loop.first %}
+											<a id="tx-up-btn-{{ row_id }}" class="tx-up-btn" data-row-id="{{ row_id }}">
+												<img class="tx-icon" src="{{ url_for('static', filename='img/up7.png') }}" />
+											</a>
+											{% endif %}
+											<a id="tx-audio-btn-{{ row_id }}" class="tx-audio-btn" data-row-id="{{ row_id }}">
+												<img class="tx-icon" src="{{ url_for('static', filename='img/note54.png') }}" />
+											</a>
+										</div>
+									</div>
+								</li>
+
+							{% endfor %}
+						</ul>
+
+					{% endfor %}
+
+				</div>
+
+			{% else %}
+
+				<div class="group-3">
+					No translations for phrase.
+				</div>
+
+			{% endif %}
+
+			<div class="group-head">
+				Sections
+			</div>
+
+			{% if section %}
+
+				<div class="group-4">
+
+					<textarea class="section-text">
+						{{ section['text'] }}
+					</textarea>
+				</div>
+
+			{% else %}
+
+				<div class="group-5">
+					No section for phrase.
+				</div>
+
+			{% endif %}
+
+	</form>
 
 {% endblock %}
