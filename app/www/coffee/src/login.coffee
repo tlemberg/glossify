@@ -32,6 +32,10 @@ define [
 
 		$(".login-page").html(template())
 
+		if utils.getUrlParameter('action') == 'activationsuccessful' and !storage.getAccountConfirmed()?
+			_nav.showAlert("Your have succesfully confirmed your account")
+			storage.setAccountConfirmed(true)
+
 		_registerEvents()
 
 
@@ -63,8 +67,20 @@ define [
 
 					api.ensureDictionary 'fr', (json) ->
 						if json['success']
-							console.log("success")
-							_nav.loadPage('overview')
+							
+							api.getProgress (json) ->
+								if json['success']
+
+									api.getPlan (json) ->
+
+										if json['success']
+											_nav.loadPage('overview')
+										else
+											# Error ensuring plan
+											$('.login-page .error').html(strings.getString('unexpectedFailure'))
+								else
+									# Error ensuring progress
+									$('.login-page .error').html(strings.getString('unexpectedFailure'))
 						else
 							# Error ensuring dictionary
 							$('.login-page .error').html(strings.getString('unexpectedFailure'))

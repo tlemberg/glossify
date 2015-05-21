@@ -12,6 +12,9 @@ define ['utils'], (utils) ->
 	LANGUAGE_KEY     = 'lang'
 	SECTION_KEY      = 'section'
 	BOX_KEY          = 'box'
+	PROGRESS_KEY     = 'progress'
+	PROGRESS_UPDATES_KEY = 'card_updates'
+	ACCOUNT_CONFIRMED_KEY = 'account_confirmed'
 
 
 	############################################################################
@@ -42,6 +45,8 @@ define ['utils'], (utils) ->
 		_removeLocalStorageItem(LANGUAGE_KEY)
 		_removeLocalStorageItem(SECTION_KEY)
 		_removeLocalStorageItem(BOX_KEY)
+
+		_clearProgressUpdates()
 
 
 	############################################################################
@@ -104,6 +109,71 @@ define ['utils'], (utils) ->
 		_setLocalStorageItem(BOX_KEY, v)
 
 
+	_getAccountConfirmed = ->
+		_getLocalStorageItem(ACCOUNT_CONFIRMED_KEY)
+
+
+	_setAccountConfirmed = (v) ->
+		_setLocalStorageItem(ACCOUNT_CONFIRMED_KEY, v)
+
+
+	_clearProgressUpdates = ->
+		_setLocalStorageItem(PROGRESS_UPDATES_KEY, {})
+
+
+	_getProgressUpdates = ->
+		_getLocalStorageItem(PROGRESS_UPDATES_KEY)
+
+
+	_addProgressUpdate = (phraseId, progressValue) ->
+
+		# Get the progressUpdates hash, defaulting to an empty hash
+		progressUpdates = _getProgressUpdates()
+		if !progressUpdates?
+			progressUpdates = {}
+
+		# Modify the hash
+		progressUpdates[phraseId] = progressValue
+
+		# Store the modified value locally
+		_setLocalStorageItem(PROGRESS_UPDATES_KEY, progressUpdates)
+
+
+	_getProgress = (phraseId) ->
+		lang = _getLanguage()
+		progress = _getLocalStorageItem("progress_#{ lang }")
+		progress[phraseId] ? 0
+
+
+	_setProgress = (phraseId, progressValue) ->
+		lang = _getLanguage()
+		progress = _getLocalStorageItem("progress_#{ lang }")
+		progress[phraseId] = progressValue
+		_setLocalStorageItem("progress_#{ lang }", progress)
+		_addProgressUpdate(phraseId, progressValue)
+
+
+	_getPlan = (lang) ->
+		_getLocalStorageItem("plan_#{ lang }")
+
+
+	_setPlan = (lang, v) ->
+		_setLocalStorageItem("plan_#{ lang }", v)
+
+
+	_isLoggedIn = ->
+		userProfile = _getUserProfile()
+		lang        = _getLanguage()
+
+		console.log(userProfile)
+		console.log(lang)
+
+		if userProfile? and lang?
+			dictionary  = _getDictionary(lang)
+			if dictionary?
+				return true
+		return false
+
 
 	############################################################################
 	# Exposed objects
@@ -155,6 +225,36 @@ define ['utils'], (utils) ->
 
 		setBox: (v) ->
 			_setBox(v)
+
+		getAccountConfirmed: ->
+			_getAccountConfirmed()
+
+		setAccountConfirmed: (v) ->
+			_setAccountConfirmed(v)
+
+		getProgressUpdates: ->
+			_getProgressUpdates()
+
+		clearProgressUpdates: ->
+			_clearProgressUpdates()
+
+		addProgressUpdate: (phraseId, progressValue) ->
+			_addProgressUpdate(phraseId, progressValue)
+
+		getProgress: (phraseId) ->
+			_getProgress(phraseId)
+
+		setProgress: (phraseId, progressValue) ->
+			_setProgress(phraseId, progressValue)
+
+		getPlan: (lang) ->
+			_getPlan(lang)
+
+		setPlan: (lang, v) ->
+			_setPlan(lang, v)
+
+		isLoggedIn: ->
+			_isLoggedIn()
 
 	}
 

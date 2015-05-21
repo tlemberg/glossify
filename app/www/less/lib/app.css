@@ -13,6 +13,7 @@ ul {
 }
 .page {
   float: left;
+  overflow-x: hidden;
 }
 body {
   width: 100%;

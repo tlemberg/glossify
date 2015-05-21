@@ -1,4 +1,4 @@
-define ['utils', 'stack', 'storage', 'nav', 'deck', 'css', 'pageview'], (utils, stack, storage, nav, deck, css, pageview) ->
+define ['utils', 'stack', 'storage', 'nav', 'deck', 'css', 'pageview', 'api'], (utils, stack, storage, nav, deck, css, pageview, api) ->
 
 
 	############################################################################
@@ -7,7 +7,7 @@ define ['utils', 'stack', 'storage', 'nav', 'deck', 'css', 'pageview'], (utils, 
 	############################################################################
 	_nav       = undefined
 	_isFlipped = false
-	_card      = undefined
+	_phrase    = undefined
 	_deck      = undefined
 
 
@@ -25,26 +25,29 @@ define ['utils', 'stack', 'storage', 'nav', 'deck', 'css', 'pageview'], (utils, 
 	#
 	############################################################################
 	_loadPage = (template) ->
+
+		# Get local values
 		userProfile = storage.getUserProfile()
 		lang        = storage.getLanguage()
 		section     = storage.getSection()
 		box         = storage.getBox()
+		plan        = storage.getPlan(lang)
 		dictionary  = storage.getDictionary(lang)
 
-		minIndex = minIndex = (section - 1) * deck.boxSize() + box * deck.boxSize()
-		maxIndex = minIndex + deck.boxSize()
+		# Get phrase IDs for the current box
+		phraseIds = stack.getPhraseIds(plan, section, box, lang)
 
-		interval = stack.getBoxInterval(section, box)
-
-		cards = userProfile['langs'][lang].slice(interval['min'], interval['max'])
-
-		console.log(cards)
+		console.log("A")
 
 		# Construct a deck and store is as a module variable
-		_deck = deck.createDeck(cards, dictionary)
+		_deck = deck.createDeck(phraseIds, dictionary)
 
-		# Draw a card to start the deck
-		_card = deck.drawCard(_deck)
+		console.log("B")
+
+		# Draw a phrase to start the deck
+		_phrase = deck.drawPhrase(_deck)
+
+		console.log("C")
 
 		# Set other properties
 		_isFlipped = false
@@ -65,7 +68,12 @@ define ['utils', 'stack', 'storage', 'nav', 'deck', 'css', 'pageview'], (utils, 
 		_resetCard()
 
 		_nav.showBackBtn "Done", (event) ->
-			_nav.loadPage('overview')
+			progressUpdates = storage.getProgressUpdates()
+			if progressUpdates? and progressUpdates != {}
+				api.updateProgress (json) ->
+					_nav.loadPage('overview')
+			else
+				_nav.loadPage('overview')
 
 		_registerEvents()
 
@@ -80,26 +88,19 @@ define ['utils', 'stack', 'storage', 'nav', 'deck', 'css', 'pageview'], (utils, 
 			_resetCard()
 
 		$('.study-page .btn').click (event) ->
-			# Update progress on the card
-			_card['progress'] = $(this).data('progress')
-			deck.updateCard(_deck, _card)
-			stack.updateCards([_card])
+
+			# Update the progress value
+			storage.setProgress(_phrase['_id'], $(this).data('progress'))
+
+			# Refresh the deck
+			deck.refreshDeck(_deck)
 
 			# Draw a new card
-			_card = deck.drawCard(_deck)
+			_phrase = deck.drawPhrase(_deck)
 
 			# Refresh the page
 			_isFlipped = false
 			_resetCard()
-
-		$('.study-page .back-btn').click (event) ->
-
-			section = storage.getSection()
-			box     = storage.getBox()
-			lang    = storage.getLanguage()
-			cards   = stack.getCards(section, box, lang)
-
-			_nav.loadPage('overview')
 
 
 	############################################################################
@@ -107,21 +108,22 @@ define ['utils', 'stack', 'storage', 'nav', 'deck', 'css', 'pageview'], (utils, 
 	#
 	############################################################################
 	_resetCard = ->
+
 		# Set the text to match the card
-		_setTopText(_card['phrase']['base'])
+		_setTopText(_phrase['base'])
 
 		# Set the border color to indicate progress
-		progress = _card['progress']
+		progressValue = storage.getProgress(_phrase['_id'])
 		for i in [0..5]
 			$('.study-page .card').removeClass("card-progress-#{ i }")
-		$('.study-page .card').addClass("card-progress-#{ progress }")
+		$('.study-page .card').addClass("card-progress-#{ progressValue }")
 
 		if not _isFlipped
 			# Build the flip buton UI and show it
 			_showFlipButton()
 		else
 			# Get a translation summary and set it in the UI
-			txSummary = _getTxSummary(_card['phrase']['txs'])
+			txSummary = _getTxSummary(_phrase['txs'])
 			_setBottomText(txSummary)
 
 			# Show the appropriate divs
@@ -169,13 +171,14 @@ define ['utils', 'stack', 'storage', 'nav', 'deck', 'css', 'pageview'], (utils, 
 	#
 	############################################################################
 	_setProgressCounter = () ->
+
 		# Compute the max progress
-		maxProgress = 5 * _deck['cards'].length
+		maxProgress = 5 * _deck['phraseList'].length
 
 		# Compute the total progress
 		totalProgress = 0
-		for card in _deck['cards']
-			totalProgress += card['progress']
+		for phrase in _deck['phraseList']
+			totalProgress += storage.getProgress(phrase['_id'])
 
 		percentProgress = Math.floor(totalProgress / maxProgress * 100)
 
@@ -213,8 +216,10 @@ define ['utils', 'stack', 'storage', 'nav', 'deck', 'css', 'pageview'], (utils, 
 		s = ''
 		for k, v of txs
 			defTexts = (def['text'] for def in v when not def['deleted'])
-			lines = ("#{ i + 1 }. #{ defTexts[i] }" for i in [0..(defTexts.length - 1)])
-			s = s + "<b>#{ k }</b>" + "<br />" + lines.join("<br />")
+			lines = ("#{ i + 1 }. #{ defTexts[i] }" for i in [0..Math.min(defTexts.length - 1, 2)])
+			s = s + "<div><b>#{ k }</b>" + "<br />" + lines.join("<br />") + "</div>"
+			break
+		s
 
 
 	############################################################################
