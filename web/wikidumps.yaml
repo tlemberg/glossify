@@ -1,0 +1,11 @@
+en:
+  wiktionary: /data/wikidumps/enwiktionary-full.xml
+fr:
+  articles: /data/wikidumps/frwiki-latest-pages-articles1.xml
+  wiktionary: /data/wikidumps/frwiktionary-20150104-pages-articles-multistream.xml
+es:
+  articles: /data/wikidumps/eswiki-20150429-pages-articles-multistream.xml
+  wiktionary: /data/wikidumps/eswiktionary-20150421-pages-articles-multistream.xml
+ru:
+  articles: /data/wikidumps/ruwiki-20150504-pages-articles-multistream.xml
+  wiktionary: /data/wikidumps/ruwiktionary-20150407-pages-articles-multistream.xml

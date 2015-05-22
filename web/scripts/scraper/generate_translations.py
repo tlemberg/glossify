@@ -1,18 +1,24 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from xml.etree.ElementTree import iterparse
-import re
-from pymongo import MongoClient
-from scraperutils import *
-from frequencies import *
+import app.utils
 import argparse
+import dbutils
+import re
+import scraper
 
+from xml.etree.ElementTree import iterparse
 
+# Set up an arg parser
 parser = argparse.ArgumentParser()
+parser.add_argument("lang")
 parser.add_argument("--base")
+
+# Parse the arguments
 args = parser.parse_args()
 
+# Connect to the DB
+db = dbutils.DBConnect()
 
 # Define valid section keys
 valid_section_keys = [
@@ -30,49 +36,61 @@ valid_section_keys = [
 	'Phrase'
 ]
 
-
-# Connect to the database and get a list of phrases
-db = DBConnect()
-
-language_code = 'fr'
-
-
 # Make a rank map
 rank_map = {}
-for doc in db.total_phrase_counts.find({ 'lang': language_code }, { 'base': 1, 'rank': 1 }):
+for doc in db.phrases.find({ 'lang': args.lang }, { 'base': 1, 'rank': 1 }):
 	rank_map[doc['base']] = doc['rank']
 
-print "Rank map complete!"
 
-
+################################################################################
+# Main
+#
+################################################################################
 def Main() :
 
-	db.phrases.remove({ "lang": language_code })
+	phrases = None
 
-	phrase_counts = db.total_phrase_counts.find({ 'lang': language_code }, { 'base': 1, 'rank': 1 })
-	for phrase_count in phrase_counts:
-		base = phrase_count["base"]
-		section = db.sections.find_one({ 'base': base }, { "text": 1 })
-		if section == None:
-			section = db.sections.find_one({ 'base': base.title() }, { "text": 1 })
-			if section == None:
-				section = db.sections.find_one({ 'base': base.upper() }, { "text": 1 })
+	if args.base != None:
+		phrases = db.phrases.find(
+			{
+				'lang': args.lang,
+				'base': args.base,
+			},
+		).sort('rank', 1)
+	else:
+		phrases = db.phrases.find({ 'lang': args.lang })
+
+	print "Starting..."
+
+	count = 0
+	for phrase in phrases:
+		section = dbutils.get_section_for_phrase(db, phrase)
 
 		if section != None:
+			base = phrase['base']
 			text = section['text']
 
+			print base
+
 			# Get the translations
-			doc = process_text(base, text)
+			tx_hash = process_text(base, text)
 
 			# Write the document if it exists
-			if doc is not None:
-				write_translations(doc)
+			if tx_hash is not None:
+				write_translations(base, tx_hash)
+				count += 1
+				if count % 100 == 0:
+					print count
 
 
+################################################################################
+# process_text
+#
+################################################################################
 def process_text(base, text):
 
 	# Extract sections from the text
-	sections = parse_text_for_sections(text)
+	sections = scraper.parse_text_for_sections(text)
 
 	# Initialize a document to insert
 	txs = {}
@@ -86,14 +104,13 @@ def process_text(base, text):
 	rank = rank_map[base]
 
 	if txs != {} and rank is not None:
-		return {
-			"lang": "fr",
-			"base": base,
-			"rank": rank,
-			"txs" : txs
-		}
+		return txs
 
 
+################################################################################
+# get_translations
+#
+################################################################################
 def get_translations(lines):
 	txs = []
 	rank = 1
@@ -117,10 +134,27 @@ def get_translations(lines):
 	return txs
 
 
-def write_translations(doc):
+################################################################################
+# write_translations
+#
+################################################################################
+def write_translations(base, tx_hash):
 
 	# Insert all of the new entries
-	db.phrases.insert(doc)
+	phrase = db.phrases.find_one({
+		'lang': args.lang,
+		'base': base,
+	})
+
+	phrase['txs'] = tx_hash
+
+	db.phrases.update(
+		{
+			'lang': args.lang,
+			'base': base,
+		},
+		phrase,
+	)
 
 
 Main()

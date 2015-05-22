@@ -17,7 +17,7 @@ def manage_page():
 	if user_profile == None:
 		return flask.redirect(flask.url_for('login_page'))
 	else:
-		return flask.redirect(flask.url_for('phrases_page'))
+		return flask.redirect(flask.url_for('phrases_page', lang='fr'))
 
 
 ################################################################################
@@ -42,7 +42,7 @@ def login_page():
 		if email and password:
 			token = auth.store_auth_token_in_session(email, password)
 			if token:
-				return flask.redirect(flask.url_for('phrases_page'))
+				return flask.redirect(flask.url_for('phrases_page', lang='fr'))
 		
 
 		# Handle failure
@@ -80,12 +80,12 @@ def home_page():
 # phrases_page
 #
 ################################################################################
-@app_instance.route('/manage/phrases')
-def phrases_page():
+@app_instance.route('/manage/<lang>/phrases')
+def phrases_page(lang):
 
 	# Authentication
 	user_profile = auth.verify_auth_token()
-	if user_profile == None or not auth.has_permission(user_profile, 'MANAGE_DICTIONARY'):
+	if user_profile == None or not auth.has_permission(user_profile, 'manage_dictionary'):
 		return flask.redirect(flask.url_for('unauthorized_page'))
 
 	min_phrase = flask.request.args.get('min-phrase')
@@ -98,21 +98,25 @@ def phrases_page():
 		max_phrase = 99
 
 
-	total_phrase_counts = mongo.db.total_phrase_counts.find({ 'rank': { '$gt': min_phrase-1, '$lt': max_phrase+1 } })
+	phrases = mongo.db.phrases.find({
+		'lang': lang,
+		'rank': { '$gt': min_phrase-1, '$lt': max_phrase+1 }
+	}).sort('rank', 1)
 
-	processed_phrase_counts = []
-	for phrase_count in total_phrase_counts:
-		if dbutils.get_section_for_base(phrase_count['base']):
-			phrase_count['has_section'] = 1
-		if dbutils.get_phrase_for_base(phrase_count['base']):
-			phrase_count['has_phrase'] = 1
-		processed_phrase_counts.append(phrase_count)
+	processed_phrases = []
+	for phrase in phrases:
+		if dbutils.get_section_for_phrase(mongo.db, phrase):
+			phrase['has_section'] = 1
+		if 'txs' in phrase:
+			phrase['has_txs'] = 1
+		processed_phrases.append(phrase)
 
 	# Render the template by passing the total phrase counts
 	return flask.render_template('phrases.html',
+		lang          = lang,
 		min_phrase    = min_phrase,
 		max_phrase    = max_phrase,
-		phrase_counts = processed_phrase_counts,
+		phrase_counts = processed_phrases,
 	)
 
 
@@ -120,8 +124,8 @@ def phrases_page():
 # phrase_page
 #
 ################################################################################
-@app_instance.route('/manage/phrase/<base>', methods=['GET', 'POST'])
-def phrase_page(base):
+@app_instance.route('/manage/<lang>/phrase/<base>', methods=['GET', 'POST'])
+def phrase_page(lang, base):
 
 	# Authentication
 	user_profile = auth.verify_auth_token()
@@ -130,11 +134,11 @@ def phrase_page(base):
 
 	# Get the phrase from the database
 	phrase = mongo.db.phrases.find_one({
-		'lang': 'fr',
+		'lang': lang,
 		'base': base
 	})
 
-	section = dbutils.get_section_for_base(base)
+	section = dbutils.get_section_for_phrase(mongo.db, phrase)
 
 	if phrase and flask.request.method == 'POST':
 		# Apply changes from the form
@@ -149,7 +153,7 @@ def phrase_page(base):
 		# Perform the update
 		mongo.db.phrases.update(
 			{
-			'lang': 'fr',
+			'lang': lang,
 			'base': base
 			},
 			phrase,
@@ -160,6 +164,7 @@ def phrase_page(base):
 
 	# Pass the translation to the template
 	return flask.render_template('phrase.html',
+		lang         = lang,
 		phrase       = phrase,
 		section      = section,
 		show_deleted = show_deleted

@@ -1,13 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from xml.etree.ElementTree import iterparse
-from pprint import PrettyPrinter
+import argparse
+import dbutils
 import re
-from pymongo import MongoClient
-from scraperutils import *
+import scraper
 
-dumper = PrettyPrinter(indent=4, depth=6)
+from xml.etree.ElementTree import iterparse
 
 alphabet = {
 	"lowercase": "abcdebghijklmnopqrstuvwxyzàâæäçéèêëîïôœöùûüÿ",
@@ -16,22 +15,39 @@ alphabet = {
 
 invalidcharpattern = "\"|\(|\)|\[|\]|\{|\}|\<|\>|!|&|?|%|+|:|;«»"
 
-language_code = 'fr'
+# Set up an arg parser
+parser = argparse.ArgumentParser()
+parser.add_argument("lang")
+
+# Parse the arguments
+args = parser.parse_args()
 
 # Connect to the DB
-db = DBConnect()
+db = dbutils.DBConnect()
 
+
+################################################################################
+# Main
+#
+################################################################################
 def Main():
 	db.phrase_counts.remove({
-		'lang': language_code,
+		'lang': args.lang,
 	})
 
-	parse_pages("/data/wikidumps/frwiki-latest-pages-articles1.xml",
+	xml_file = scraper.get_articles_dump_path(args.lang)
+
+	scraper.parse_pages(db,
+		xml_file       = xml_file,
 		max_pages      = 50000,
 		process_text_f = process_text,
 		show_progress  = True)
 
 
+################################################################################
+# process_text
+#
+################################################################################
 def process_text(base, pageid, text):
 	# Get mostly complete sentences on which to analyze vocabulary
 	sentences = _GetSentences(text)
@@ -45,6 +61,10 @@ def process_text(base, pageid, text):
 	if phrasehash: _InsertWordCounts(phrasehash, pageid)
 
 
+################################################################################
+# _GetSentences
+#
+################################################################################
 def _GetSentences(text) :
 	# Get sentences
 	sentences = [x for x in text.split(".") if not re.search(r'\n', x)]
@@ -65,6 +85,10 @@ def _GetSentences(text) :
 	return processed
 
 
+################################################################################
+# _AnalyzeSentence
+#
+################################################################################
 def _AnalyzeSentence(text, phrasehash) :
 	words = text.split(" ")
 	
@@ -97,9 +121,18 @@ def _AnalyzeSentence(text, phrasehash) :
 					}
 	
 
+################################################################################
+# _InsertPageMetadata
+#
+################################################################################
 def _InsertPageMetadata(pageid, pagetitle) :
 	pass
 
+
+################################################################################
+# _InsertWordCounts
+#
+################################################################################
 def _InsertWordCounts(phrasehash, pageid) :
 
 	obj = {}
@@ -115,7 +148,7 @@ def _InsertWordCounts(phrasehash, pageid) :
 	# Perform the bulk insert
 	try:
 		db.phrase_counts.insert({
-			"lang"  : language_code,
+			"lang"  : args.lang,
 			"counts": obj,
 		})
 	except:

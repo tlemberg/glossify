@@ -5,7 +5,7 @@
 	<div class="phrases-page">
 
 		<div class="group-1">
-			<form action="/manage/phrases" method="GET">
+			<form action="/manage/{{ lang }}/phrases" method="GET">
 				show phrases
 				<input name="min-phrase" class="min-max-input" type="text" value={{ min_phrase }} />
 				to
@@ -40,12 +40,12 @@
 							{{ phrase_count['rank'] }}
 						</div>
 						<div class="large-column">
-							<a href="/manage/phrase/{{ phrase_count['base'] }}">
+							<a href="/manage/{{ lang }}/phrase/{{ phrase_count['base'] }}">
 								{{ phrase_count['base'] }}
 							</a>
 						</div>
 						<div class="extra-column">
-							{% if phrase_count.has_phrase %}
+							{% if phrase_count.has_txs %}
 								<div class="circle-mark"></div>
 							{% endif %}
 						</div>

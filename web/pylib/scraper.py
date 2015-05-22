@@ -1,27 +1,39 @@
 # -*- coding: utf-8 -*-
 
-from pymongo import MongoClient
-from xml.etree.ElementTree import iterparse
-import re
+import dbutils
+import os
 import pprint
+import re
+import yaml
+
+from xml.etree.ElementTree import iterparse
+
+yaml_file = os.path.join(os.environ['PROJECT_HOME'], 'web/wikidumps.yaml')
 
 
-pp = pprint.PrettyPrinter(indent=4)
+################################################################################
+# get_articles_dump_path
+#
+################################################################################
+def get_articles_dump_path(lang):
+	wikidumps_hash = yaml.load(open(yaml_file, 'r'))
+	return wikidumps_hash[lang]['articles']
 
 
-def DBConnect():
-	client = MongoClient('localhost', 27017)
-	return client.tenk
+################################################################################
+# get_wiktionary_dump_path
+#
+################################################################################
+def get_wiktionary_dump_path(lang):
+	wikidumps_hash = yaml.load(open(yaml_file, 'r'))
+	return wikidumps_hash[lang]['wiktionary']
 
 
-def hashify(xs):
-	r = {}
-	for x in xs:
-		r[x] = 1
-	return r
-
-
-def parse_pages(xml_file,
+################################################################################
+# parse_pages
+#
+################################################################################
+def parse_pages(db, xml_file,
 	valid_phrases      = None,
 	max_pages          = None,
 	show_progress      = False,
@@ -30,9 +42,6 @@ def parse_pages(xml_file,
 
 	# Initialize a count of the number of pages parsed
 	n_pages_parsed = 0
-
-	# Get the phrases we want to define
-	db = DBConnect()
 
 	context = iterparse(xml_file, events=("start", "end"))
 	context = iter(context)
@@ -72,6 +81,10 @@ def parse_pages(xml_file,
 			root.clear()
 
 
+################################################################################
+# parse_page
+#
+################################################################################
 def parse_page(page, valid_phrases=None):
 
 	# Get the metadate for the page
@@ -99,6 +112,10 @@ def parse_page(page, valid_phrases=None):
 	return None
 
 
+################################################################################
+# parse_text_for_sections
+#
+################################################################################
 def parse_text_for_sections(text):
 	sections = {}
 	base_line = None
@@ -128,6 +145,10 @@ def parse_text_for_sections(text):
 	return sections
 
 
+################################################################################
+# get_section_bases
+#
+################################################################################
 def get_section_bases(db, lang):
 	docs = db.sections.find(
 		{
@@ -141,6 +162,10 @@ def get_section_bases(db, lang):
 	return [doc["base"] for doc in docs]
 
 
+################################################################################
+# get_section_text
+#
+################################################################################
 def get_section_text(db, lang, base):
 	doc = db.sections.find_one(
 		{

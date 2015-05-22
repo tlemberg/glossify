@@ -1,3 +1,4 @@
+import app.utils
 import boto.ses
 import itsdangerous
 import flask
@@ -17,10 +18,9 @@ secret_key = '99cd44e7b746f9fa53613929e01855864b278981facd9f69'
 # permissions
 #
 ################################################################################
-all_permisions = [
-	'ROOT',
-	'MANAGE_USERS',
-	'MANAGE_DICTIONARY',
+all_permissions = [
+	'root',
+	'manage_dictionary',
 ]
 
 
@@ -156,8 +156,10 @@ def get_permissions(user_profile):
 #
 ################################################################################
 def has_permission(user_profile, permission_name):
+	print user_profile
 	if 'permissions' in user_profile:
-		return user_profile['permissions']['ROOT'] or user_profile['permissions'][permission_name]
+		permissions = user_profile['permissions']
+		return 'root' in permissions or permission_name.lower() in permissions
 	else:
 		return False
 

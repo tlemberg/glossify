@@ -1,29 +1,50 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from pymongo import MongoClient
-from scraperutils import *
+import app.utils
+import argparse
+import dbutils
+import re
+import scraper
+
+from xml.etree.ElementTree import iterparse
+
+# Set up an arg parser
+parser = argparse.ArgumentParser()
+parser.add_argument("lang")
+
+# Parse the arguments
+args = parser.parse_args()
+
+# Connect to the DB
+db = dbutils.DBConnect()
 
 
-language_code = 'fr'
-
-
+################################################################################
+# Main
+#
+################################################################################
 def Main():
 	# Connect to the DB
-	db = DBConnect()
+	db = dbutils.DBConnect()
 
-	db.total_phrase_counts.remove({ 'lang': language_code })
+	db.phrases.remove({ 'lang': args.lang })
 
 	# Get the total phrase counts as a list of dictionaries
 	total_phrase_counts = get_total_phrase_counts(db)
 
 	# Write the dictionaries to a new table
-	write_total_phrase_counts(db, total_phrase_counts)
+	db.phrases.insert(total_phrase_counts)
 
 
+################################################################################
+# get_total_phrase_counts
+#
+################################################################################
 def get_total_phrase_counts(db):
 
 	# Get a cursor to all of the phrase count documents in the database
-	phrase_counts = db.phrase_counts.find({ 'lang': language_code })
+	phrase_counts = db.phrase_counts.find({ 'lang': args.lang })
 
 	# Iterate over the phrase count documents in the cursor
 	count_map = {}
@@ -34,7 +55,7 @@ def get_total_phrase_counts(db):
 				count = phrase_count['counts'][phrase_length][base]
 				if base not in count_map:
 					count_map[base] = {
-						'lang' : language_code,
+						'lang' : args.lang,
 						'base' : base,
 						'count': count
 					}
@@ -53,15 +74,6 @@ def get_total_phrase_counts(db):
 
 	# Write more than the desired 10k phrases, because some will be invalid
 	return total_phrase_counts
-
-
-def write_total_phrase_counts(db, total_phrase_counts):
-
-	# Remove existing entries
-	db.total_phrase_counts.remove()
-
-	# Insert all of the new entries
-	db.total_phrase_counts.insert(total_phrase_counts)
 
 
 Main()
