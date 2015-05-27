@@ -9,6 +9,8 @@ import yaml
 from xml.etree.ElementTree import iterparse
 
 yaml_file = os.path.join(os.environ['PROJECT_HOME'], 'web/wikidumps.yaml')
+iso_codes_path = os.path.join(os.environ['PROJECT_HOME'], 'web/iso_language_codes.yaml')
+
 
 
 ################################################################################
@@ -127,15 +129,18 @@ def parse_text_for_sections(text):
 		if accumulator is not None:
 			accumulator.append(line)
 
-		m = re.search(r'====([A-Za-z]*?)====', line) or re.search(r'===([A-Za-z]*?)===', line)
+		m = re.search(r'====([A-Za-z\s]*?)====', line) or re.search(r'===([A-Za-z\s]*?)===', line)
 		if m:
 			# If there exists an accumulator, add its completed text to the section map
-			if accumulator is not None: sections[base_line] = accumulator[:-1]
+			if accumulator is not None:
+				sections[base_line] = accumulator[:-1]
 
 			# If we recognize the event, start an accumulator
 			base_line = m.group(1)
 			accumulator = []
 			
+	if accumulator is not None:
+		sections[base_line] = accumulator[:-1]
 
 	#for k in sections:
 	#	if k in event_handlers:
@@ -179,4 +184,11 @@ def get_section_text(db, lang, base):
 
 	return doc["text"]
 
+
+################################################################################
+# Read
+#
+################################################################################
+def get_iso_codes_hash():
+	return yaml.load(open(iso_codes_path, 'r'))
 

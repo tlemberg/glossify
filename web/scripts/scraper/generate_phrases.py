@@ -63,7 +63,7 @@ def get_total_phrase_counts(db):
 					count_map[base]['count'] += count
 
 	# Grab the total phrase counts as a list and sort them
-	total_phrase_counts = [v for v in count_map.values() if v['count'] > 10]
+	total_phrase_counts = [v for v in count_map.values() if v['count'] > 5]
 	total_phrase_counts = sorted(total_phrase_counts, key=lambda phrase_count: phrase_count['count'], reverse=True)
 
 	# Assign a rank to every phrase count in the list

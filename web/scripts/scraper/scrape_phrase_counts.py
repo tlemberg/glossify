@@ -5,25 +5,25 @@ import argparse
 import dbutils
 import re
 import scraper
+import sys
 
 from xml.etree.ElementTree import iterparse
 
-alphabet = {
-	"lowercase": "abcdebghijklmnopqrstuvwxyzàâæäçéèêëîïôœöùûüÿ",
-	"uppercase": "ABCDEFGHIJKLMNOPQRSTUVWXYZÀÂÆÄÇÉÈÊËÎÏÔŒÖÙÛÜŸ",
-}
-
-invalidcharpattern = "\"|\(|\)|\[|\]|\{|\}|\<|\>|!|&|?|%|+|:|;«»"
+invalidcharpattern = r"\"|\(|\)|\[|\]|\{|\}|\<|\>|!|&|\?|%|\+|:|;|«|»|=|\*|#|\n|\.|@|\$|\\|~|\_"
 
 # Set up an arg parser
 parser = argparse.ArgumentParser()
 parser.add_argument("lang")
+parser.add_argument("path")
 
 # Parse the arguments
 args = parser.parse_args()
 
 # Connect to the DB
 db = dbutils.DBConnect()
+
+# Get langauge hash
+language_info_hash = scraper.get_iso_codes_hash()[args.lang]
 
 
 ################################################################################
@@ -35,11 +35,11 @@ def Main():
 		'lang': args.lang,
 	})
 
-	xml_file = scraper.get_articles_dump_path(args.lang)
+	xml_file = args.path
 
 	scraper.parse_pages(db,
 		xml_file       = xml_file,
-		max_pages      = 50000,
+		max_pages      = 5000,
 		process_text_f = process_text,
 		show_progress  = True)
 
@@ -49,18 +49,27 @@ def Main():
 #
 ################################################################################
 def process_text(base, pageid, text):
+	if text == None:
+		return
+
 	# Get mostly complete sentences on which to analyze vocabulary
+	phrasehash = {}
+	"""
 	sentences = _GetSentences(text)
 
-	phrasehash = {}
+	
 
 	# Get the words
 	for sentence in sentences:
 		_AnalyzeSentence(sentence, phrasehash)
+	"""
+
+	_analyzeText(text, phrasehash)
 
 	if phrasehash: _InsertWordCounts(phrasehash, pageid)
 
 
+"""
 ################################################################################
 # _GetSentences
 #
@@ -75,7 +84,7 @@ def _GetSentences(text) :
 		sentence = sentence.strip()
 
 		# Skip malformed sentences
-		if not re.search("^[%s]" % "|".join(list(alphabet["uppercase"])), sentence): continue
+		# if not re.search("^[%s]" % "|".join(list(alphabet["uppercase"])), sentence): continue
 		if re.search("^\|", sentence): continue
 		# Get rid of links
 		sentence = re.sub(r"\[\[(.+?)\]\]", r"\1" , sentence)
@@ -83,14 +92,19 @@ def _GetSentences(text) :
 		processed.append(sentence)
 
 	return processed
+"""
 
 
 ################################################################################
-# _AnalyzeSentence
+# _analyzeText
 #
 ################################################################################
-def _AnalyzeSentence(text, phrasehash) :
-	words = text.split(" ")
+def _analyzeText(text, phrasehash) :
+	words = None
+	if 'noSpacing' in language_info_hash:
+		words = text.split('')
+	else:
+		words = text.split(' ')
 	
 	for phraselength in range(1, 6) :
 		phrasewords = []
@@ -110,6 +124,8 @@ def _AnalyzeSentence(text, phrasehash) :
 				if re.search(r"[%s]" % invalidcharpattern, phrase): continue
 				if re.search(r"[0-9]", phrase): continue
 				if re.search(r"''", phrase): continue
+				if phrase == '': continue
+				if phrase.count(' ') == len(phrase): continue
 
 				# If validation passed, increment the phrase count for this phrase
 				try: 
@@ -152,7 +168,8 @@ def _InsertWordCounts(phrasehash, pageid) :
 			"counts": obj,
 		})
 	except:
-		print "A document failed to insert"
+		print obj
+		print "A document failed to insert", sys.exc_info()[0]
 
 
 Main()

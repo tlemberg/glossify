@@ -80,10 +80,10 @@ def verify_password(user_profile, password):
 ################################################################################
 def store_auth_token_in_session(email, password):
 
-	print "STORING"
-
 	# Find the user
 	user_profile = mongo.db.user_profiles.find_one({ 'email': email })
+
+	print user_profile
 
 	# Return the result
 	if user_profile is not None:

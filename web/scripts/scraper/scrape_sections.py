@@ -9,19 +9,14 @@ import scraper
 
 from xml.etree.ElementTree import iterparse
 
-# Set up an arg parser
-parser = argparse.ArgumentParser()
-parser.add_argument("lang")
-
-# Parse the arguments
-args = parser.parse_args()
-
 # Define a mapping of language keys in the wiki to 2-digit language codes
-language_key_map = {
-	"fr": "French",
-	"es": "Spanish",
-	"ru": "Russian",
-}
+iso_codes_hash = scraper.get_iso_codes_hash()
+language_key_map = {}
+for iso_code, d in iso_codes_hash.iteritems():
+	if 'wiktionaryName' in d:
+		language_key_map[iso_code] = d['wiktionaryName']
+print language_key_map
+language_key_map_r = app.utils.reverse_hash(language_key_map)
 
 # Connect to the DB
 db = dbutils.DBConnect()
@@ -34,9 +29,7 @@ db = dbutils.DBConnect()
 def Main() :
 
 	# Remove existing entries
-	db.sections.remove({
-		"lang": args.lang,
-	})
+	db.sections.remove({ })
 
 	xml_file = scraper.get_wiktionary_dump_path('en')
 
@@ -74,14 +67,14 @@ def process_text(base, page_id, text):
 			m = re.search(r'^==([A-Za-z\s]+)==$', line)
 			if m:
 				# If the current language key is in the list of valid keys, add the accumulator to the sections dictionary
-				if accumulator is not None and language_key == language_key_map[args.lang]:
+				if accumulator is not None and language_key in language_key_map_r:
 					sections[language_key] = accumulator[:-1]
 
 				# Specify the new language key and reset the accumulator
 				language_key = m.group(1)
 				accumulator = []
 		
-		if accumulator is not None and language_key == language_key_map[args.lang]:
+		if accumulator is not None and language_key in language_key_map_r:
 			sections[language_key] = accumulator
 
 		# Iterate through the sections and write them to the database
@@ -97,14 +90,16 @@ def process_text(base, page_id, text):
 def write_section(language_key, base, text):
 
 	# Return if the language key isn't in the map
-	if language_key not in language_key_map.values(): return
+	if language_key not in language_key_map_r: return
 
 	# Insert all of the new entries
 	new_id = db.sections.insert({
-		"lang": app.utils.reverse_hash(language_key_map)[language_key],
+		"lang": language_key_map_r[language_key],
 		"base": base,
 		"text": text,
 	})
 
 
-Main()
+if __name__ == "__main__":
+
+	Main()

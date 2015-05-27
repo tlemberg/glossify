@@ -41,6 +41,7 @@ def login_page():
 		# Attempt authentication
 		if email and password:
 			token = auth.store_auth_token_in_session(email, password)
+			print token
 			if token:
 				return flask.redirect(flask.url_for('phrases_page', lang='fr'))
 		

@@ -24,16 +24,19 @@ db = dbutils.DBConnect()
 valid_section_keys = [
 	'Adverb',
 	'Numeral',
+	'Cardinal numeral',
 	'Verb',
 	'Article',
 	'Conjunction',
+	'Contraction',
 	'Noun',
 	'Particle',
 	'Pronoun',
 	'Adjective',
 	'Preposition',
 	'Synonyms',
-	'Phrase'
+	'Phrase',
+	'Proper noun',
 ]
 
 # Make a rank map
@@ -98,7 +101,7 @@ def process_text(base, text):
 	for k in sections:
 		if k in valid_section_keys:
 			translations = get_translations(sections[k])
-			if translations != []: txs[k] = translations
+			txs[k] = translations
 
 	
 	rank = rank_map[base]
@@ -115,13 +118,14 @@ def get_translations(lines):
 	txs = []
 	rank = 1
 	for line in lines:
-		m = re.search(r'^# (.*)$', line) or re.search(r'^\* (.*)$', line)
+		m = re.search(r'^# (.*)$', line) or re.search(r'^#\{\{(.*)$', line) or re.search(r'^#\[\[(.*)$', line) or re.search(r'^\* (.*)$', line)
 		if m:
-			s = m.group(1)
+			s = line #m.group(1)
 			s = re.sub(r'\{\{.*?\}\}', '', s)
 			s = re.sub(r'\[\[', '', s)
 			s = re.sub(r'\]\]', '', s)
 			s = re.sub(r'=', '', s)
+			s = re.sub(r'#', '', s)
 			s = s.strip()
 			if s != '':
 				txs.append({
