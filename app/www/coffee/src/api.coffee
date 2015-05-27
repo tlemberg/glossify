@@ -5,7 +5,7 @@ define ['utils', 'storage', 'nav', 'strings'], (utils, storage, nav, strings) ->
 	# Module properties
 	#
 	############################################################################
-	URL_BASE = 'http://52.10.65.123:5000/api/'
+	URL_BASE = 'https://glossify.net'
 	_nav = undefined
 
 

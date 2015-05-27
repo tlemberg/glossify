@@ -1,1 +1,3 @@
+#!/bin/bash
+
 fswatch-run ../www/coffee/src ../scripts/compile_coffee
