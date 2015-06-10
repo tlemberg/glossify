@@ -251,7 +251,7 @@ define ['utils', 'storage', 'nav', 'strings', 'config'], (utils, storage, nav, s
 	############################################################################
 	_getPlan = (handler) ->
 		# Show the modal after a certain amount of load time
-		_nav.showModal("Downloading dictionary", "ajax", 100)
+		_nav.showModal("Downloading lesson plans", "ajax", 100)
 
 		# Construct the data
 		lang = storage.getLanguage()

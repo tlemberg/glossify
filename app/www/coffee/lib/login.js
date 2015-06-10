@@ -51,8 +51,13 @@
           }
         });
       });
-      return $('.login-page .signup-btn').click(function(event) {
+      $('.login-page .signup-btn').click(function(event) {
         return _nav.loadPage('signup');
+      });
+      return $('.login-page input').keydown(function(event) {
+        if (event.keyCode === 13) {
+          return $('.login-page .login-btn').click();
+        }
       });
     };
     return {

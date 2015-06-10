@@ -100,6 +100,10 @@ define [
 						else
 							_nav.showAlert("error creating user")
 
+		$('.signup-page input').keydown (event) ->
+			if event.keyCode == 13
+				$('.signup-page .signup-btn').click()
+
 
 	############################################################################
 	# _validateEmail

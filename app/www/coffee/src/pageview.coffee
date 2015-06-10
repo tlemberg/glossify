@@ -48,13 +48,13 @@ define ['utils', 'constants'], (utils, constants) ->
 	_formatPageDimensions = (page, transition = true) ->
 
 		# Compute the page width, height, and position
-		pageWidth  = Math.min(MAX_PAGE_WIDTH, utils.windowWidth())
-		pageHeight = utils.windowHeight()
+		pageWidth  = utils.windowWidth()
+		#pageHeight = utils.windowHeight()
 		marginWidth = (utils.windowWidth() - pageWidth) / 2
 
 		# Set the page width, height, and position using CSS
 		$(".page").css('width', utils.withUnit(pageWidth, 'px'))
-		$(".page").css('height', utils.withUnit(pageHeight, 'px'))
+		#$(".page").css('height', utils.withUnit(pageHeight, 'px'))
 		$(".page").css('margin-left', utils.withUnit(marginWidth, 'px'))
 		$(".page").css('margin-right', utils.withUnit(marginWidth, 'px'))
 

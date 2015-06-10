@@ -19,7 +19,7 @@
       return console.log("refresh");
     };
     _registerEvents = function() {
-      return $('.signup-page .signup-btn').click(function(event) {
+      $('.signup-page .signup-btn').click(function(event) {
         var email, password1, password2;
         if (_config.lockdown != null) {
           email = $('.signup-page .email-input').val();
@@ -59,6 +59,11 @@
               }
             });
           }
+        }
+      });
+      return $('.signup-page input').keydown(function(event) {
+        if (event.keyCode === 13) {
+          return $('.signup-page .signup-btn').click();
         }
       });
     };

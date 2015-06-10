@@ -31,16 +31,12 @@
         message: message
       }));
       $(".alert-div").css("visibility", "visible");
-      console.log(pageview.getAlertHeight());
-      console.log(utils.withUnit(-1 * pageview.getAlertHeight(), 'px'));
       $(".alert-div").css("margin-top", utils.withUnit(-1 * pageview.getAlertHeight(), 'px'));
       $(".alert-div").show();
       return $(".alert-div").animate({
         "margin-top": "0px"
       }, 500, function() {
-        console.log("create");
         return $(".alert-div .alert-btn").click(function(event) {
-          console.log("click it");
           return _hideAlert();
         });
       });

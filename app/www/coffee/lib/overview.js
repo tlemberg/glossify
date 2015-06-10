@@ -34,7 +34,7 @@
       return _registerEvents();
     };
     _refreshPage = function() {
-      return console.log('refresh');
+      return _loadBoxList(false);
     };
     _loadNavHeader = function() {
       var maxIndex, minIndex, s, section, sectionInterval;
@@ -56,7 +56,7 @@
       return $(".overview-page .interval-text").html(s);
     };
     _loadBoxList = function(transition) {
-      var dictionary, lang, matchHeight, matchWidth, plan, section, templateArgs, userProfile;
+      var dictionary, lang, matchWidth, plan, section, templateArgs, userProfile;
       if (transition == null) {
         transition = true;
       }
@@ -72,9 +72,7 @@
       $(".overview-page .box-list-" + section).css("width", utils.withUnit(utils.windowWidth(), 'px'));
       $(".overview-page .box-list-container").css("width", utils.withUnit(utils.windowWidth() * 10, 'px'));
       matchWidth = $(".overview-page .box-list-" + section).css("width");
-      matchHeight = $(".overview-page .box-list-" + section).css("height");
       $(".overview-page .box-list").css("width", matchWidth);
-      $(".overview-page .box-list").css("height", matchHeight);
       $(".box-list-container .box-div").off('click');
       $(".box-list-" + section + " .box-div").click(function(event) {
         var index;

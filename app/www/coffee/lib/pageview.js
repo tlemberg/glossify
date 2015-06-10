@@ -17,15 +17,13 @@
       return utils.stripNumeric($(".alert-div").css("height"));
     };
     _formatPageDimensions = function(page, transition) {
-      var i, j, marginWidth, pageHeight, pageIndex, pageWidth, ref;
+      var i, j, marginWidth, pageIndex, pageWidth, ref;
       if (transition == null) {
         transition = true;
       }
-      pageWidth = Math.min(MAX_PAGE_WIDTH, utils.windowWidth());
-      pageHeight = utils.windowHeight();
+      pageWidth = utils.windowWidth();
       marginWidth = (utils.windowWidth() - pageWidth) / 2;
       $(".page").css('width', utils.withUnit(pageWidth, 'px'));
-      $(".page").css('height', utils.withUnit(pageHeight, 'px'));
       $(".page").css('margin-left', utils.withUnit(marginWidth, 'px'));
       $(".page").css('margin-right', utils.withUnit(marginWidth, 'px'));
       pageIndex = 0;

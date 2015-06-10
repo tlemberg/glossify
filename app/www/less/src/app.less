@@ -28,22 +28,6 @@ ul {
 	margin: 0px;
 }
 
-.viewer {
-	position: absolute;
-	top: 0px;
-	left: 0px;
-	width: 100%;
-	height: 100%;
-	overflow-x: hidden;
-	overflow-y: scroll;
-}
-
-.page {
-	float: left;
-	overflow-x: hidden;
-}
-
-
 .vertical-align(@ty: 50%) {
   position: relative;
   top: @ty;
@@ -60,6 +44,8 @@ body {
 	color: @textColor1;
 	font-family: Helvetica Neue, Helvetica, Arial, sans-serif;
 	background-color: @backgroundColor;
+	overflow-y: hidden;
+	overfloy-x: hidden;
 }
 
 
@@ -83,11 +69,22 @@ input[type="password"].focus {
 
 .header {
 	width: 100%;
-	height: 60px;
+	height: 10%;
 	text-align: center;
 	background-color: @headerColor;
 	position: relative;
 	z-index: 2;
+}
+
+.viewer {
+	height: 90%;
+	overflow-y: scroll;
+}
+
+.page {
+	float: left;
+	overflow-x: hidden;
+	height: 100%;
 }
 
 .header-group-left {
@@ -156,6 +153,7 @@ input[type="password"].focus {
 	width: 25%;
 	height: 100%;
 	display: inline-block;
+	text-align: right;
 }
 
 .alert-div .message {
@@ -175,6 +173,7 @@ input[type="password"].focus {
 	cursor: pointer;
 	.vertical-align;
 	margin-right: 20px;
+	text-align: center;
 }
 
 .modal-div {
@@ -335,30 +334,47 @@ input[type="password"].focus {
 	height: 50px;
 	text-align: center;
 	width: 100%;
+	margin-top: 30px;
 	margin-bottom: 30px;
 }
 
-.overview-page .arrow-btn-left {
+.overview-page .nav-header-1 {
 	float: left;
-	width: 40px;
+	width: 15%;
+	display: inline-block;
+	text-align: center;
+	height: 100%;
+}
+
+.overview-page .nav-header-2 {
+	float: left;
+	width: 70%;
+	display: inline-block;
+	text-align: center;
+	height: 100%;
+}
+
+.overview-page .nav-header-3 {
+	float: left;
+	width: 15%;
+	display: inline-block;
+	text-align: center;
+	height: 100%;
+}
+
+.overview-page .arrow-btn-left {
 	.vertical-align;
 	display: inline-block;
-	width: 15%;
 }
 
 .overview-page .interval-text {
-	float: left;
 	.vertical-align;
 	display: inline-block;
-	width: 70%;
 }
 
 .overview-page .arrow-btn-right {
-	float: right;
-	width: 40px;
 	.vertical-align;
 	display: inline-block;
-	width: 15%;
 }
 
 .overview-page .arrow-btn-bg {
@@ -377,35 +393,53 @@ input[type="password"].focus {
 }
 
 .overview-page .box-div {
-	padding: 30px;
+	width: 100%;
 	border-top-style: solid;
 	border-top-width: 1px;
 	border-top-color: #999999;
 	cursor: pointer;
+	display: inline-block;
+	height: 60px;
 }
 
 .overview-page .box-group-left {
 	float: left;
+	width: 80%;
+	display: inline-block;
+	height: 100%;
 	text-align: left;
-	font-style: italic;
-	.vertical-align;
 }
 
 .overview-page .box-group-right {
 	float: right;
+	width: 20%;
+	display: inline-block;
+	height: 100%;
 	text-align: right;
+}
+
+.overview-page .box-group-left-content {
+	margin-left: 44px;
+	width: 100%;
 	font-style: italic;
 	.vertical-align;
+	display: inline-block;
+}
+
+.overview-page .box-group-right-content {
+	margin-right: 44px;
+	font-style: italic;
+	.vertical-align;
+	display: inline-block;
 }
 
 .overview-page .box-list-container {
 	display: inline-block;
-	overflow-x: hidden;
 }
 
 .overview-page .box-list {
 	float: left;
-	display: inline-block;
+	height: 100%;
 }
 
 .study-page .btn-container {

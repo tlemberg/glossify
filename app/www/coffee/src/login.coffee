@@ -97,6 +97,11 @@ define [
 			_nav.loadPage('signup')
 
 
+		$('.login-page input').keydown (event) ->
+			if event.keyCode == 13
+				$('.login-page .login-btn').click()
+
+
 	############################################################################
 	# Exposed objects
 	#

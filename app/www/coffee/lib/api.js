@@ -216,7 +216,7 @@
     };
     _getPlan = function(handler) {
       var authenticated, data, lang;
-      _nav.showModal("Downloading dictionary", "ajax", 100);
+      _nav.showModal("Downloading lesson plans", "ajax", 100);
       lang = storage.getLanguage();
       data = {
         lang: lang

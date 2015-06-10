@@ -1,4 +1,4 @@
-define ['utils', 'stack', 'storage', 'nav', 'deck', 'css', 'pageview', 'api'], (utils, stack, storage, nav, deck, css, pageview, api) ->
+define ['utils', 'stack', 'storage', 'nav', 'deck', 'pageview', 'api'], (utils, stack, storage, nav, deck, pageview, api) ->
 
 
 	############################################################################
@@ -37,17 +37,11 @@ define ['utils', 'stack', 'storage', 'nav', 'deck', 'css', 'pageview', 'api'], (
 		# Get phrase IDs for the current box
 		phraseIds = stack.getPhraseIds(plan, section, box, lang)
 
-		console.log("A")
-
 		# Construct a deck and store is as a module variable
 		_deck = deck.createDeck(phraseIds, dictionary)
 
-		console.log("B")
-
 		# Draw a phrase to start the deck
 		_phrase = deck.drawPhrase(_deck)
-
-		console.log("C")
 
 		# Set other properties
 		_isFlipped = false
@@ -151,41 +145,7 @@ define ['utils', 'stack', 'storage', 'nav', 'deck', 'css', 'pageview', 'api'], (
 	#
 	############################################################################
 	_refreshPage = ->
-
 		_setStudyFooterCss()
-
-		_setHeaderCss()
-
-		# Change the height of the content pane
-		_refreshContentPane()
-
-		# Set progress counter
-		_setProgressCounter()
-
-		$('.study-footer').css('height', page.getFooterHeight())
-
-
-
-	############################################################################
-	# _setProgressCounter
-	#
-	############################################################################
-	_setProgressCounter = () ->
-
-		# Compute the max progress
-		maxProgress = 5 * _deck['phraseList'].length
-
-		# Compute the total progress
-		totalProgress = 0
-		for phrase in _deck['phraseList']
-			totalProgress += storage.getProgress(phrase['_id'])
-
-		percentProgress = Math.floor(totalProgress / maxProgress * 100)
-
-		$('#study-progress-counter').html("#{ percentProgress }%")
-
-		bin = Math.floor(percentProgress / 25) + 1
-		$('#study-progress-counter').css('background-color', BG_COLORS[bin])
 
 
 	############################################################################
@@ -242,20 +202,13 @@ define ['utils', 'stack', 'storage', 'nav', 'deck', 'css', 'pageview', 'api'], (
 
 
 	############################################################################
-	# _setHeaderCss
-	#
-	############################################################################
-	_setHeaderCss = ->
-		$('#study-header').css('height', utils.withUnit(css.getStaticCss('study', 'header', 'height')))
-
-
-	############################################################################
 	# _setStudyFooterCss
 	#
 	############################################################################
 	_setStudyFooterCss = ->
-		cardWidth = Math.min(MAX_CARD_WIDTH, utils.windowWidth())
-		cardHeight = cardWidth * CARD_ASPECT
+
+		cardHeight = utils.windowHeight() - 200
+		cardWidth  = Math.min(MAX_CARD_WIDTH, cardHeight / CARD_ASPECT)
 
 		$('.study-page .card-container').css('width', cardWidth);
 
@@ -272,21 +225,6 @@ define ['utils', 'stack', 'storage', 'nav', 'deck', 'css', 'pageview', 'api'], (
 		$('.study-page .btn-5').css('margin-right', '0px')
 
 		$('.study-page .flip-btn').css('height', btnWidth)
-
-
-	############################################################################
-	# _refreshContentPane
-	#
-	############################################################################
-	_refreshContentPane = ->
-		# Collect the heights of existing elements
-		headerHeight = utils.stripNumeric(css.getStaticCss('study', 'header', 'height'))
-
-		# Calculate the new height of the content pane and set it
-		contentMargin = utils.stripNumeric(css.getStaticCss('study', 'container', 'padding'))
-		borderWidth = utils.stripNumeric(css.getStaticCss('study', 'content', 'border-width'))
-		contentHeight = utils.appHeight() - page.getFooterHeight() - contentMargin * 2 - headerHeight
-		$('#study-container').css('height', contentHeight)
 
 
 	############################################################################

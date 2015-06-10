@@ -10,7 +10,6 @@
 
   requirejs(['jquery', 'nav', 'storage'], function($, nav, storage, url) {
     $(document).ready(function(event) {
-      storage.logout();
       nav.initPages();
       if (storage.isLoggedIn()) {
         return nav.loadPage('overview');

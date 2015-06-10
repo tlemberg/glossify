@@ -74,7 +74,7 @@ define [
 	#
 	############################################################################
 	_refreshPage = ->
-		console.log('refresh')
+		_loadBoxList(false)
 
 
 	_loadNavHeader = ->
@@ -122,9 +122,10 @@ define [
 		$(".overview-page .box-list-container").css("width", utils.withUnit(utils.windowWidth() * 10, 'px'))
 
 		matchWidth = $(".overview-page .box-list-#{section}").css("width")
-		matchHeight = $(".overview-page .box-list-#{section}").css("height")
+		#matchHeight = $(".overview-page .box-list-#{section}").css("height") + 100
 		$(".overview-page .box-list").css("width", matchWidth)
-		$(".overview-page .box-list").css("height", matchHeight)
+		#$(".overview-page .box-list").css("height", matchHeight)
+		#$(".overview-page .box-list-container").css("height", matchHeight)
 
 		# Register events
 		$(".box-list-container .box-div").off('click')

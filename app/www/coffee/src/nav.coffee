@@ -76,16 +76,11 @@ define [
 		$(".alert-div").html(alertTemplate({ message: message }))
 		$(".alert-div").css("visibility", "visible");
 
-		console.log(pageview.getAlertHeight())
-		console.log(utils.withUnit(-1 * pageview.getAlertHeight(), 'px'))
-
 		$(".alert-div").css("margin-top", utils.withUnit(-1 * pageview.getAlertHeight(), 'px'))
 		$(".alert-div").show()
 
 		$(".alert-div").animate { "margin-top": "0px" }, 500, ->
-			console.log("create")
 			$(".alert-div .alert-btn").click (event) ->
-				console.log("click it")
 				_hideAlert()
 
 
