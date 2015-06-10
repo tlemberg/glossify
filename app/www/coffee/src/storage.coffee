@@ -41,10 +41,12 @@ define ['utils'], (utils) ->
 		_removeLocalStorageItem(PAGE_KEY)
 		_removeLocalStorageItem(ACCESS_TOKEN_KEY)
 		_removeLocalStorageItem(USER_PROFILE_KEY)
-		_removeLocalStorageItem(DICTIONARY_KEY)
 		_removeLocalStorageItem(LANGUAGE_KEY)
 		_removeLocalStorageItem(SECTION_KEY)
 		_removeLocalStorageItem(BOX_KEY)
+
+		_removeDictionary('fr')
+		_removeDictionary('es')
 
 		_clearProgressUpdates()
 
@@ -91,6 +93,11 @@ define ['utils'], (utils) ->
 
 	_setDictionary = (lang, v) ->
 		_setLocalStorageItem("dictionary_#{ lang }", v)
+
+
+	_removeDictionary = (lang) ->
+		console.log("removing dictionary #{ lang }")
+		_removeLocalStorageItem("dictionary_#{ lang }")
 
 
 	_getSection = ->
@@ -147,7 +154,7 @@ define ['utils'], (utils) ->
 
 	_setProgress = (phraseId, progressValue) ->
 		lang = _getLanguage()
-		progress = _getLocalStorageItem("progress_#{ lang }")
+		progress = _getLocalStorageItem("progress_#{ lang }") ? {}
 		progress[phraseId] = progressValue
 		_setLocalStorageItem("progress_#{ lang }", progress)
 		_addProgressUpdate(phraseId, progressValue)

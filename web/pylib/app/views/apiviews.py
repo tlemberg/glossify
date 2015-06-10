@@ -55,7 +55,7 @@ def get_plan():
 
 	# Create the plan array
 	plan = []
-	for phrase in mongo.db.phrases.find({ 'lang': lang }, { '_id': 1 }).sort('rank', 1):
+	for phrase in mongo.db.phrases.find({ 'lang': lang, 'in_plan': 1 }, { '_id': 1 }).sort('rank', 1):
 		plan.append( phrase['_id'] )
 
 	# Return success

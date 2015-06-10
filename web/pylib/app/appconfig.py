@@ -1,4 +1,5 @@
 import jinja2
+import os
 
 from flask                import Flask
 from flask.ext            import restful
@@ -11,7 +12,14 @@ from flask.ext.mail       import Mail
 
 
 # App
-app_instance = Flask('tenk')
+app_instance = None
+if 'ISDEV' in os.environ:
+	app_instance = Flask('tenk')
+	print "RUNNING IN DEV MODE"
+else:
+	app_instance = Flask('tenk',
+		template_folder='/var/www/glossify/web/templates',
+		static_folder='/var/www/glossify/web/static')
 
 # CORS
 CORS(app_instance, resources=r'/api/*', allow_headers='Content-Type')
@@ -26,19 +34,17 @@ mongo = PyMongo(app_instance)
 app_instance.config['DEBUG'] = True
 app_instance.config['SECRET_KEY'] = 'super-secret'
 
-# Helper methods
-class JSONEncoder(JSONEncoder):
-    def default(self, o):
-        if isinstance(o, ObjectId):
-            return str(o)
-        return JSONEncoder.default(self, o)
-
 # Mail
 mail = Mail(app_instance)
 
 # Domains
-web_domain = 'glossify.net'
-app_domain = '192.168.0.108:8000'
+if 'ISDEV' in os.environ:
+	app_domain = 'http://glossify.net'
+	web_domain = 'https://glossify.net'
+else:
+	app_domain = '52.25.87.1:5000'
+	web_domain = '52.25.87.1:5000'
+
 
 # jinja2
 app_instance.jinja_loader = jinja2.ChoiceLoader([

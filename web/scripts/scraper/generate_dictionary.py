@@ -24,16 +24,18 @@ cursor = db.phrases.find(
 		"lang": args.lang,
 	},
 	{
+		"_id" : 1,
 		"lang": 1,
 		"base": 1,
 		"txs" : 1,
-		"rank" : 1,
+		"rank": 1,
 	}
 )
 
 l = list(cursor)
 q = []
 d = {}
+
 for phrase in l:
 	if 'txs' in phrase and phrase['txs'] != {}:
 		new_txs = {}
@@ -48,11 +50,36 @@ for phrase in l:
 			'lang': phrase['lang'],
 			'base': phrase['base'],
 			'txs' : new_txs,
-			'rank': phrase['rank'],
+			'_id': str(phrase['_id']),
 		})
 
+db.phrases.update(
+	{
+		'lang': args.lang,
+	},
+	{
+		'$set': {
+			'in_plan': 0,
+		},
+	},
+	multi=True,
+	upsert=True,
+)
 for h in q[0:10000]:
-	d[h['rank']] = h
+	d[h['_id']] = h
+	db.phrases.update(
+		{
+			'lang': args.lang,
+			'base': h['base'],
+		},
+		{
+			'$set': {
+				'in_plan': 1,
+			},
+		},
+		multi=True,
+		upsert=True,
+	)
 
 print len(d.keys())
 

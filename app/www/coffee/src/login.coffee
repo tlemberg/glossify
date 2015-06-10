@@ -22,6 +22,7 @@ define [
 	#
 	############################################################################
 	_nav = undefined
+	_config = undefined
 
 
 	############################################################################
@@ -30,7 +31,9 @@ define [
 	############################################################################
 	_loadPage = (template) ->
 
-		$(".login-page").html(template())
+		templateArgs =
+			lockdown: _config.lockdown
+		$(".login-page").html(template(templateArgs))
 
 		if utils.getUrlParameter('action') == 'activationsuccessful' and !storage.getAccountConfirmed()?
 			_nav.showAlert("Your have succesfully confirmed your account")
@@ -91,7 +94,6 @@ define [
 
 		# When the signup button is clicked
 		$('.login-page .signup-btn').click (event) ->
-			console.log("clicked")
 			_nav.loadPage('signup')
 
 
@@ -106,6 +108,7 @@ define [
 
 		loadPage: (template) ->
 			_nav = require('nav')
+			_config = require('config')
 			_loadPage(template)
 
 	}

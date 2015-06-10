@@ -56,7 +56,7 @@ def verify_auth_token():
 		return None
 
 	email = token_data['email']
-	user_profile = mongo.db.user_profiles.find_one({ 'email': email, 'confirmed': 1 })
+	user_profile = mongo.db.user_profiles.find_one({ 'email': email })
 
 	return user_profile
 
@@ -120,6 +120,22 @@ def send_activation_email(email):
 		'',
 		[email],
 		html_body="Click <a href='%s'>here</a> to activate your account." % activation_link,
+	)
+
+
+################################################################################
+# send_request_access_email
+#
+################################################################################
+def send_request_access_email(email):
+
+	conn = boto.ses.connect_to_region('us-west-2')
+	conn.send_email(
+		'noreply@glossify.net',
+		'A user has requested access to glossify.net',
+		'',
+		['tlemberg10@gmail.com'],
+		html_body="The user's email address is: %s" % email,
 	)
 
 

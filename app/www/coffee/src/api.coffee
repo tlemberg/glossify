@@ -1,11 +1,11 @@
-define ['utils', 'storage', 'nav', 'strings'], (utils, storage, nav, strings) ->
+define ['utils', 'storage', 'nav', 'strings', 'config'], (utils, storage, nav, strings, config) ->
 
 
 	############################################################################
 	# Module properties
 	#
 	############################################################################
-	URL_BASE = 'https://glossify.net'
+	URL_BASE = config.apiUrl
 	_nav = undefined
 
 
@@ -25,6 +25,8 @@ define ['utils', 'storage', 'nav', 'strings'], (utils, storage, nav, strings) ->
 		# Create strings for the GET parameters
 		paramStr = ("#{ k }=#{ v }" for k, v of params).join('&')
 
+		console.log(url)
+
 		# Return the URL
 		if paramStr
 			"#{ URL_BASE }#{ url }?#{ paramStr }"
@@ -38,6 +40,8 @@ define ['utils', 'storage', 'nav', 'strings'], (utils, storage, nav, strings) ->
 	############################################################################
 	_createUser = (email, password, handler) ->
 		_nav.showModal("Creating user", "ajax", 100)
+
+		console.log(_apiUrl('create-user'))
 
 		# Send the remote call
 		$.ajax
@@ -76,6 +80,25 @@ define ['utils', 'storage', 'nav', 'strings'], (utils, storage, nav, strings) ->
 
 
 	############################################################################
+	# _requestAccess
+	#
+	############################################################################
+	_requestAccess = (email, handler) ->
+		_nav.showModal("Requesting access", "ajax", 100)
+		$.ajax
+			url      : _apiUrl('request-access')
+			method   : "POST"
+			data     : { email: email}
+			dataType : 'json'
+			timeout  : 10 * 1000
+			success  : (json) ->
+				_nav.hideModal()
+				handler(json)
+			error    : (jqXHR, textStatus, thownError) ->
+				_nav.showModal(strings.getString("ajaxError"), "alert")
+
+
+	############################################################################
 	# _fetchDictionary
 	#
 	############################################################################
@@ -87,10 +110,11 @@ define ['utils', 'storage', 'nav', 'strings'], (utils, storage, nav, strings) ->
 
 		# Send the remote call
 		$.ajax
-			url      : "http://52.10.65.123:5000/api/get-dictionary/#{ lang }?auth_token=#{ token }"
+			url      : _apiUrl("get-dictionary/#{ lang }", authenticated = true)
 			dataType : 'json'
 			timeout  : 10 * 1000
 			success  : (json) ->
+				console.log(Object.keys(json['result']['dictionary']).length)
 				_nav.hideModal()
 				if json['success'] is 1
 					dictionary = json['result']
@@ -116,14 +140,14 @@ define ['utils', 'storage', 'nav', 'strings'], (utils, storage, nav, strings) ->
 
 		# Send the remote call
 		$.ajax
-			url      : "http://52.10.65.123:5000/api/update-progress/#{ email }?auth_token=#{ token }"
+			url      : _apiUrl("update-progress/#{ email }", authenticated = true)
 			method   : 'post'
 			data     : { cards: cards }
 			dataType : 'json'
 			timeout  : 10 * 1000
 			success  : (json) ->
 				_nav.hideModal()
-				if json['success'] is 1
+				if json['success']
 					dictionary = json['result']
 
 				# Refresh the page now that we have made an attempt at fetching the dictionary
@@ -242,6 +266,7 @@ define ['utils', 'storage', 'nav', 'strings'], (utils, storage, nav, strings) ->
 			dataType : 'json'
 			timeout  : 10 * 1000
 			success  : (json) ->
+				console.log(json)
 				_nav.hideModal()
 				if json['success']
 					storage.setPlan(lang, json['result'])
@@ -264,6 +289,10 @@ define ['utils', 'storage', 'nav', 'strings'], (utils, storage, nav, strings) ->
 		authenticateUser: (email, password, handler) ->
 			_nav = require("nav")
 			_authenticateUser(email, password, handler)
+
+		requestAccess: (email, handler) ->
+			_nav = require("nav")
+			_requestAccess(email, handler)
 
 
 		addLanguage: (lang, handler) ->

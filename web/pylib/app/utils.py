@@ -1,3 +1,14 @@
+import json
+
+from bson.objectid        import ObjectId
+
+# Helper methods
+class JSONEncoder(json.JSONEncoder):
+    def default(self, o):
+        if isinstance(o, ObjectId):
+            return str(o)
+        return JSONEncoder.default(self, o)
+
 ################################################################################
 # json_result
 #

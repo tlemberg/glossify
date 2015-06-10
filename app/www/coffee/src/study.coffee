@@ -215,8 +215,7 @@ define ['utils', 'stack', 'storage', 'nav', 'deck', 'css', 'pageview', 'api'], (
 	_getTxSummary = (txs) ->
 		s = ''
 		for k, v of txs
-			defTexts = (def['text'] for def in v when not def['deleted'])
-			lines = ("#{ i + 1 }. #{ defTexts[i] }" for i in [0..Math.min(defTexts.length - 1, 2)])
+			lines = ("#{ i + 1 }. #{ v[i] }" for i in [0..Math.min(v.length - 1, 2)])
 			s = s + "<div><b>#{ k }</b>" + "<br />" + lines.join("<br />") + "</div>"
 			break
 		s

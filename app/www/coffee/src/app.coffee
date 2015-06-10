@@ -17,6 +17,7 @@ requirejs [
 	#
 	############################################################################
 	$(document).ready (event) ->
+		storage.logout()
 		nav.initPages()
 
 		if storage.isLoggedIn()

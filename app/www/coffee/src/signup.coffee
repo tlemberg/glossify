@@ -22,6 +22,7 @@ define [
 	#
 	############################################################################
 	_nav = undefined
+	_config = undefined
 
 
 	############################################################################
@@ -30,9 +31,14 @@ define [
 	############################################################################
 	_loadPage = (template) ->
 
-		$(".signup-page").html(template())
+		templateArgs =
+			lockdown: _config.lockdown
+		$(".signup-page").html(template(templateArgs))
 
 		_registerEvents()
+
+		_nav.showBackBtn "Back", (event) ->
+			_nav.loadPage('login')
 
 
 	############################################################################
@@ -50,35 +56,49 @@ define [
 	_registerEvents = ->
 		$('.signup-page .signup-btn').click (event) ->
 
-			# Collect inputs from the UI
-			email     = $('.signup-page .email-input').val()
-			password1 = $('.signup-page .password-input-1').val()
-			password2 = $('.signup-page .password-input-2').val()
+			if _config.lockdown?
 
-			# Validate inputs
-			if not _validateEmail(email)
-				_nav.showAlert(strings.getString('invalidEmail'))
-			# Validate password
-			else if not _validatePassword(password1, password2)
-				_nav.showAlert(strings.getString('invalidPassword'))
+				# Collect inputs from the UI
+				email     = $('.signup-page .email-input').val()
+
+				# Validate inputs
+				if not _validateEmail(email)
+					_nav.showAlert(strings.getString('invalidEmail'))
+				else
+					api.requestAccess email, (json) ->
+						_nav.showAlert("Your request for an account has been received. We will contact you via email if you are approved.")
+
 			else
-				api.createUser email, password1, (json) ->
-					console.log(json)
 
-					if json['success']
-						# Attempt to fetch an access token via the API
-						api.authenticateUser email, password1, (json) ->
-							if json['success']
-								storage.setLanguage('fr') # TODO: generalize
+				# Collect inputs from the UI
+				email     = $('.signup-page .email-input').val()
+				password1 = $('.signup-page .password-input-1').val()
+				password2 = $('.signup-page .password-input-2').val()
 
-								api.ensureDictionary 'fr', (json) ->
-									if json['success']
-										_nav.loadPage('overview')
-									else
-										# Error ensuring dictionary
-										_nav.showAlert(strings.getString('unexpectedFailure'))
-					else
-						_nav.showAlert("error creating user")
+				# Validate inputs
+				if not _validateEmail(email)
+					_nav.showAlert(strings.getString('invalidEmail'))
+				# Validate password
+				else if not _validatePassword(password1, password2)
+					_nav.showAlert(strings.getString('invalidPassword'))
+				else
+					api.createUser email, password1, (json) ->
+						console.log(json)
+
+						if json['success']
+							# Attempt to fetch an access token via the API
+							api.authenticateUser email, password1, (json) ->
+								if json['success']
+									storage.setLanguage('fr') # TODO: generalize
+
+									api.ensureDictionary 'fr', (json) ->
+										if json['success']
+											_nav.loadPage('overview')
+										else
+											# Error ensuring dictionary
+											_nav.showAlert(strings.getString('unexpectedFailure'))
+						else
+							_nav.showAlert("error creating user")
 
 
 	############################################################################
@@ -108,6 +128,7 @@ define [
 
 		loadPage: (template) ->
 			_nav = require('nav')
+			_config = require('config')
 			_loadPage(template)
 
 	}

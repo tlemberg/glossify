@@ -1,4 +1,7 @@
 #!/bin/bash
 
-HDIR=../www/coffee
-coffee --compile --output $HDIR/lib/ $HDIR/src/
+echo "Compiling COFFEE"
+
+APPDIR=$PROJECT_HOME/app/www/coffee
+
+coffee --compile --output $APPDIR/lib/ $APPDIR/src/

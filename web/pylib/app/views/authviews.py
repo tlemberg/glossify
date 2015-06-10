@@ -1,15 +1,18 @@
-import app.appconfig
 import app.utils
+import auth
 import flask
 import sys
 import traceback
+
+from app.appconfig import mongo, app_instance
+from passlib.hash  import sha256_crypt
 
 
 ################################################################################
 # unauthorized
 #
 ################################################################################
-@app.appconfig.app_instance.route('/manage/unauthorized')
+@app_instance.route('/manage/unauthorized')
 def unauthorized_page():
 	# Pass the translation to the template
 	return flask.render_template('unauthorized.html')
@@ -19,7 +22,7 @@ def unauthorized_page():
 # get_auth_token
 #
 ################################################################################
-@app.appconfig.app_instance.route('/api/authenticate-user', methods=['POST'])
+@app_instance.route('/api/authenticate-user', methods=['POST'])
 def get_auth_token():
 
 	# Extract params
@@ -31,9 +34,9 @@ def get_auth_token():
 
 	# Return the result
 	if user_profile is not None:
-		if verify_password(user_profile, password):
-			token = generate_auth_token(email)
-			return app.utils.app.utils.json_result({
+		if auth.verify_password(user_profile, password):
+			token = auth.generate_auth_token(email)
+			return app.utils.json_result({
 				'success': 1,
 				'result' : {
 					'token'	  : token,
@@ -56,7 +59,7 @@ def get_auth_token():
 # create_user
 #
 ################################################################################
-@app.appconfig.app_instance.route('/api/create-user', methods=['POST'])
+@app_instance.route('/api/create-user', methods=['POST'])
 def create_user():
 	# Extract params
 	email	= flask.request.form['email']
@@ -77,7 +80,7 @@ def create_user():
 				'langs'	: {},
 			})
 
-			send_activation_email(email)
+			auth.send_activation_email(email)
 			
 			return app.utils.json_result({
 				'success': 1,
@@ -91,7 +94,7 @@ def create_user():
 			})
 
 	except:
-		traceback.print_exc(file=sys.stdout)
+		traceback.print_exc()
 		return app.utils.json_result({
 			'success': 0,
 			'error'  : 'create user failed',
@@ -102,7 +105,7 @@ def create_user():
 # validate_user
 #
 ################################################################################
-@app.appconfig.app_instance.route('/api/activate-user', methods=['GET'])
+@app_instance.route('/api/activate-user', methods=['GET'])
 def activate_user():
 
 	# Get the encoded message
@@ -123,5 +126,24 @@ def activate_user():
 
 	# Return success
 	return flask.redirect("http://192.168.0.108:8000?action=activationsuccessful")
+
+
+################################################################################
+# request_access
+#
+################################################################################
+@app_instance.route('/api/request-access', methods=['POST'])
+def request_access():
+
+	# Get the email of the potential user
+	email = flask.request.form['email']
+
+	# Send an email 
+	auth.send_request_access_email(email)
+
+	# Return success
+	return app.utils.json_result({
+		'success': 1,
+	})
 
 

@@ -61,7 +61,19 @@ def Main() :
 			},
 		).sort('rank', 1)
 	else:
-		phrases = db.phrases.find({ 'lang': args.lang })
+		print "update lang"
+		db.phrases.update(
+			{
+				'lang': args.lang,
+			},
+			{
+				'$unset': 
+					{ 'txs': 1 }
+			},
+			multi=True,
+			upsert=True,
+		)
+		phrases = db.phrases.find({ 'lang': args.lang }).sort('rank', 1)
 
 	print "Starting..."
 
@@ -73,7 +85,7 @@ def Main() :
 			base = phrase['base']
 			text = section['text']
 
-			print base
+			print phrase['base']
 
 			# Get the translations
 			tx_hash = process_text(base, text)

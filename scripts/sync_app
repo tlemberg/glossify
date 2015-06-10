@@ -1,3 +1,4 @@
 #s3put -a $AWS_ACCESS_KEY_ID -s $AWS_SECRET_ACCESS_KEY -b glossify.net -p $PROJECT_HOME/app/www $PROJECT_HOME/app/www
 
 cp -rf $PROJECT_HOME/app/www/* /var/www/glossify/app
+mv /var/www/glossify/app/www/coffee/lib/config-prod.js /var/www/glossify/app/www/coffee/lib/config.js 

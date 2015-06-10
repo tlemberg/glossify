@@ -28,7 +28,11 @@
 		<div class="content-group-5">
 			<a>
 				<div class="facebook-signup-btn signup-btn">
-					Create an account
+					{{#if lockdown}}
+						Request an account
+					{{else}}
+						Create an account
+					{{/if}}
 				</div>
 			</a>
 		</div>

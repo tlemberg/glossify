@@ -139,12 +139,30 @@ input[type="password"].focus {
 	z-index: 1;
 	visibility: hidden;
 	height: 60px;
+	display: inline-block;
+	width: 100%;
+}
+
+.alert-div .message-container {
+	float: left;
+	width: 75%;
+	text-align: left;
+	height: 100%;
+	display: inline-block;
+}
+
+.alert-div .alert-btn-container {
+	float: right;
+	width: 25%;
+	height: 100%;
+	display: inline-block;
 }
 
 .alert-div .message {
-	float: left;
 	.vertical-align;
 	margin-left: 20px;
+	margin-right: 20px;
+	display: inline-block;
 }
 
 .alert-div .alert-btn {
@@ -155,7 +173,6 @@ input[type="password"].focus {
 	border-radius: 10px;
 	width: 100px;
 	cursor: pointer;
-	float: right;
 	.vertical-align;
 	margin-right: 20px;
 }
@@ -247,6 +264,8 @@ input[type="password"].focus {
 .signup-page .content-group-2 {
 	font-size: 20px;
 	padding-top: 20px;
+	padding-left: 40px;
+	padding-right: 40px;
 }
 
 .login-page .content-group-3,

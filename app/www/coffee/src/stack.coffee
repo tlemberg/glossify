@@ -42,6 +42,12 @@ define ['utils', 'storage'], (utils, storage) ->
 		minIndex = minIndex = (section - 1) * SECTION_SIZE + boxIndex * boxSize
 		maxIndex = minIndex + boxSize
 
+		console.log(minIndex)
+		console.log(maxIndex)
+		console.log("-----")
+
+		console.log(plan.slice(minIndex, maxIndex))
+
 		plan.slice(minIndex, maxIndex)
 
 
@@ -57,9 +63,9 @@ define ['utils', 'storage'], (utils, storage) ->
 		for boxIndex in [0..nBoxes-1]
 			phraseIds = _getPhraseIds(plan, section, boxIndex, lang)
 
-			console.log(phraseId)
-
 			samplePhraseIds = phraseIds[0..3]
+			console.log(Object.keys(dictionary['dictionary']).length)
+			console.log(samplePhraseIds)
 			sampleWords = (dictionary['dictionary'][phraseId]['base'] for phraseId in samplePhraseIds)
 			sample = sampleWords.join(', ') + "..."
 
