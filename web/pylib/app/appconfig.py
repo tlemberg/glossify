@@ -11,6 +11,12 @@ from bson.objectid        import ObjectId
 from flask.ext.mail       import Mail
 
 
+template_folder = None
+if 'ISDEV' in os.environ:
+	template_folder='/home/ubuntu/projects/glossify/web/templates'
+else:
+	template_folder='/var/www/glossify/web/templates'
+
 # App
 app_instance = None
 if 'ISDEV' in os.environ:
@@ -18,7 +24,7 @@ if 'ISDEV' in os.environ:
 	print "RUNNING IN DEV MODE"
 else:
 	app_instance = Flask('tenk',
-		template_folder='/var/www/glossify/web/templates',
+		template_folder=template_folder,
 		static_folder='/var/www/glossify/web/static')
 
 # CORS

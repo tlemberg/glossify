@@ -66,27 +66,7 @@ define [
 			# Attempt to fetch an access token via the API
 			api.authenticateUser email, password, (json) ->
 				if json['success']
-					storage.setLanguage('fr') # TODO: generalize
-
-					api.ensureDictionary 'fr', (json) ->
-						if json['success']
-							
-							api.getProgress (json) ->
-								if json['success']
-
-									api.getPlan (json) ->
-
-										if json['success']
-											_nav.loadPage('overview')
-										else
-											# Error ensuring plan
-											$('.login-page .error').html(strings.getString('unexpectedFailure'))
-								else
-									# Error ensuring progress
-									$('.login-page .error').html(strings.getString('unexpectedFailure'))
-						else
-							# Error ensuring dictionary
-							$('.login-page .error').html(strings.getString('unexpectedFailure'))
+					_nav.loadPage('manage')
 				else
 					# Error authenticating user
 					#$('.login-page .error').html(strings.getString('loginFailed'))

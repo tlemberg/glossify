@@ -1,4 +1,4 @@
-from flask             import render_template, request, redirect
+from flask             import render_template, request, redirect, send_from_directory
 from flask.ext.pymongo import PyMongo
 
 from app.appconfig     import app_instance, mongo
@@ -8,6 +8,16 @@ from auth              import verify_auth_token
 
 import app.appconfig
 import json
+import os.path
+
+
+################################################################################
+# get_worksheet
+#
+################################################################################
+@app.appconfig.app_instance.route('/api/get-worksheet/<name>')
+def get_worksheet(name):
+	return send_from_directory(os.path.join(app.appconfig.template_folder, 'worksheets'), "%s.csv" % name)
 
 
 ################################################################################
@@ -26,7 +36,8 @@ def get_dictionary(lang):
 		})
 
 	# Return success
-	return render_template("dictionaries/%s.json" % lang)
+	print os.path.join(app.appconfig.template_folder, 'dictionaries'), "%s.json" % lang
+	return send_from_directory(os.path.join(app.appconfig.template_folder, 'dictionaries'), "%s.json" % lang)
 
 
 ################################################################################
@@ -55,7 +66,8 @@ def get_plan():
 
 	# Create the plan array
 	plan = []
-	for phrase in mongo.db.phrases.find({ 'lang': lang, 'in_plan': 1 }, { '_id': 1 }).sort('rank', 1):
+	coll = mongo.db["phrases_%s" % lang]
+	for phrase in coll.find({ 'in_plan': 1 }, { '_id': 1 }).sort('rank', 1):
 		plan.append( phrase['_id'] )
 
 	# Return success
@@ -69,7 +81,7 @@ def get_plan():
 # add_language
 #
 ################################################################################
-@app.appconfig.app_instance.route('/api/add-language', methods=['POST'])
+@app.appconfig.app_instance.route('/api/add-language/<lang>', methods=['POST'])
 def add_language(lang):
 	
 	# Authenticate the user
@@ -83,19 +95,14 @@ def add_language(lang):
 	# Get user properties
 	email = user_profile['email']
 
-	try:
-		# Read the parameters
-		lang = request.form['lang']
-	except KeyError:
-		# Return failure if the arguments don't exist
-		return json_result({
-			'success': 0,
-			'error'  : 'invalid parameters',
-		})
+	print lang
+	print user_profile['langs']
 		
 	if lang not in user_profile['langs']:
 		# Append the language to the array
 		user_profile['langs'].append(lang)
+
+		user_profile['langs'] = f7(user_profile['langs'])
 
 		# Perform the upsert
 		mongo.db.user_profiles.update(
@@ -214,3 +221,18 @@ def update_progress():
 	})
 
 	
+def f7(seq, idfun=None): 
+   # order preserving
+   if idfun is None:
+       def idfun(x): return x
+   seen = {}
+   result = []
+   for item in seq:
+       marker = idfun(item)
+       # in old Python versions:
+       # if seen.has_key(marker)
+       # but in new ones:
+       if marker in seen: continue
+       seen[marker] = 1
+       result.append(item)
+   return result

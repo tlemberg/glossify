@@ -63,20 +63,22 @@ define ['utils', 'storage'], (utils, storage) ->
 		for boxIndex in [0..nBoxes-1]
 			phraseIds = _getPhraseIds(plan, section, boxIndex, lang)
 
-			samplePhraseIds = phraseIds[0..3]
-			console.log(Object.keys(dictionary['dictionary']).length)
-			console.log(samplePhraseIds)
-			sampleWords = (dictionary['dictionary'][phraseId]['base'] for phraseId in samplePhraseIds)
-			sample = sampleWords.join(', ') + "..."
+			if phraseIds.length > 0
 
-			percent = _getProgressPercentage(phraseIds)
+				samplePhraseIds = phraseIds[0..3]
+				console.log(Object.keys(dictionary['dictionary']).length)
+				console.log(samplePhraseIds)
+				sampleWords = (dictionary['dictionary'][phraseId]['base'] for phraseId in samplePhraseIds)
+				sample = sampleWords.join(', ') + "..."
 
-			box =
-				sample : sample
-				index  : boxIndex
-				percent: percent
+				percent = _getProgressPercentage(phraseIds)
 
-			boxes.push(box)
+				box =
+					sample : sample
+					index  : boxIndex
+					percent: percent
+
+				boxes.push(box)
 
 		boxes
 

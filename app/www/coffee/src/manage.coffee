@@ -1,85 +1,95 @@
-define ['utils', 'nav', 'css'], (utils, nav, css) ->
+define ['storage', 'api', 'strings'], (storage, api, strings) ->
 
 	_nav = undefined
-
-	# UI constants
-	PICKER_TILE_MARGIN = 10
-
-
-	_preloadPage = (userProfile, dictionary, params) ->
-		_registerEvents()
+	_validLangs = ['fr', 'es', 'ru', 'he', 'zh', 'is', 'sw']
+	_template = undefined
 
 
-	# Render the overview page
-	_refreshPage = (userProfile, dictionary, params) ->
+	############################################################################
+	# _loadPage
+	#
+	############################################################################
+	_loadPage = (template) ->
+		_template = template
+		userProfile = storage.getUserProfile()
+		constants = require('constants')
+
+		langs = ({
+			'code': code
+			'name': constants.langMap[code]
+		} for code in userProfile.langs)
+		options = ({
+			'code': code
+			'name': constants.langMap[code]
+		} for code in _validLangs when code not in userProfile.langs)
+		
+		templateArgs =
+			langs  : langs
+			options: options
+
+		console.log(templateArgs)
+
+		$(".manage-page").html(template(templateArgs))
+
+		$('.manage-page .box').click (event) ->
+			langCode = $(this).data('lang-code')
+			storage.setLanguage(langCode)
+			api.ensureDictionary langCode, (json) ->
+				if json['success']
+					
+					api.getProgress (json) ->
+						if json['success']
+
+							api.ensurePlan (json) ->
+
+								if json['success']
+									storage.setSection(1)
+									_nav.loadPage('overview')
+								else
+									# Error ensuring plan
+									$('.login-page .error').html(strings.getString('unexpectedFailure'))
+						else
+							# Error ensuring progress
+							$('.login-page .error').html(strings.getString('unexpectedFailure'))
+				else
+					# Error ensuring dictionary
+					$('.login-page .error').html(strings.getString('unexpectedFailure'))
+
+		_nav.showBackBtn "Logout", (event) ->
+			storage.logout()
+			_nav.loadPage('login')
+
+		$('.manage-page .add-language-btn').click (event) ->
+			console.log("go")
+			langCode = $('.manage-page .add-language-select').val()
+			console.log(langCode)
+			api.addLanguage langCode, (json) ->
+				if json['success']
+					_loadPage(_template)
+					_nav.showAlert('Language added!')
+				else
+					_nav.showAlert('Failed to add language. Try again.')
+
+
+	############################################################################
+	# _refreshPage
+	#
+	############################################################################
+	_refreshPage = ->
 		console.log("refresh")
 
 
-	_loadPage = (userProfile, dictionary, params) ->
-		console.log("load")
-
-
-	_registerEvents = ->
-		console.log("register")
-
-
+	############################################################################
+	# Exposed objects
+	#
+	############################################################################
 	return {
 
-
-		########################################################################
-		# preloadStudyPage
-		#
-		#	Generates the elements of the page that only need to be built once
-		#
-		# Parameters:
-		#
-		#	userProfile: userProfile hash
-		#	dictionary : dictionary hash
-		#	params     : extra parameters
-		#	
-		# Returns:
-		#	Nothing
-		########################################################################
-		preloadPage: (userProfile, dictionary, params) ->
+		loadPage: (template) ->
 			_nav = require('nav')
+			_loadPage(template)
 
-			_preloadPage(userProfile, dictionary, params)
-
-
-		########################################################################
-		# refreshStudyPage
-		#
-		#	Adjusts the elements of the page every time it changes size
-		#
-		# Parameters:
-		#
-		#	userProfile: userProfile hash
-		#	dictionary : dictionary hash
-		#	params     : extra parameters
-		#	
-		# Returns:
-		#	Nothing
-		########################################################################
-		refreshPage: (userProfile, dictionary, params) ->
-			_refreshPage(userProfile, dictionary, params)
-
-
-		########################################################################
-		# loadStudyPage
-		#
-		#	Adjusts the elements of the page when it is navigated to in the app
-		#
-		# Parameters:
-		#
-		#	userProfile: userProfile hash
-		#	dictionary : dictionary hash
-		#	params     : extra parameters
-		#	
-		# Returns:
-		#	Nothing
-		########################################################################
-		loadPage: (userProfile, dictionary, params) ->
-			_loadPage(userProfile, dictionary, params)
-
+		refreshPage: ->
+			_refreshPage()
 
 	}

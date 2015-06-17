@@ -22,6 +22,7 @@ define [
 	#
 	############################################################################
 	_nav = undefined
+	_nPages = 10
 
 	
 	############################################################################
@@ -50,17 +51,20 @@ define [
 		# Build args
 		userProfile = storage.getUserProfile()
 		dictionary  = storage.getDictionary(lang)
+		plan        = storage.getPlan(lang)
+
+		planLength = plan.length
+		_nPages     = Math.ceil(planLength / 1000)
 
 		templateArgs =
-			sections: [1..10]
+			sections: [1.._nPages]
 		$(".overview-page").html(template(templateArgs))
 
 		_loadBoxList(false)
 		_loadNavHeader()
 
-		_nav.showBackBtn "Logout", (event) ->
-			storage.logout()
-			_nav.loadPage('login')
+		_nav.showBackBtn "Account", (event) ->
+			_nav.loadPage('manage')
 
 		if not userProfile['confirmed']
 			_nav.showAlert("You will need to check your email to confirm your email address and fully activate yout account.")
@@ -80,16 +84,18 @@ define [
 	_loadNavHeader = ->
 		section = storage.getSection()
 		sectionInterval = stack.getSectionInterval(section)
+		lang = storage.getLanguage()
+		plan = storage.getPlan(lang)
 
 		minIndex = sectionInterval['min'] + 1
-		maxIndex = sectionInterval['max'] + 1
+		maxIndex = Math.min(sectionInterval['max'] + 1, plan.length)
 
 		s = "Cards #{minIndex} through #{maxIndex}"
 
 		if section == 1
 			$('.overview-page .arrow-btn-left').hide()
 			$('.overview-page .arrow-btn-right').show()
-		else if section == 10
+		else if section == _nPages
 			$('.overview-page .arrow-btn-left').show()
 			$('.overview-page .arrow-btn-right').hide()
 		else

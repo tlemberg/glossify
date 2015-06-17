@@ -32,8 +32,8 @@
           pageIndex = i;
         }
       }
+      $(".page-container").css('width', utils.withUnit(utils.windowWidth() * constants.pages.length, 'px'));
       if (transition) {
-        $(".page-container").css('width', utils.withUnit(utils.windowWidth() * constants.pages.length, 'px'));
         return $(".page-container").animate({
           "margin-left": utils.withUnit(-1 * pageIndex * utils.windowWidth(), 'px')
         }, 500, function() {

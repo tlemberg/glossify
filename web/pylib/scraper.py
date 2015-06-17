@@ -6,7 +6,7 @@ import pprint
 import re
 import yaml
 
-from xml.etree.ElementTree import iterparse
+from xml.etree.ElementTree import iterparse, XMLParser
 
 yaml_file = os.path.join(os.environ['PROJECT_HOME'], 'web/wikidumps.yaml')
 iso_codes_path = os.path.join(os.environ['PROJECT_HOME'], 'web/iso_language_codes.yaml')
@@ -77,7 +77,7 @@ def parse_pages(db, xml_file,
 					# Check for hitting the maximum pages parsed if a limit is specified
 					if max_pages is not None:
 						n_pages_parsed += 1
-						if n_pages_parsed % 10 == 0: print n_pages_parsed
+						if show_progress and n_pages_parsed % 10 == 0: print n_pages_parsed
 						if n_pages_parsed >= max_pages: return
 
 			root.clear()
@@ -191,4 +191,23 @@ def get_section_text(db, lang, base):
 ################################################################################
 def get_iso_codes_hash():
 	return yaml.load(open(iso_codes_path, 'r'))
+
+
+################################################################################
+# get_viewable_txs
+#
+################################################################################
+def get_viewable_txs(phrase):
+	priority = sorted(phrase['txs'].keys(), key = lambda t: len(phrase['txs'][t]))
+	new_txs = {}
+	for k in priority[:2]:
+		v = phrase['txs'][k]
+		if v == []:
+			continue
+		x = [tx for tx in v if not tx['deleted']]
+		x = sorted(x, key = lambda a: a['rank'])
+		x = x[0:3]
+		x = [tx['text'] for tx in x]
+		new_txs[k] = x
+	return new_txs
 

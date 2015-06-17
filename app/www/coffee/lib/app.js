@@ -12,7 +12,7 @@
     $(document).ready(function(event) {
       nav.initPages();
       if (storage.isLoggedIn()) {
-        return nav.loadPage('overview');
+        return nav.loadPage('manage');
       } else {
         return nav.loadPage('login');
       }

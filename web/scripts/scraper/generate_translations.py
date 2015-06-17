@@ -8,17 +8,20 @@ import re
 import scraper
 
 from xml.etree.ElementTree import iterparse
+from datetime              import datetime
 
 # Set up an arg parser
 parser = argparse.ArgumentParser()
 parser.add_argument("lang")
 parser.add_argument("--base")
+parser.add_argument("--skipto")
 
 # Parse the arguments
 args = parser.parse_args()
 
 # Connect to the DB
 db = dbutils.DBConnect()
+coll = db["phrases_%s" % args.lang]
 
 # Define valid section keys
 valid_section_keys = [
@@ -37,11 +40,12 @@ valid_section_keys = [
 	'Synonyms',
 	'Phrase',
 	'Proper noun',
+	'Determiner',
 ]
 
 # Make a rank map
 rank_map = {}
-for doc in db.phrases.find({ 'lang': args.lang }, { 'base': 1, 'rank': 1 }):
+for doc in coll.find({ }, { 'base': 1, 'rank': 1 }):
 	rank_map[doc['base']] = doc['rank']
 
 
@@ -54,18 +58,15 @@ def Main() :
 	phrases = None
 
 	if args.base != None:
-		phrases = db.phrases.find(
+		phrases = coll.find(
 			{
-				'lang': args.lang,
 				'base': args.base,
 			},
 		).sort('rank', 1)
 	else:
 		print "update lang"
-		db.phrases.update(
-			{
-				'lang': args.lang,
-			},
+		coll.update(
+			{ },
 			{
 				'$unset': 
 					{ 'txs': 1 }
@@ -73,29 +74,54 @@ def Main() :
 			multi=True,
 			upsert=True,
 		)
-		phrases = db.phrases.find({ 'lang': args.lang }).sort('rank', 1)
+		phrases = coll.find({ }).sort('rank', 1)
 
 	print "Starting..."
 
 	count = 0
+	started = False
 	for phrase in phrases:
+		if args.skipto and not started:
+			if phrase['base'] == args.skipto:
+				started = True
+			else:
+				continue
+
+		#print phrase['base']
+		t0 = datetime.now()
 		section = dbutils.get_section_for_phrase(db, phrase)
+		t1 = datetime.now()
+		#print "  get section: ", (t1-t0)
 
 		if section != None:
 			base = phrase['base']
 			text = section['text']
 
-			print phrase['base']
-
 			# Get the translations
+			t0 = datetime.now()
 			tx_hash = process_text(base, text)
+			t1 = datetime.now()
+			#print "  process: ", (t1-t0)
 
 			# Write the document if it exists
 			if tx_hash is not None:
+				t0 = datetime.now()
 				write_translations(base, tx_hash)
+				t1 = datetime.now()
+				#print "  insert: ", (t1-t0)
 				count += 1
 				if count % 100 == 0:
 					print count
+
+	if args.base:
+		section = dbutils.get_section_for_phrase(db, phrase)
+		phrase = coll.find_one(
+			{
+				'base': args.base,
+			},
+		)
+		print section['text']
+		print phrase['txs']
 
 
 ################################################################################
@@ -113,7 +139,8 @@ def process_text(base, text):
 	for k in sections:
 		if k in valid_section_keys:
 			translations = get_translations(sections[k])
-			txs[k] = translations
+			if translations != []:
+				txs[k] = translations
 
 	
 	rank = rank_map[base]
@@ -129,23 +156,85 @@ def process_text(base, text):
 def get_translations(lines):
 	txs = []
 	rank = 1
+	strings = []
 	for line in lines:
-		m = re.search(r'^# (.*)$', line) or re.search(r'^#\{\{(.*)$', line) or re.search(r'^#\[\[(.*)$', line) or re.search(r'^\* (.*)$', line)
+		m = re.search(r'^#', line)
+		if m == None:
+			continue
+		m = re.search(r'^#\*', line)
 		if m:
-			s = line #m.group(1)
-			s = re.sub(r'\{\{.*?\}\}', '', s)
-			s = re.sub(r'\[\[', '', s)
-			s = re.sub(r'\]\]', '', s)
-			s = re.sub(r'=', '', s)
-			s = re.sub(r'#', '', s)
-			s = s.strip()
-			if s != '':
-				txs.append({
-					"text"   : s,
-					"rank"   : rank,
-					"deleted": False,
-				})
-				rank += 1
+			continue
+		m = re.search(r'^#\:', line)
+		if m:
+			continue
+
+		m = re.search(r'^# \[\[', line)
+		if m:
+			########################
+			# Pattern 1:
+			# [[a]], [[b]], [[c]]
+			########################
+			m = re.findall(r'\[\[(.*?)\]\]', line)
+			if m:
+				for s in m:
+					strings.append(f6(s))
+				continue
+
+		m = re.search(r'^# \{\{context\|(.*?)\|lang', line)
+		if m:
+			########################
+			# Pattern 2:
+			# [[a]], [[b]], [[c]]
+			########################
+			m2 = re.findall(r'\[\[(.*?)\]\]', line)
+			if m2:
+				for s in m2:
+					if args.lang == 'zh' and re.search('Chinese|Mandarin', m.group(1)):
+						strings.append("%s" % (f6(s)))
+					else:
+						strings.append("%s (%s)" % (f6(s), f6(m.group(1))))
+				continue
+
+		m = re.search(r'^# (.*)$|^## (.*)$|^#\{\{(.*)$|^#\[\[(.*)$|^\* (.*)$', line)
+		if m:
+			s = ''
+			########################
+			# Pattern 3:
+			# {{l/en|as}}{{l/en|as}}
+			########################
+			m = re.search(r'\{\{l\/en\|(.*)\}\}', line)
+			if m:
+				strings.append(f6(m.group(1)))
+				continue
+
+			
+
+
+		########################
+		# All other patterns:
+		########################
+		m = re.findall(r'\[\[(.*?)\]\]', line)
+		if m:
+			for s in m:
+				strings.append(f6(s))
+			continue
+		m = re.search(r'\((.*?)\)', line)
+		if m:
+			strings.append(f6(m.group(1)))
+
+			
+
+	for s in f7(strings):
+		if s == '':
+			continue
+		if s.find('#') >= 0:
+			continue
+		txs.append({
+			"text"   : s,
+			"rank"   : rank,
+			"deleted": False,
+		})
+		rank += 1
 
 	return txs
 
@@ -157,20 +246,43 @@ def get_translations(lines):
 def write_translations(base, tx_hash):
 
 	# Insert all of the new entries
-	phrase = db.phrases.find_one({
-		'lang': args.lang,
+	phrase = coll.find_one({
 		'base': base,
 	})
 
 	phrase['txs'] = tx_hash
 
-	db.phrases.update(
+	coll.update(
 		{
-			'lang': args.lang,
 			'base': base,
 		},
 		phrase,
 	)
+
+
+def f6(s):
+	i = s.find('|')
+	if i >= 0:
+		s = s[:i]
+	s = re.sub(r'\[\[(.*?)\]\]', r'\1', s)
+	return s
+
+
+def f7(seq, idfun=None): 
+   # order preserving
+   if idfun is None:
+       def idfun(x): return x
+   seen = {}
+   result = []
+   for item in seq:
+       marker = idfun(item)
+       # in old Python versions:
+       # if seen.has_key(marker)
+       # but in new ones:
+       if marker in seen: continue
+       seen[marker] = 1
+       result.append(item)
+   return result
 
 
 Main()

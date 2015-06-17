@@ -26,26 +26,7 @@
         password = $('.login-page #password-input').val();
         return api.authenticateUser(email, password, function(json) {
           if (json['success']) {
-            storage.setLanguage('fr');
-            return api.ensureDictionary('fr', function(json) {
-              if (json['success']) {
-                return api.getProgress(function(json) {
-                  if (json['success']) {
-                    return api.getPlan(function(json) {
-                      if (json['success']) {
-                        return _nav.loadPage('overview');
-                      } else {
-                        return $('.login-page .error').html(strings.getString('unexpectedFailure'));
-                      }
-                    });
-                  } else {
-                    return $('.login-page .error').html(strings.getString('unexpectedFailure'));
-                  }
-                });
-              } else {
-                return $('.login-page .error').html(strings.getString('unexpectedFailure'));
-              }
-            });
+            return _nav.loadPage('manage');
           } else {
             return _nav.showAlert(strings.getString('loginFailed'));
           }

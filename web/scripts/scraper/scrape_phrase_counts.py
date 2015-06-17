@@ -6,8 +6,10 @@ import dbutils
 import re
 import scraper
 import sys
+import io
 
 from xml.etree.ElementTree import iterparse
+from datetime import datetime
 
 invalidcharpattern = r"\"|\(|\)|\[|\]|\{|\}|\<|\>|!|&|\?|%|\+|:|;|«|»|=|\*|#|\n|\.|@|\$|\\|~|\_"
 
@@ -25,6 +27,8 @@ db = dbutils.DBConnect()
 # Get langauge hash
 language_info_hash = scraper.get_iso_codes_hash()[args.lang]
 
+total_count = 0
+
 
 ################################################################################
 # Main
@@ -35,13 +39,18 @@ def Main():
 		'lang': args.lang,
 	})
 
-	xml_file = args.path
+	xml_file = args.path #io.open(args.path, encoding='utf-8', errors='replace')
+
+	print ""
 
 	scraper.parse_pages(db,
 		xml_file       = xml_file,
-		max_pages      = 5000,
+		max_pages      = 100000,
 		process_text_f = process_text,
-		show_progress  = True)
+		show_progress  = False)
+
+	global total_count
+	print "Total count: %s" % total_count
 
 
 ################################################################################
@@ -64,9 +73,22 @@ def process_text(base, pageid, text):
 		_AnalyzeSentence(sentence, phrasehash)
 	"""
 
-	_analyzeText(text, phrasehash)
 
-	if phrasehash: _InsertWordCounts(phrasehash, pageid)
+	t0 = datetime.now()
+	_analyzeText(text, phrasehash)
+	t1 = datetime.now()
+	#print "  analyze: ", (t1-t0)
+
+	global total_count
+
+	if phrasehash:
+		_InsertWordCounts(phrasehash, pageid)
+		total_count += len(phrasehash.keys())
+		print "\r", "{0:.2f}".format(100. * float(total_count) / 100000000), '%',
+
+	if total_count >= 100000000:
+		print "Reached 100000000 phrases"
+		sys.exit()
 
 
 """
@@ -101,12 +123,17 @@ def _GetSentences(text) :
 ################################################################################
 def _analyzeText(text, phrasehash) :
 	words = None
+	lRange = None
+	noAscii = False
 	if 'noSpacing' in language_info_hash:
-		words = text.split('')
+		words = text
+		lRange = range(1,5)
+		noAscii = True
 	else:
 		words = text.split(' ')
+		lRange =range(1,3)
 	
-	for phraselength in range(1, 6) :
+	for phraselength in lRange :
 		phrasewords = []
 		for word in words:
 			phrasewords.append(word)
@@ -114,9 +141,13 @@ def _analyzeText(text, phrasehash) :
 				phrasewords = phrasewords[1:phraselength+1]
 			if len(phrasewords) == phraselength:
 				# Construct the phrase by joining words with spaces and polishing it
-				phrase = " ".join(phrasewords)
-				re.sub(r"^([%s])" % invalidcharpattern, r"\1", phrase)
-				re.sub(r"([%s])$" % invalidcharpattern, r"\1", phrase)
+				phrase = None
+				if noAscii:
+					phrase = "".join(phrasewords)
+				else:
+					phrase = " ".join(phrasewords)
+				#re.sub(r"^([%s])" % invalidcharpattern, r"\1", phrase)
+				#re.sub(r"([%s])$" % invalidcharpattern, r"\1", phrase)
 				phrase = phrase.replace(u"\u2018", "'").replace(u"\u2019", "'").replace(u"\u201c","\"").replace(u"\u201d", "\"")
 				phrase = phrase.lower().strip('\'\"-,.:;!?')
 
@@ -126,6 +157,9 @@ def _analyzeText(text, phrasehash) :
 				if re.search(r"''", phrase): continue
 				if phrase == '': continue
 				if phrase.count(' ') == len(phrase): continue
+
+				if noAscii:
+					if re.search(r'[A-Za-z]', phrase): continue
 
 				# If validation passed, increment the phrase count for this phrase
 				try: 
@@ -163,12 +197,15 @@ def _InsertWordCounts(phrasehash, pageid) :
 
 	# Perform the bulk insert
 	try:
+		t0 = datetime.now()
 		db.phrase_counts.insert({
 			"lang"  : args.lang,
 			"counts": obj,
 		})
+		t1 = datetime.now()
+		#print "  insert: ", (t1-t0)
 	except:
-		print obj
+		#print obj
 		print "A document failed to insert", sys.exc_info()[0]
 
 

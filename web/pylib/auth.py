@@ -5,6 +5,7 @@ import flask
 import passlib.hash
 
 from app.appconfig import mongo
+from passlib.hash  import sha256_crypt
 
 
 ################################################################################
@@ -28,7 +29,7 @@ all_permissions = [
 # generate_auth_token
 #
 ################################################################################
-def generate_auth_token(email, expiration = 600):
+def generate_auth_token(email, expiration = 3600):
 	s = itsdangerous.TimedJSONWebSignatureSerializer(secret_key, expires_in = expiration)
 	return s.dumps({ 'email': email })
 
@@ -91,6 +92,29 @@ def store_auth_token_in_session(email, password):
 			token = generate_auth_token(email)
 			flask.session['token'] = token
 			return token
+
+
+################################################################################
+# create_user_profile
+#
+################################################################################
+def create_user_profile(db, email, password, confirmed=0):
+	password_hash = sha256_crypt.encrypt(password)
+
+	# Check that no user already exists with that email
+	if db.user_profiles.find_one({ 'email': email }) == None:
+
+		db.user_profiles.insert({
+			'email'	   : email,
+			'password' : password_hash,
+			'active'   : 1,
+			'confirmed': confirmed,
+			'langs'	   : [],
+		})
+
+		return True
+
+	return None
 
 
 ################################################################################

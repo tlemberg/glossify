@@ -8,6 +8,7 @@ import dbutils
 import itsdangerous
 from bson.json_util import dumps
 import os
+import scraper
 
 # Set up an arg parser
 parser = argparse.ArgumentParser()
@@ -18,17 +19,17 @@ args = parser.parse_args()
 
 # Connect to the database and get a list of phrases
 db = dbutils.DBConnect()
+coll = db["phrases_%s" % args.lang]
 
-cursor = db.phrases.find(
-	{
-		"lang": args.lang,
-	},
+cursor = coll.find(
+	{ },
 	{
 		"_id" : 1,
 		"lang": 1,
 		"base": 1,
 		"txs" : 1,
 		"rank": 1,
+		"pron": 1
 	}
 )
 
@@ -38,25 +39,22 @@ d = {}
 
 for phrase in l:
 	if 'txs' in phrase and phrase['txs'] != {}:
-		new_txs = {}
-		for k, v in phrase['txs'].iteritems():
-			 x = [tx for tx in v if not tx['deleted']]
-			 x = sorted(x, key = lambda a: a['rank'])
-			 x = x[0:3]
-			 x = [tx['text'] for tx in x]
-			 new_txs[k] = x
+		new_txs = scraper.get_viewable_txs(phrase)
 
-		q.append({
+		to_append = {
 			'lang': phrase['lang'],
 			'base': phrase['base'],
 			'txs' : new_txs,
 			'_id': str(phrase['_id']),
-		})
+		}
+		if 'pron' in phrase:
+			to_append['pron'] = phrase['pron']
 
-db.phrases.update(
-	{
-		'lang': args.lang,
-	},
+		if new_txs != {}:
+			q.append(to_append)
+
+coll.update(
+	{ },
 	{
 		'$set': {
 			'in_plan': 0,
@@ -67,9 +65,8 @@ db.phrases.update(
 )
 for h in q[0:10000]:
 	d[h['_id']] = h
-	db.phrases.update(
+	coll.update(
 		{
-			'lang': args.lang,
 			'base': h['base'],
 		},
 		{
@@ -86,7 +83,7 @@ print len(d.keys())
 obj = {
 	'success': 1,
 	'result' : {
-		'lang': 'fr',
+		'lang': 'is',
 		'dictionary': d,
 	},
 }

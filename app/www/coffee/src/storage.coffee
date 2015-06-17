@@ -45,8 +45,12 @@ define ['utils'], (utils) ->
 		_removeLocalStorageItem(SECTION_KEY)
 		_removeLocalStorageItem(BOX_KEY)
 
-		_removeDictionary('fr')
-		_removeDictionary('es')
+		constants = require('constants')
+
+		for lang in Object.keys(constants.langMap)
+			_removeDictionary(lang)
+			_removePlan(lang)
+			_removeProgress(lang)
 
 		_clearProgressUpdates()
 
@@ -96,7 +100,6 @@ define ['utils'], (utils) ->
 
 
 	_removeDictionary = (lang) ->
-		console.log("removing dictionary #{ lang }")
 		_removeLocalStorageItem("dictionary_#{ lang }")
 
 
@@ -159,6 +162,9 @@ define ['utils'], (utils) ->
 		_setLocalStorageItem("progress_#{ lang }", progress)
 		_addProgressUpdate(phraseId, progressValue)
 
+	_removeProgress = (lang) ->
+		_removeLocalStorageItem("progress_#{ lang }")
+
 
 	_getPlan = (lang) ->
 		_getLocalStorageItem("plan_#{ lang }")
@@ -166,6 +172,10 @@ define ['utils'], (utils) ->
 
 	_setPlan = (lang, v) ->
 		_setLocalStorageItem("plan_#{ lang }", v)
+
+
+	_removePlan = (lang) ->
+		_removeLocalStorageItem("plan_#{ lang }")
 
 
 	_isLoggedIn = ->

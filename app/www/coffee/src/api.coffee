@@ -114,6 +114,7 @@ define ['utils', 'storage', 'nav', 'strings', 'config'], (utils, storage, nav, s
 			dataType : 'json'
 			timeout  : 10 * 1000
 			success  : (json) ->
+				console.log(json)
 				console.log(Object.keys(json['result']['dictionary']).length)
 				_nav.hideModal()
 				if json['success'] is 1
@@ -177,14 +178,26 @@ define ['utils', 'storage', 'nav', 'strings', 'config'], (utils, storage, nav, s
 	#
 	############################################################################
 	_addLanguage = (lang, handler) ->
+		# Show the modal after a certain amount of load time
+		_nav.showModal("Adding language to your library", "ajax", 1000)
 
-		# Send the remote call
+		# Send the query
 		$.ajax
 			url      : _apiUrl("add-language/#{ lang }", authenticated = true)
+			method   : "POST"
+			data     : {}
 			dataType : 'json'
 			timeout  : 10 * 1000
 			success  : (json) ->
+				_nav.hideModal()
+				if json['success']
+					userProfile = storage.getUserProfile()
+					userProfile['langs'].push(lang)
+					console.log(userProfile)
+					storage.setUserProfile(userProfile)
 				handler(json)
+			error    : (jqXHR, textStatus, thownError) ->
+				_nav.showModal(strings.getString("ajaxError"), "alert")
 
 
 	############################################################################
@@ -276,6 +289,23 @@ define ['utils', 'storage', 'nav', 'strings', 'config'], (utils, storage, nav, s
 
 
 	############################################################################
+	# _ensurePlan
+	#
+	############################################################################
+	_ensurePlan = (handler) ->
+		# Attempt to get the dictionary from memory
+		lang = storage.getLanguage()
+		plan = storage.getPlan(lang)
+
+		if plan?
+			handler
+				success: 1
+				result : plan
+		else
+			_getPlan(handler)
+
+
+	############################################################################
 	# Exposed objects
 	#
 	############################################################################
@@ -323,6 +353,11 @@ define ['utils', 'storage', 'nav', 'strings', 'config'], (utils, storage, nav, s
 		getPlan: (handler) ->
 			_nav = require("nav")
 			_getPlan(handler)
+
+
+		ensurePlan: (handler) ->
+			_nav = require("nav")
+			_ensurePlan(handler)
 
 
 		apiSummary: ->

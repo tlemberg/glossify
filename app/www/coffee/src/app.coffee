@@ -20,7 +20,7 @@ requirejs [
 		nav.initPages()
 
 		if storage.isLoggedIn()
-			nav.loadPage('overview')
+			nav.loadPage('manage')
 		else
 			nav.loadPage('login')
 		

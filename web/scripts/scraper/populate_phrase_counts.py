@@ -29,7 +29,7 @@ def main():
 	h = None
 	good_h = []
 	for h in iso_language_hashes:
-		if h['isoCode'] in ['is']:
+		if h['isoCode'] in ['fr']:
 			good_h.append(h)
 			
 
@@ -46,15 +46,20 @@ def main():
 ################################################################################
 def process_main(iso_language_hash):
 
-	print iso_language_hash
-
 	iso_code           = iso_language_hash['isoCode']
 	is_character_based = 'characterBased' in iso_language_hash
 
 	# Get various names
 	xml_file = "%swiki-latest-pages-articles-multistream.xml" % iso_code
 	bz2_file = "%s.bz2" % xml_file
-	bz2_url  = "https://dumps.wikimedia.org/%swiki/latest/%s" % (iso_code, bz2_file)
+
+	# Some of the deafult 'latest' urls are corrupt files
+	bz2_url = ''
+	if iso_code == 'ru':
+		bz2_url = 'https://dumps.wikimedia.org/ruwiki/20150324/ruwiki-20150324-pages-articles-multistream.xml.bz2'
+	else:
+		bz2_url = "https://dumps.wikimedia.org/%swiki/latest/%s" % (iso_code, bz2_file)
+
 	xml_local_path = os.path.join(wikidumps_path, xml_file)
 	bz2_local_path = os.path.join(wikidumps_path, bz2_file)
 
@@ -67,11 +72,22 @@ def process_main(iso_language_hash):
 
 	# Scrape the sections
 	scraper_script_path = os.path.join(os.environ['PROJECT_HOME'], 'web/scripts/scraper/scrape_phrase_counts.py')
-	options = 'characterbased' if is_character_based else '';
-	run_cmd("python %s %s %s %s" % (scraper_script_path, iso_code, xml_local_path, options))
+	run_cmd("python %s %s %s" % (scraper_script_path, iso_code, xml_local_path))
+
+	# Create phrases
+	phrases_script_path = os.path.join(os.environ['PROJECT_HOME'], 'web/scripts/scraper/generate_phrases.py')
+	run_cmd("python %s %s" % (phrases_script_path, iso_code))
+
+	# Find translations
+	translate_script_path = os.path.join(os.environ['PROJECT_HOME'], 'web/scripts/scraper/generate_translations.py')
+	run_cmd("python %s %s" % (translate_script_path, iso_code))
+
+	# Build dictionary
+	dictionary_script_path = os.path.join(os.environ['PROJECT_HOME'], 'web/scripts/scraper/generate_dictionary.py')
+	run_cmd("python %s %s" % (dictionary_script_path, iso_code))
 
 	# Remove the XML
-	run_cmd("rm %s" % xml_local_path)
+	# run_cmd("rm %s" % xml_local_path)
 
 
 ################################################################################

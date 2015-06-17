@@ -63,8 +63,9 @@ define ['utils', 'constants'], (utils, constants) ->
 			if constants.pages[i] == page
 				pageIndex = i
 
+		$(".page-container").css('width', utils.withUnit(utils.windowWidth() * constants.pages.length, 'px'))
+
 		if transition
-			$(".page-container").css('width', utils.withUnit(utils.windowWidth() * constants.pages.length, 'px'))
 			$(".page-container").animate { "margin-left": utils.withUnit(-1 * pageIndex * utils.windowWidth(), 'px') }, 500, ->
 				console.log("done")
 		else

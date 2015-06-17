@@ -1,4 +1,13 @@
-define ['utils', 'stack', 'storage', 'nav', 'deck', 'pageview', 'api'], (utils, stack, storage, nav, deck, pageview, api) ->
+define [
+	'utils',
+	'stack',
+	'storage',
+	'nav',
+	'deck',
+	'pageview',
+	'api',
+	'hbs!../../hbs/src/wordref',
+], (utils, stack, storage, nav, deck, pageview, api, wordrefTemplate) ->
 
 
 	############################################################################
@@ -15,9 +24,8 @@ define ['utils', 'stack', 'storage', 'nav', 'deck', 'pageview', 'api'], (utils, 
 	# UI constants
 	#
 	############################################################################
-	MAX_CARD_WIDTH = 340
 	MAX_BUTTON_AREA_WIDTH = 600
-	CARD_ASPECT = 1.5
+	CARD_ASPECT = .68
 
 
 	############################################################################
@@ -104,7 +112,12 @@ define ['utils', 'stack', 'storage', 'nav', 'deck', 'pageview', 'api'], (utils, 
 	_resetCard = ->
 
 		# Set the text to match the card
-		_setTopText(_phrase['base'])
+		topText = ''
+		if _phrase['pron']?
+			topText = "#{_phrase['base']} (#{_phrase['pron']})"
+		else
+			topText = _phrase['base']
+		_setTopText(topText)
 
 		# Set the border color to indicate progress
 		progressValue = storage.getProgress(_phrase['_id'])
@@ -122,6 +135,13 @@ define ['utils', 'stack', 'storage', 'nav', 'deck', 'pageview', 'api'], (utils, 
 
 			# Show the appropriate divs
 			_hideFlipButton()
+
+		lang = storage.getLanguage()
+		templateArgs =
+			lang: lang
+			base: _phrase['base']
+			"lang_#{lang}": 1
+		$(".wordref-menu").html(wordrefTemplate(templateArgs))
 
 
 	############################################################################
@@ -173,12 +193,14 @@ define ['utils', 'stack', 'storage', 'nav', 'deck', 'pageview', 'api'], (utils, 
 	#
 	############################################################################
 	_getTxSummary = (txs) ->
-		s = ''
-		for k, v of txs
-			lines = ("#{ i + 1 }. #{ v[i] }" for i in [0..Math.min(v.length - 1, 2)])
-			s = s + "<div><b>#{ k }</b>" + "<br />" + lines.join("<br />") + "</div>"
-			break
-		s
+		types = Object.keys(txs).sort (a, b) ->
+			txs[b].length - txs[a].length
+		chunks = []
+		for k in types[0..1]
+			v = txs[k]
+			lines = ("#{ i + 1 }. #{ v[i] }" for i in [0..Math.min(v.length - 1, 1)])
+			chunks.push("<div><b>#{ k }</b>" + "<br />" + lines.join("<br />") + "</div>")
+		chunks.join("<br />")
 
 
 	############################################################################
@@ -208,23 +230,23 @@ define ['utils', 'stack', 'storage', 'nav', 'deck', 'pageview', 'api'], (utils, 
 	_setStudyFooterCss = ->
 
 		cardHeight = utils.windowHeight() - 200
-		cardWidth  = Math.min(MAX_CARD_WIDTH, cardHeight / CARD_ASPECT)
+		cardWidth  = Math.min(cardHeight / CARD_ASPECT, utils.windowWidth() - 60)
 
 		$('.study-page .card-container').css('width', cardWidth);
 
 		#$('.study-page .card').css('width', cardWidth)
 		$('.study-page .card').css('height', cardHeight)
 
-		btnWidth = (cardWidth - 20) / 5
+		btnWidth = (cardWidth - 60) / 5
 
 		# Set the tile width and heights
 		$('.study-page .btn').css('width', btnWidth)
-		$('.study-page .btn').css('height', btnWidth)
-		$('.study-page .btn').css('margin-top', '5px')
-		$('.study-page .btn').css('margin-right', '5px')
+		$('.study-page .btn').css('height', '50px')
+		$('.study-page .btn').css('margin-top', '15px')
+		$('.study-page .btn').css('margin-right', '15px')
 		$('.study-page .btn-5').css('margin-right', '0px')
 
-		$('.study-page .flip-btn').css('height', btnWidth)
+		$('.study-page .flip-btn').css('height', '50px')
 
 
 	############################################################################

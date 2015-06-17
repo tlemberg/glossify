@@ -17,3 +17,8 @@ db.phrases.create_index([
 	('lang', pymongo.ASCENDING),
 	('base', pymongo.ASCENDING),
 ])
+
+db.sections.create_index([
+	('lang', pymongo.ASCENDING),
+	('base', pymongo.ASCENDING),
+])

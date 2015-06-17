@@ -1,28 +1,38 @@
 <div class="content">
 
-	<div class="card-container">
+	<div class="group-left">
+	</div>
 
-		<div class="card">
-			<div class="card-half card-top">
-				<div class="card-top-text"></div>
-			</div>
-			<div class="card-half card-bottom">
-				<div class="card-bottom-text"></div>
-			</div>
-		</div>
+	<div class="group-middle">
+		<div class="card-container">
 
-		<div class="flip-btn">
-			<div class="flip-btn-text">reveal answer</div>
-		</div>
-
-		<div class="btn-container">
-			{{#each buttons}}
-				<div class='btn btn-{{progress}}' data-progress="{{progress}}">
-					<div class='btn-text'>{{text}}</div>
+			<div class="card">
+				<div class="card-half card-top">
+					<div class="card-top-text"></div>
 				</div>
-			{{/each}}
-		</div>
+				<div class="card-half card-bottom">
+					<div class="card-bottom-text"></div>
+				</div>
+			</div>
 
+			<div class="flip-btn">
+				<div class="flip-btn-text">reveal answer</div>
+			</div>
+
+			<div class="btn-container">
+				{{#each buttons}}
+					<div class='btn btn-{{progress}}' data-progress="{{progress}}">
+						<div class='btn-text'>{{text}}</div>
+					</div>
+				{{/each}}
+			</div>
+
+		</div>
+	</div>
+
+	<div class="group-right">
+		<div class="wordref-menu">
+		</div>
 	</div>
 
 </div>

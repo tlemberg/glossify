@@ -15,6 +15,8 @@ language_key_map = {}
 for iso_code, d in iso_codes_hash.iteritems():
 	if 'wiktionaryName' in d:
 		language_key_map[iso_code] = d['wiktionaryName']
+	else:
+		language_key_map[iso_code] = d['name']
 print language_key_map
 language_key_map_r = app.utils.reverse_hash(language_key_map)
 

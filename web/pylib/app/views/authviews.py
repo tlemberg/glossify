@@ -67,18 +67,7 @@ def create_user():
 
 	# Do SQL work
 	try:
-		password_hash = sha256_crypt.encrypt(password)
-
-		# Check that no user already exists with that email
-		if mongo.db.user_profiles.find_one({ 'email': email }) == None:
-
-			mongo.db.user_profiles.insert({
-				'email'	: email,
-				'password' : password_hash,
-				'active'   : 1,
-				'confirmed': 0,
-				'langs'	: {},
-			})
+		if auth.cerate_user_profile(mongo.db, email, password):
 
 			auth.send_activation_email(email)
 			

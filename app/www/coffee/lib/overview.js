@@ -3,11 +3,12 @@
   var indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
   define(['utils', 'storage', 'nav', 'css', 'deck', 'stack', 'hbs!../../hbs/src/box-list'], function(utils, storage, nav, css, deck, stack, boxListTemplate) {
-    var PICKER_TILE_MARGIN, _createEmptyProgress, _loadBoxList, _loadNavHeader, _loadPage, _nav, _refreshPage, _registerEvents, _setPickerHtml;
+    var PICKER_TILE_MARGIN, _createEmptyProgress, _loadBoxList, _loadNavHeader, _loadPage, _nPages, _nav, _refreshPage, _registerEvents, _setPickerHtml;
     _nav = void 0;
+    _nPages = 10;
     PICKER_TILE_MARGIN = 10;
     _loadPage = function(template) {
-      var dictionary, lang, templateArgs, userProfile;
+      var dictionary, i, lang, plan, planLength, results, templateArgs, userProfile;
       lang = storage.getLanguage();
       userProfile = storage.getUserProfile();
       if (indexOf.call(Object.keys(userProfile['langs']), lang) < 0) {
@@ -18,15 +19,21 @@
       }
       userProfile = storage.getUserProfile();
       dictionary = storage.getDictionary(lang);
+      plan = storage.getPlan(lang);
+      planLength = plan.length;
+      _nPages = Math.ceil(planLength / 1000);
       templateArgs = {
-        sections: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+        sections: (function() {
+          results = [];
+          for (var i = 1; 1 <= _nPages ? i <= _nPages : i >= _nPages; 1 <= _nPages ? i++ : i--){ results.push(i); }
+          return results;
+        }).apply(this)
       };
       $(".overview-page").html(template(templateArgs));
       _loadBoxList(false);
       _loadNavHeader();
-      _nav.showBackBtn("Logout", function(event) {
-        storage.logout();
-        return _nav.loadPage('login');
+      _nav.showBackBtn("Account", function(event) {
+        return _nav.loadPage('manage');
       });
       if (!userProfile['confirmed']) {
         _nav.showAlert("You will need to check your email to confirm your email address and fully activate yout account.");
@@ -37,16 +44,18 @@
       return _loadBoxList(false);
     };
     _loadNavHeader = function() {
-      var maxIndex, minIndex, s, section, sectionInterval;
+      var lang, maxIndex, minIndex, plan, s, section, sectionInterval;
       section = storage.getSection();
       sectionInterval = stack.getSectionInterval(section);
+      lang = storage.getLanguage();
+      plan = storage.getPlan(lang);
       minIndex = sectionInterval['min'] + 1;
-      maxIndex = sectionInterval['max'] + 1;
+      maxIndex = Math.min(sectionInterval['max'] + 1, plan.length);
       s = "Cards " + minIndex + " through " + maxIndex;
       if (section === 1) {
         $('.overview-page .arrow-btn-left').hide();
         $('.overview-page .arrow-btn-right').show();
-      } else if (section === 10) {
+      } else if (section === _nPages) {
         $('.overview-page .arrow-btn-left').show();
         $('.overview-page .arrow-btn-right').hide();
       } else {

@@ -184,6 +184,7 @@ ho:
 hr:
     name: Croatian
     nativeName: hrvatski
+    wiktionaryName: Serbo-Croatian
 ht:
     name: Haitian; Haitian Creole
     nativeName: Kreyòl ayisyen
@@ -471,6 +472,7 @@ sq:
 sr:
     name: Serbian
     nativeName: српски језик
+    wiktionaryName: Serbo-Croatian
 ss:
     name: Swati
     nativeName: SiSwati

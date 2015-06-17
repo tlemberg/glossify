@@ -7,6 +7,8 @@ import yaml
 # Connect to the DB
 db = dbutils.DBConnect()
 
+
+
 yaml_file = os.path.join(os.environ['PROJECT_HOME'], 'web/permissions.yaml')
 permissions_hash = yaml.load(open(yaml_file, 'r'))
 

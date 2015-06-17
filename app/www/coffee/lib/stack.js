@@ -39,26 +39,28 @@
       boxes = [];
       for (boxIndex = i = 0, ref = nBoxes - 1; 0 <= ref ? i <= ref : i >= ref; boxIndex = 0 <= ref ? ++i : --i) {
         phraseIds = _getPhraseIds(plan, section, boxIndex, lang);
-        samplePhraseIds = phraseIds.slice(0, 4);
-        console.log(Object.keys(dictionary['dictionary']).length);
-        console.log(samplePhraseIds);
-        sampleWords = (function() {
-          var j, len, results;
-          results = [];
-          for (j = 0, len = samplePhraseIds.length; j < len; j++) {
-            phraseId = samplePhraseIds[j];
-            results.push(dictionary['dictionary'][phraseId]['base']);
-          }
-          return results;
-        })();
-        sample = sampleWords.join(', ') + "...";
-        percent = _getProgressPercentage(phraseIds);
-        box = {
-          sample: sample,
-          index: boxIndex,
-          percent: percent
-        };
-        boxes.push(box);
+        if (phraseIds.length > 0) {
+          samplePhraseIds = phraseIds.slice(0, 4);
+          console.log(Object.keys(dictionary['dictionary']).length);
+          console.log(samplePhraseIds);
+          sampleWords = (function() {
+            var j, len, results;
+            results = [];
+            for (j = 0, len = samplePhraseIds.length; j < len; j++) {
+              phraseId = samplePhraseIds[j];
+              results.push(dictionary['dictionary'][phraseId]['base']);
+            }
+            return results;
+          })();
+          sample = sampleWords.join(', ') + "...";
+          percent = _getProgressPercentage(phraseIds);
+          box = {
+            sample: sample,
+            index: boxIndex,
+            percent: percent
+          };
+          boxes.push(box);
+        }
       }
       return boxes;
     };
