@@ -1,5 +1,5 @@
 ################################################################################
-# Setup
+# Overview
 ################################################################################
 
 The goal of the project is to teach vocabulary in any world language to reach
@@ -24,6 +24,10 @@ web/scripts/scraper
 	The scraper. Reads massive wikipedia dump files, fills out MongoDB
 	collections, indexes the database, defines words, sorts by frequency, and
 	compiles dictionaries.
+
+web/scripts/auth
+
+	User access management scripts.
 
 web/pylib
 
