@@ -223,7 +223,7 @@ define ['utils', 'storage', 'nav', 'strings', 'config'], (utils, storage, nav, s
 			success  : (json) ->
 				_nav.hideModal()
 				if json['success']
-					storage.clearCardUpdates()
+					storage.clearProgressUpdates()
 				handler(json)
 			error    : (jqXHR, textStatus, thownError) ->
 				_nav.showModal(strings.getString("ajaxError"), "alert")
@@ -252,7 +252,7 @@ define ['utils', 'storage', 'nav', 'strings', 'config'], (utils, storage, nav, s
 			success  : (json) ->
 				_nav.hideModal()
 				if json['success']
-					storage.setProgress(lang, json['result'])
+					storage.setProgressObject(lang, json['result']['progress'])
 				handler(json)
 			error    : (jqXHR, textStatus, thownError) ->
 				_nav.showModal(strings.getString("ajaxError"), "alert")

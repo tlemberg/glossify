@@ -21,8 +21,17 @@ args = parser.parse_args()
 db = dbutils.DBConnect()
 coll = db["phrases_%s" % args.lang]
 
+restrictions = {
+	'txs': {'$exists': 1 },
+}
+include_pron = args.lang in ['he', 'zh']
+if include_pron:
+	restrictions['pron'] = { '$exists': 1 }
+if args.lang == 'zh':
+	restrictions['trad'] = { '$exists': 0 }
+
 cursor = coll.find(
-	{ },
+	restrictions,
 	{
 		"_id" : 1,
 		"lang": 1,
@@ -47,7 +56,7 @@ for phrase in l:
 			'txs' : new_txs,
 			'_id': str(phrase['_id']),
 		}
-		if 'pron' in phrase:
+		if include_pron:
 			to_append['pron'] = phrase['pron']
 
 		if new_txs != {}:

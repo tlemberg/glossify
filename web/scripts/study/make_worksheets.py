@@ -42,6 +42,33 @@ class UnicodeWriter:
 # Connect to the database and get a list of phrases
 db = dbutils.DBConnect()
 
+def get_row_html(phrase):
+	new_txs = scraper.get_viewable_txs(phrase)
+
+	d_chunks = []
+	for t in new_txs.keys():
+		t_chunks = ["%d. %s" % (i+1, new_txs[t][i]) for i in range(0, min(2, len(new_txs[t])))]
+		d_chunks.append("%s => %s" % (t, "  ".join(t_chunks)))
+
+	def_str = ' | '.join(d_chunks)
+	base    = phrase['base']
+	pron    = phrase.get('pron')
+
+	return """
+		<tr>
+			<td>%s</td>
+			<td>%s</td>
+			<td>%s</td>
+		</tr>
+	""" % (base, pron, def_str)
+
+
+
+rows_html  = [get_row_html(phrase) for phrase in cursor]
+inner_html = ''.join(rows_html)
+all_html   = "<table>%s</table>" % inner_html
+
+"""
 path = os.path.join(os.environ['PROJECT_HOME'], "web/templates/worksheets/zh.csv")
 out_file = open(path, 'w')
 writer = UnicodeWriter(out_file,quoting=csv.QUOTE_ALL)
@@ -67,3 +94,4 @@ for phrase in cursor:
 		row = [phrase['base'], '', def_str]
 
 	writer.writerow(row)
+"""

@@ -103,5 +103,4 @@ def write_section(language_key, base, text):
 
 
 if __name__ == "__main__":
-
 	Main()

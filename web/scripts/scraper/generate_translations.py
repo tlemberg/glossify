@@ -182,18 +182,22 @@ def get_translations(lines):
 
 		m = re.search(r'^# \{\{context\|(.*?)\|lang', line)
 		if m:
-			########################
-			# Pattern 2:
-			# [[a]], [[b]], [[c]]
-			########################
-			m2 = re.findall(r'\[\[(.*?)\]\]', line)
-			if m2:
-				for s in m2:
-					if args.lang == 'zh' and re.search('Chinese|Mandarin', m.group(1)):
-						strings.append("%s" % (f6(s)))
-					else:
-						strings.append("%s (%s)" % (f6(s), f6(m.group(1))))
+			context = f6(m.group(1))
+			if context == 'archaic':
 				continue
+			else:
+				########################
+				# Pattern 2:
+				# [[a]], [[b]], [[c]]
+				########################
+				m2 = re.findall(r'\[\[(.*?)\]\]', line)
+				if m2:
+					for s in m2:
+						if args.lang == 'zh' and re.search('Chinese|Mandarin', m.group(1)):
+							strings.append("%s" % (f6(s)))
+						else:
+							strings.append("%s (%s)" % (f6(s), context))
+					continue
 
 		m = re.search(r'^# (.*)$|^## (.*)$|^#\{\{(.*)$|^#\[\[(.*)$|^\* (.*)$', line)
 		if m:

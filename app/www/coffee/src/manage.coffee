@@ -27,8 +27,6 @@ define ['storage', 'api', 'strings'], (storage, api, strings) ->
 			langs  : langs
 			options: options
 
-		console.log(templateArgs)
-
 		$(".manage-page").html(template(templateArgs))
 
 		$('.manage-page .box').click (event) ->
@@ -60,9 +58,7 @@ define ['storage', 'api', 'strings'], (storage, api, strings) ->
 			_nav.loadPage('login')
 
 		$('.manage-page .add-language-btn').click (event) ->
-			console.log("go")
 			langCode = $('.manage-page .add-language-select').val()
-			console.log(langCode)
 			api.addLanguage langCode, (json) ->
 				if json['success']
 					_loadPage(_template)

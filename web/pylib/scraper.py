@@ -198,7 +198,7 @@ def get_iso_codes_hash():
 #
 ################################################################################
 def get_viewable_txs(phrase):
-	priority = sorted(phrase['txs'].keys(), key = lambda t: len(phrase['txs'][t]))
+	priority = sorted(phrase['txs'].keys(), key = lambda t: len(phrase['txs'][t]), reverse=True)
 	new_txs = {}
 	for k in priority[:2]:
 		v = phrase['txs'][k]

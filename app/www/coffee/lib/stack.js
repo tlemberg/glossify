@@ -27,22 +27,16 @@
       var maxIndex, minIndex;
       minIndex = minIndex = (section - 1) * SECTION_SIZE + boxIndex * boxSize;
       maxIndex = minIndex + boxSize;
-      console.log(minIndex);
-      console.log(maxIndex);
-      console.log("-----");
-      console.log(plan.slice(minIndex, maxIndex));
       return plan.slice(minIndex, maxIndex);
     };
     _getBoxes = function(plan, dictionary, section, lang, cardsPerBox) {
-      var box, boxIndex, boxes, i, nBoxes, percent, phraseId, phraseIds, ref, sample, samplePhraseIds, sampleWords;
+      var box, boxIndex, boxes, i, includePron, nBoxes, percentDefs, percentPron, phraseId, phraseIds, ref, sample, samplePhraseIds, sampleWords;
       nBoxes = SECTION_SIZE / cardsPerBox;
       boxes = [];
       for (boxIndex = i = 0, ref = nBoxes - 1; 0 <= ref ? i <= ref : i >= ref; boxIndex = 0 <= ref ? ++i : --i) {
         phraseIds = _getPhraseIds(plan, section, boxIndex, lang);
         if (phraseIds.length > 0) {
           samplePhraseIds = phraseIds.slice(0, 4);
-          console.log(Object.keys(dictionary['dictionary']).length);
-          console.log(samplePhraseIds);
           sampleWords = (function() {
             var j, len, results;
             results = [];
@@ -53,24 +47,31 @@
             return results;
           })();
           sample = sampleWords.join(', ') + "...";
-          percent = _getProgressPercentage(phraseIds);
+          percentDefs = _getProgressPercentage(phraseIds, 'defs');
+          percentPron = _getProgressPercentage(phraseIds, 'pron');
+          includePron = void 0;
+          if (lang === 'he' || lang === 'zh') {
+            includePron = 1;
+          }
           box = {
             sample: sample,
             index: boxIndex,
-            percent: percent
+            percentDefs: percentDefs,
+            percentPron: percentPron,
+            includePron: includePron
           };
           boxes.push(box);
         }
       }
       return boxes;
     };
-    _getProgressPercentage = function(phraseIds) {
+    _getProgressPercentage = function(phraseIds, studyMode) {
       var i, len, maxProgress, phraseId, totalProgress;
       maxProgress = 5 * phraseIds.length;
       totalProgress = 0;
       for (i = 0, len = phraseIds.length; i < len; i++) {
         phraseId = phraseIds[i];
-        totalProgress += storage.getProgress(phraseId);
+        totalProgress += storage.getProgress(phraseId, studyMode);
       }
       return Math.floor(totalProgress / maxProgress * 100);
     };

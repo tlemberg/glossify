@@ -136,9 +136,12 @@ define [
 		# Register events
 		$(".box-list-container .box-div").off('click')
 		$(".box-list-#{section} .box-div").click (event) ->
-			index = $(this).data('index')
-			storage.setBox(index)
+			storage.setBox($(this).data('index'))
+			_nav.loadPage('study')
 
+		$(".box-list-#{section} .small-btn").click (event) ->
+			storage.setBox($(this).data('index'))
+			storage.setStudyMode($(this).data('study-mode'))
 			_nav.loadPage('study')
 
 		if transition

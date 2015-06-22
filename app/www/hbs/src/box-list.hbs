@@ -2,14 +2,19 @@
 	{{#each boxes}}
 		<li>
 			<div class="box-div" data-index="{{index}}">
-				<div class="box-group-left">
+				<div class="box-group-1">
 					<div class="box-group-left-content">
 						{{sample}}
 					</div>
 				</div>
-				<div class="box-group-right">
+				<div class="box-group-4">
 					<div class="box-group-right-content">
-						{{percent}}%
+						{{#if includePron}}
+							Definitions: {{percentDefs}}%
+							Pronunciation: {{percentPron}}%
+						{{else}}
+							{{percentDefs}}%
+						{{/if}}
 					</div>
 				</div>
 			</div>

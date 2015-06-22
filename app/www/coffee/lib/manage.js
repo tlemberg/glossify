@@ -43,7 +43,6 @@
         langs: langs,
         options: options
       };
-      console.log(templateArgs);
       $(".manage-page").html(template(templateArgs));
       $('.manage-page .box').click(function(event) {
         var langCode;
@@ -76,9 +75,7 @@
       });
       return $('.manage-page .add-language-btn').click(function(event) {
         var langCode;
-        console.log("go");
         langCode = $('.manage-page .add-language-select').val();
-        console.log(langCode);
         return api.addLanguage(langCode, function(json) {
           if (json['success']) {
             _loadPage(_template);

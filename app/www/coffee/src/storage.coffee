@@ -13,7 +13,9 @@ define ['utils'], (utils) ->
 	SECTION_KEY      = 'section'
 	BOX_KEY          = 'box'
 	PROGRESS_KEY     = 'progress'
-	PROGRESS_UPDATES_KEY = 'card_updates'
+	STUDY_MODE_KEY   = 'study_mode'
+	STUDY_ORDER_KEY  = 'study_order'
+	PROGRESS_UPDATES_KEY  = 'card_updates'
 	ACCOUNT_CONFIRMED_KEY = 'account_confirmed'
 
 
@@ -44,6 +46,8 @@ define ['utils'], (utils) ->
 		_removeLocalStorageItem(LANGUAGE_KEY)
 		_removeLocalStorageItem(SECTION_KEY)
 		_removeLocalStorageItem(BOX_KEY)
+		_removeLocalStorageItem(STUDY_MODE_KEY)
+		_removeLocalStorageItem(STUDY_ORDER_KEY)
 
 		constants = require('constants')
 
@@ -119,6 +123,22 @@ define ['utils'], (utils) ->
 		_setLocalStorageItem(BOX_KEY, v)
 
 
+	_getStudyMode = ->
+		_getLocalStorageItem(STUDY_MODE_KEY)
+
+
+	_setStudyMode = (v) ->
+		_setLocalStorageItem(STUDY_MODE_KEY, v)
+
+
+	_getStudyOrder= ->
+		_getLocalStorageItem(STUDY_ORDER_KEY)
+
+
+	_setStudyOrder = (v) ->
+		_setLocalStorageItem(STUDY_ORDER_KEY, v)
+
+
 	_getAccountConfirmed = ->
 		_getLocalStorageItem(ACCOUNT_CONFIRMED_KEY)
 
@@ -128,39 +148,57 @@ define ['utils'], (utils) ->
 
 
 	_clearProgressUpdates = ->
-		_setLocalStorageItem(PROGRESS_UPDATES_KEY, {})
+		lang = _getLanguage()
+		_removeLocalStorageItem("progress_updates_#{ lang }")
 
 
 	_getProgressUpdates = ->
-		_getLocalStorageItem(PROGRESS_UPDATES_KEY)
+		lang = _getLanguage()
+		_getLocalStorageItem("progress_updates_#{ lang }")
 
 
-	_addProgressUpdate = (phraseId, progressValue) ->
+	_addProgressUpdate = (phraseId, progressValue, studyMode) ->
+
+		lang = _getLanguage()
+		studyMode ?= 'defs'
 
 		# Get the progressUpdates hash, defaulting to an empty hash
 		progressUpdates = _getProgressUpdates()
 		if !progressUpdates?
-			progressUpdates = {}
+			progressUpdates = {
+				'defs': {},
+				'pron': {},
+			}
 
 		# Modify the hash
-		progressUpdates[phraseId] = progressValue
+		progressUpdates[studyMode][phraseId] = progressValue
 
 		# Store the modified value locally
-		_setLocalStorageItem(PROGRESS_UPDATES_KEY, progressUpdates)
+		_setLocalStorageItem("progress_updates_#{ lang }", progressUpdates)
 
 
-	_getProgress = (phraseId) ->
+	_setProgressObject = (lang, v) ->
+		_setLocalStorageItem("progress_#{ lang }", v)
+
+
+	_getProgress = (phraseId, studyMode) ->
+
+		studyMode ?= 'defs'
+
 		lang = _getLanguage()
 		progress = _getLocalStorageItem("progress_#{ lang }")
-		progress[phraseId] ? 0
+		progress[studyMode][phraseId] ? 0
 
 
-	_setProgress = (phraseId, progressValue) ->
+	_setProgress = (phraseId, progressValue, studyMode) ->
+
+		studyMode ?= 'defs'
+
 		lang = _getLanguage()
 		progress = _getLocalStorageItem("progress_#{ lang }") ? {}
-		progress[phraseId] = progressValue
+		progress[studyMode][phraseId] = progressValue
 		_setLocalStorageItem("progress_#{ lang }", progress)
-		_addProgressUpdate(phraseId, progressValue)
+		_addProgressUpdate(phraseId, progressValue, studyMode)
 
 	_removeProgress = (lang) ->
 		_removeLocalStorageItem("progress_#{ lang }")
@@ -243,6 +281,18 @@ define ['utils'], (utils) ->
 		setBox: (v) ->
 			_setBox(v)
 
+		getStudyMode: ->
+			_getStudyMode()
+
+		setStudyMode: (v) ->
+			_setStudyMode(v)
+
+		getStudyOrder: ->
+			_getStudyOrder()
+
+		setStudyOrder: (v) ->
+			_setStudyOrder(v)
+
 		getAccountConfirmed: ->
 			_getAccountConfirmed()
 
@@ -258,11 +308,14 @@ define ['utils'], (utils) ->
 		addProgressUpdate: (phraseId, progressValue) ->
 			_addProgressUpdate(phraseId, progressValue)
 
-		getProgress: (phraseId) ->
-			_getProgress(phraseId)
+		getProgress: (phraseId, studyMode) ->
+			_getProgress(phraseId, studyMode)
 
-		setProgress: (phraseId, progressValue) ->
-			_setProgress(phraseId, progressValue)
+		setProgress: (phraseId, progressValue, studyMode) ->
+			_setProgress(phraseId, progressValue, studyMode)
+
+		setProgressObject: (lang, v) ->
+			_setProgressObject(lang, v)
 
 		getPlan: (lang) ->
 			_getPlan(lang)

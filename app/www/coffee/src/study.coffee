@@ -18,6 +18,8 @@ define [
 	_isFlipped = false
 	_phrase    = undefined
 	_deck      = undefined
+	_template  = undefined
+	_phraseIds = undefined
 
 
 	############################################################################
@@ -34,6 +36,8 @@ define [
 	############################################################################
 	_loadPage = (template) ->
 
+		_template = template
+
 		# Get local values
 		userProfile = storage.getUserProfile()
 		lang        = storage.getLanguage()
@@ -42,17 +46,29 @@ define [
 		plan        = storage.getPlan(lang)
 		dictionary  = storage.getDictionary(lang)
 
+		studyMode = storage.getStudyMode() ? 'defs'
+		studyOrder = storage.getStudyOrder() ? 'toEnglish'
+		storage.setStudyMode(studyMode)
+		storage.setStudyOrder(studyOrder)
+
 		# Get phrase IDs for the current box
-		phraseIds = stack.getPhraseIds(plan, section, box, lang)
+		_phraseIds = stack.getPhraseIds(plan, section, box, lang)
 
 		# Construct a deck and store is as a module variable
-		_deck = deck.createDeck(phraseIds, dictionary)
+		_deck = deck.createDeck(_phraseIds, dictionary)
 
 		# Draw a phrase to start the deck
 		_phrase = deck.drawPhrase(_deck)
 
 		# Set other properties
 		_isFlipped = false
+
+		# Is this a character-based language?
+		includePron = undefined
+		if lang == 'he' or lang == 'zh'
+			includePron = 1
+
+		constants = require('constants')
 
 		templateArgs =
 			buttons: [
@@ -62,6 +78,8 @@ define [
 				{ progress: 4, text: ""},
 				{ progress: 5, text: "know"},
 			]
+			lang_name: constants.langMap[lang]
+			include_pron: includePron
 
 		$(".study-page").html(template(templateArgs))
 
@@ -79,6 +97,8 @@ define [
 
 		_registerEvents()
 
+		_resetProgress()
+
 
 	############################################################################
 	# _registerEvents
@@ -92,7 +112,7 @@ define [
 		$('.study-page .btn').click (event) ->
 
 			# Update the progress value
-			storage.setProgress(_phrase['_id'], $(this).data('progress'))
+			storage.setProgress(_phrase['_id'], $(this).data('progress'), storage.getStudyMode())
 
 			# Refresh the deck
 			deck.refreshDeck(_deck)
@@ -103,6 +123,49 @@ define [
 			# Refresh the page
 			_isFlipped = false
 			_resetCard()
+			_resetProgress()
+
+		$('.study-page .study-mode-select').change (event) ->
+			studyDescription = $(this).val()
+			if studyDescription == 'phrase-def'
+				studyMode = 'defs'
+				studyOrder = 'toEnglish'
+			else if studyDescription == 'def-phrase'
+				studyMode = 'defs'
+				studyOrder = 'fromEnglish'
+			else if studyDescription == 'phrase-pron'
+				studyMode = 'pron'
+				studyOrder = 'toEnglish'
+			else if studyDescription == 'pron-phrase'
+				studyMode = 'pron'
+				studyOrder = 'fromEnglish'
+			storage.setStudyMode(studyMode)
+			storage.setStudyOrder(studyOrder)
+			_nav.loadPage('study')
+
+
+	############################################################################
+	# _resetProgress
+	#
+	############################################################################
+	_resetProgress = ->
+		for studyMode in ['defs', 'pron']
+			progressHash = {
+				1: 0
+				2: 0
+				3: 0
+				4: 0
+				5: 0
+			}
+			for phraseId in _phraseIds
+				progress = storage.getProgress(phraseId, studyMode)
+				if progress > 0
+					progressHash[progress] += 1
+			for progress in Object.keys(progressHash)
+				count = progressHash[progress]
+				percent = (count / _phraseIds.length * 98) + 2
+				widthStr = utils.withUnit(percent, '%')
+				$(".study-page .progress-box-#{ studyMode } .progress-bar-#{ progress }").css('width', widthStr)
 
 
 	############################################################################
@@ -111,16 +174,65 @@ define [
 	############################################################################
 	_resetCard = ->
 
-		# Set the text to match the card
-		topText = ''
-		if _phrase['pron']?
-			topText = "#{_phrase['base']} (#{_phrase['pron']})"
+		studyMode = storage.getStudyMode()
+		studyOrder = storage.getStudyOrder()
+
+		studyDescription = undefined
+		if studyMode == 'defs'
+			if studyOrder == 'toEnglish'
+				studyDescription = 'phrase-def'
+			else
+				studyDescription = 'def-phrase'
 		else
-			topText = _phrase['base']
-		_setTopText(topText)
+			if studyOrder == 'toEnglish'
+				studyDescription = 'phrase-pron'
+			else
+				studyDescription = 'pron-phrase'
+
+
+		# Set the text to match the card
+		phraseText = ''
+		if studyDescription == 'phrase-def'
+			#if _phrase['pron']?
+			#	phraseText = "#{_phrase['base']} (#{_phrase['pron']})"
+			#else
+			phraseText = _phrase['base']
+		else
+			phraseText = _phrase['base']
+
+		# Get a translation summary and set it in the UI
+		defText = ''
+		if studyDescription == 'phrase-def' or studyDescription == 'def-phrase'
+			defText = _getTxSummary(_phrase['txs'])			
+
+		# Get the pronunciation text
+		pronText = ''
+		if studyDescription == 'phrase-pron' or studyDescription == 'pron-phrase'
+			pronText = _phrase['pron']
+
+		if studyDescription == 'phrase-def' or studyDescription == 'phrase-pron'
+			$('.study-page .card-top-text').addClass('big-font-half')
+			$('.study-page .card-top-text').removeClass('small-font-half')
+			$('.study-page .card-bottom-text').addClass('small-font-half')
+			$('.study-page .card-bottom-text').removeClass('big-font-half')
+		else
+			$('.study-page .card-top-text').addClass('small-font-half')
+			$('.study-page .card-top-text').removeClass('big-font-half')
+			$('.study-page .card-bottom-text').addClass('big-font-half')
+			$('.study-page .card-bottom-text').removeClass('small-font-half')
+
+		# Set the top text
+		if studyDescription == 'phrase-def'
+			_setTopText(phraseText)
+		else if studyDescription == 'def-phrase'
+			_setTopText(defText)
+		else if studyDescription == 'phrase-pron'
+			_setTopText(phraseText)
+		else if studyDescription == 'pron-phrase'
+			_setTopText(pronText)
 
 		# Set the border color to indicate progress
-		progressValue = storage.getProgress(_phrase['_id'])
+		progressValue = storage.getProgress(_phrase['_id'], studyMode)
 		for i in [0..5]
 			$('.study-page .card').removeClass("card-progress-#{ i }")
 		$('.study-page .card').addClass("card-progress-#{ progressValue }")
@@ -129,19 +241,26 @@ define [
 			# Build the flip buton UI and show it
 			_showFlipButton()
 		else
-			# Get a translation summary and set it in the UI
-			txSummary = _getTxSummary(_phrase['txs'])
-			_setBottomText(txSummary)
+			if studyDescription == 'phrase-def'
+				_setBottomText(defText)
+			else if studyDescription == 'def-phrase'
+				_setBottomText(phraseText)
+			else if studyDescription == 'phrase-pron'
+				_setBottomText(pronText)
+			else if studyDescription == 'pron-phrase'
+				_setBottomText(phraseText)
 
 			# Show the appropriate divs
 			_hideFlipButton()
 
 		lang = storage.getLanguage()
+
 		templateArgs =
 			lang: lang
 			base: _phrase['base']
 			"lang_#{lang}": 1
 		$(".wordref-menu").html(wordrefTemplate(templateArgs))
+		$(".study-page .study-mode-select").val(studyDescription)
 
 
 	############################################################################
@@ -230,14 +349,15 @@ define [
 	_setStudyFooterCss = ->
 
 		cardHeight = utils.windowHeight() - 200
-		cardWidth  = Math.min(cardHeight / CARD_ASPECT, utils.windowWidth() - 60)
+		#cardWidth  = Math.min(cardHeight / CARD_ASPECT, utils.windowWidth() - 60)
+		cardWidth = utils.stripNumeric($('.study-page .card').css('width'))
 
-		$('.study-page .card-container').css('width', cardWidth);
+		#$('.study-page .card-container').css('width', cardWidth);
 
 		#$('.study-page .card').css('width', cardWidth)
 		$('.study-page .card').css('height', cardHeight)
 
-		btnWidth = (cardWidth - 60) / 5
+		btnWidth = (cardWidth - 60 - 6) / 5
 
 		# Set the tile width and heights
 		$('.study-page .btn').css('width', btnWidth)

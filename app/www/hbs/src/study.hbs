@@ -1,37 +1,68 @@
 <div class="content">
 
 	<div class="group-left">
-	</div>
-
-	<div class="group-middle">
-		<div class="card-container">
-
-			<div class="card">
-				<div class="card-half card-top">
-					<div class="card-top-text"></div>
+		<div class="section-title">
+			Translation Progress
+		</div>
+		<div class="progress-box progress-box-defs">
+			{{#each buttons}}
+				<div class="progress-bar progress-bar-{{progress}}" data-progress="{{progress}}">
 				</div>
-				<div class="card-half card-bottom">
-					<div class="card-bottom-text"></div>
-				</div>
+			{{/each}}
+		</div>
+		{{#if include_pron}}
+			<div class="section-title section-title-not-first">
+				Pronunciation Progress
 			</div>
-
-			<div class="flip-btn">
-				<div class="flip-btn-text">reveal answer</div>
-			</div>
-
-			<div class="btn-container">
+			<div class="progress-box progress-box-pron">
 				{{#each buttons}}
-					<div class='btn btn-{{progress}}' data-progress="{{progress}}">
-						<div class='btn-text'>{{text}}</div>
+					<div class="progress-bar progress-bar-{{progress}}" data-progress="{{progress}}">
 					</div>
 				{{/each}}
 			</div>
+		{{/if}}
+	</div>
 
+	<div class="group-middle">
+		<div class="card">
+			<div class="card-half card-top">
+				<div class="card-top-text"></div>
+			</div>
+			<div class="card-half card-bottom">
+				<div class="card-bottom-text"></div>
+			</div>
+		</div>
+
+		<div class="flip-btn">
+			<div class="flip-btn-text">reveal answer</div>
+		</div>
+
+		<div class="btn-container">
+			{{#each buttons}}
+				<div class='btn btn-{{progress}}' data-progress="{{progress}}">
+					<div class='btn-text'>{{text}}</div>
+				</div>
+			{{/each}}
 		</div>
 	</div>
 
 	<div class="group-right">
 		<div class="wordref-menu">
+		</div>
+
+		<div class="section-title section-title-not-first">
+			Study Options
+		</div>
+
+		<div class="add-language-inputs">
+			<select class="study-mode-select">
+				<option value="phrase-def">{{lang_name}} to English</option>
+				<option value="def-phrase">English to {{lang_name}}</option>
+				{{#if include_pron}}
+					<option value="phrase-pron">{{lang_name}} to pronunciation</option>
+					<option value="pron-phrase">pronunciation to {{lang_name}}</option>
+				{{/if}}
+			</select>
 		</div>
 	</div>
 

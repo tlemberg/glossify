@@ -42,12 +42,6 @@ define ['utils', 'storage'], (utils, storage) ->
 		minIndex = minIndex = (section - 1) * SECTION_SIZE + boxIndex * boxSize
 		maxIndex = minIndex + boxSize
 
-		console.log(minIndex)
-		console.log(maxIndex)
-		console.log("-----")
-
-		console.log(plan.slice(minIndex, maxIndex))
-
 		plan.slice(minIndex, maxIndex)
 
 
@@ -66,17 +60,22 @@ define ['utils', 'storage'], (utils, storage) ->
 			if phraseIds.length > 0
 
 				samplePhraseIds = phraseIds[0..3]
-				console.log(Object.keys(dictionary['dictionary']).length)
-				console.log(samplePhraseIds)
 				sampleWords = (dictionary['dictionary'][phraseId]['base'] for phraseId in samplePhraseIds)
 				sample = sampleWords.join(', ') + "..."
 
-				percent = _getProgressPercentage(phraseIds)
+				percentDefs = _getProgressPercentage(phraseIds, 'defs')
+				percentPron = _getProgressPercentage(phraseIds, 'pron')
+
+				includePron = undefined
+				if lang == 'he' or lang == 'zh'
+					includePron = 1
 
 				box =
 					sample : sample
 					index  : boxIndex
-					percent: percent
+					percentDefs: percentDefs
+					percentPron: percentPron
+					includePron: includePron
 
 				boxes.push(box)
 
@@ -87,14 +86,14 @@ define ['utils', 'storage'], (utils, storage) ->
 	# _getProgressPercentage
 	#
 	############################################################################
-	_getProgressPercentage = (phraseIds) ->
+	_getProgressPercentage = (phraseIds, studyMode) ->
 
 		maxProgress = 5 * phraseIds.length
 
 		# Compute the total progress
 		totalProgress = 0
 		for phraseId in phraseIds
-			totalProgress += storage.getProgress(phraseId)
+			totalProgress += storage.getProgress(phraseId, studyMode)
 
 		Math.floor(totalProgress / maxProgress * 100)
 			

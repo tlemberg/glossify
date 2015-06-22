@@ -151,7 +151,10 @@ def get_progress():
 		user_progress = {
 			'email'   : email,
 			'lang'	: lang,
-			'progress': {},
+			'progress': {
+				'defs': { },
+				'pron': { },
+			},
 		}
 		mongo.db.user_progress.insert(user_progress)
 
@@ -169,6 +172,8 @@ def get_progress():
 @app.appconfig.app_instance.route('/api/update-progress', methods=['POST'])
 def update_progress():
 
+	print "VERIFYING"
+
 	# Authenticate the user
 	user_profile = verify_auth_token()
 	if user_profile is None:
@@ -182,7 +187,7 @@ def update_progress():
 
 	try:
 		# Read the parameters
-		card_updates_json = request.form['card_updates']
+		card_updates_json = request.form['progress_updates']
 		lang			  = request.form['lang']
 
 		# Decode JSON parameter
@@ -194,19 +199,18 @@ def update_progress():
 			'error'  : 'invalid parameters',
 		})
 
-	# Get user progress, or initialize an empty progress history if none exists
-	user_progress = mongo.db.user_progress.find_one({ 'email': email, 'lang': lang })
-	if user_progress == None:
-		user_progress = {
-			'email'   : email,
-			'lang'	: lang,
-			'progress': {},
-		}
-		mongo.db.user_progress.insert(user_progress)
+	print card_updates
 
-	# Iterate over the phrase ids and the new progress values, altering values
-	for phrase_id, progress in card_updates.iteritems():
-		user_progress['progress'][phrase_id] = progress
+	if card_updates != {}:
+
+		# Get user progress, or initialize an empty progress history if none exists
+		user_progress = mongo.db.user_progress.find_one({ 'email': email, 'lang': lang })
+
+		for studyMode in card_updates.keys():
+
+			# Iterate over the phrase ids and the new progress values, altering values
+			for phrase_id, progress in card_updates[studyMode].iteritems():
+				user_progress['progress'][studyMode][phrase_id] = progress
 
 	# Perform the upsert
 	mongo.db.user_progress.update(

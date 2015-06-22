@@ -195,7 +195,7 @@
         success: function(json) {
           _nav.hideModal();
           if (json['success']) {
-            storage.clearCardUpdates();
+            storage.clearProgressUpdates();
           }
           return handler(json);
         },
@@ -220,7 +220,7 @@
         success: function(json) {
           _nav.hideModal();
           if (json['success']) {
-            storage.setProgress(lang, json['result']);
+            storage.setProgressObject(lang, json['result']['progress']);
           }
           return handler(json);
         },
