@@ -49,6 +49,13 @@ body {
 }
 
 
+.v-align-wrapper {
+	.vertical-align;
+	display: inline-block;
+	width: 100%;
+}
+
+
 input[type="text"], input[type="password"] {
   padding: 10px;
   border: solid 1px #dcdcdc;
@@ -370,6 +377,15 @@ input[type="password"].focus {
 	margin-top: 15px;
 }
 
+.overview-page .progress-label {
+	margin-bottom: 5px;
+}
+
+.overview-page .progress-label-bottom {
+	margin-bottom: 0px;
+	margin-top: 8px;
+}
+
 .overview-page ul {
 	list-style-type: none;
 }
@@ -414,6 +430,8 @@ input[type="password"].focus {
 .overview-page .interval-text {
 	.vertical-align;
 	display: inline-block;
+	font-size: 20px;
+	font-weight: bold;
 }
 
 .overview-page .arrow-btn-right {
@@ -443,23 +461,45 @@ input[type="password"].focus {
 	border-top-color: #999999;
 	cursor: pointer;
 	display: inline-block;
-	height: 60px;
+	height: 80px;
 }
 
 .overview-page .box-group-1 {
 	float: left;
-	width: 70%;
+	width: 15%;
+	display: inline-block;
+	height: 100%;
+	text-align: left;
+	font-weight: bold;
+}
+
+.overview-page .box-group-1 .level-1 {
+	margin-left: 20px;
+	.vertical-align;
+}
+
+.overview-page .box-group-2 {
+	float: left;
+	width: 55%;
 	display: inline-block;
 	height: 100%;
 	text-align: left;
 }
 
-.overview-page .box-group-4 {
-	float: right;
-	width: 30%;
-	display: inline-block;
+.overview-page .box-group-3 {
+	float: left;
+	width: 10%;
 	height: 100%;
 	text-align: right;
+	display: inline-block;
+}
+
+.overview-page .box-group-4 {
+	float: right;
+	width: 20%;
+	height: 100%;
+	text-align: center;
+	display: inline-block;
 }
 
 .overview-page .small-btn {
@@ -541,18 +581,54 @@ input[type="password"].focus {
 	width: 80%;
 }
 
-.study-page .progress-box {
+.study-page .progress-box,
+.overview-page .progress-box {
 	width: 80%;
 	text-align: left;
 	display: inline-block;
-
 }
 
-.study-page .progress-bar {
+.study-page .progress-level,
+.overview-page .progress-level {
+	width: 100%;
 	height: 20px;
-	width: 0%;
-	background-color: #ff0000;
 	margin-bottom: 5px;
+	display: inline-block;
+	border-radius: 5px;
+	border-style: solid;
+	border-width: 2px;
+	border-color: #ffffff;
+	overflow-x: hidden;
+	overflow-y: hidden;
+	background-color: #cccccc;
+}
+
+.overview-page .progress-level-bottom {
+	margin-bottom: 0px;
+	margin-top: 10px;
+}
+
+.study-page .progress-bar,
+.overview-page .progress-bar {
+	height: 100%;
+	width: 0%;
+	float: left;
+	display: inline-block;
+}
+
+.study-page .pron-btn-group {
+}
+
+.study-page .pron-btn-group-top {
+	margin-top: 10px;
+}
+
+.study-page .progress-counter {
+	height: 100%;
+	width: 20%;
+	float: right;
+	text-align: right;
+	display: inline-block;
 }
 
 .study-page .btn-container {
@@ -569,27 +645,32 @@ input[type="password"].focus {
 }
 
 .study-page .btn-1,
-.study-page .progress-bar-1 {
+.study-page .progress-bar-1,
+.overview-page .progress-bar-1 {
 	background-color: @progressColor1;
 }
 
 .study-page .btn-2,
-.study-page .progress-bar-2 {
+.study-page .progress-bar-2,
+.overview-page .progress-bar-2 {
 	background-color: @progressColor2;
 }
 
 .study-page .btn-3,
-.study-page .progress-bar-3 {
+.study-page .progress-bar-3,
+.overview-page .progress-bar-3 {
 	background-color: @progressColor3;
 }
 
 .study-page .btn-4,
-.study-page .progress-bar-4 {
+.study-page .progress-bar-4,
+.overview-page .progress-bar-4 {
 	background-color: @progressColor4;
 }
 
 .study-page .btn-5,
-.study-page .progress-bar-5 {
+.study-page .progress-bar-5,
+.overview-page .progress-bar-5 {
 	background-color: @progressColor5;
 }
 
@@ -672,9 +753,39 @@ input[type="password"].focus {
 	font-size: 16;
 }
 
+.study-page .card-bottom-content {
+	display: inline-block;
+	width: 100%;
+	.vertical-align;
+}
+
 .study-page .card-bottom-text {
 	display: inline-block;
-	.vertical-align;
+	width: 100%;
+	text-align: center;
+}
+
+.study-page .card-reveal-btn {
+	background-color: @btnColor2;
+	color: @textColor2;
+	width: 200px;
+	display: inline-block;
+	margin-top: 20px;
+	padding-top: 10px;
+	padding-bottom: 8px;
+	border-radius: 7px;
+	cursor: pointer;
+	text-align: center;
+}
+
+.study-page .card-reveal-txt {
+	margin-top: 20px;
+}
+
+.study-page .not-flipped {
+	font-size: 26;
+	font-style: italic;
+	color: #999999;
 }
 
 .study-page .flip-btn {

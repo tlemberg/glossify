@@ -5,20 +5,24 @@
 			Translation Progress
 		</div>
 		<div class="progress-box progress-box-defs">
-			{{#each buttons}}
-				<div class="progress-bar progress-bar-{{progress}}" data-progress="{{progress}}">
-				</div>
-			{{/each}}
+			<div class="progress-level">
+				{{#each buttons}}
+					<div class="progress-bar progress-bar-{{progress}}" data-progress="{{progress}}">
+					</div>
+				{{/each}}
+			</div>
 		</div>
 		{{#if include_pron}}
 			<div class="section-title section-title-not-first">
 				Pronunciation Progress
 			</div>
 			<div class="progress-box progress-box-pron">
-				{{#each buttons}}
-					<div class="progress-bar progress-bar-{{progress}}" data-progress="{{progress}}">
-					</div>
-				{{/each}}
+				<div class="progress-level">
+					{{#each buttons}}
+						<div class="progress-bar progress-bar-{{progress}}" data-progress="{{progress}}">
+						</div>
+					{{/each}}
+				</div>
 			</div>
 		{{/if}}
 	</div>
@@ -29,7 +33,11 @@
 				<div class="card-top-text"></div>
 			</div>
 			<div class="card-half card-bottom">
-				<div class="card-bottom-text"></div>
+				<div class="card-bottom-content">
+					<div class="card-bottom-text"></div>
+					<div class="card-reveal-btn">reveal translation</div>
+					<div class="card-reveal-txt"></div>
+				</div>
 			</div>
 		</div>
 
@@ -54,16 +62,25 @@
 			Study Options
 		</div>
 
-		<div class="add-language-inputs">
-			<select class="study-mode-select">
-				<option value="phrase-def">{{lang_name}} to English</option>
-				<option value="def-phrase">English to {{lang_name}}</option>
-				{{#if include_pron}}
-					<option value="phrase-pron">{{lang_name}} to pronunciation</option>
-					<option value="pron-phrase">pronunciation to {{lang_name}}</option>
-				{{/if}}
-			</select>
+		<div class="pron-btn-group pron-btn-group-top">
+			<a>
+				<div class="facebook-signup-btn change-order-btn">Swap direction</div>
+			</a>
 		</div>
+		{{#if include_pron}}
+			<div class="pron-btn-group">
+				<a>
+					<div class="facebook-signup-btn change-study-mode-btn"></div>
+				</a>
+			</div>
+		{{/if}}
+		{{#if include_pron}}
+			<div class="pron-btn-group">
+				<a>
+					<div class="facebook-signup-btn show-pron-btn"></div>
+				</a>
+			</div>
+		{{/if}}
 	</div>
 
 </div>

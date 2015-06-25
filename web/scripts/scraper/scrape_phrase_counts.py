@@ -125,13 +125,26 @@ def _analyzeText(text, phrasehash) :
 	words = None
 	lRange = None
 	noAscii = False
-	if 'noSpacing' in language_info_hash:
+	noSpacing = False
+	if args.lang in ['zh', 'th', 'ko', 'ja']:
 		words = text
-		lRange = range(1,5)
 		noAscii = True
+		noSpacing = True
 	else:
 		words = text.split(' ')
-		lRange =range(1,3)
+	if args.lang in ['zh', 'th', 'ko', 'ja', 'ar']:
+		noAscii = True
+
+	if args.lang in ['zh']:
+		lRange = range(1, 5)
+	elif args.lang in ['th']:
+		lRange = range(1, 8)
+	elif args.lang in ['ja']:
+		lRange = range(1, 8)
+	elif args.lang in ['ko']:
+		lRange = range(1, 6)
+	else:
+		lRange =range(1, 3)
 	
 	for phraselength in lRange :
 		phrasewords = []
@@ -142,7 +155,7 @@ def _analyzeText(text, phrasehash) :
 			if len(phrasewords) == phraselength:
 				# Construct the phrase by joining words with spaces and polishing it
 				phrase = None
-				if noAscii:
+				if noSpacing:
 					phrase = "".join(phrasewords)
 				else:
 					phrase = " ".join(phrasewords)
@@ -201,6 +214,7 @@ def _InsertWordCounts(phrasehash, pageid) :
 		db.phrase_counts.insert({
 			"lang"  : args.lang,
 			"counts": obj,
+			"pageid": pageid,
 		})
 		t1 = datetime.now()
 		#print "  insert: ", (t1-t0)

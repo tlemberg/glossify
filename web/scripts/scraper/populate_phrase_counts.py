@@ -29,7 +29,7 @@ def main():
 	h = None
 	good_h = []
 	for h in iso_language_hashes:
-		if h['isoCode'] in ['fr']:
+		if h['isoCode'] in ['ja', 'de', 'th', 'ko']:
 			good_h.append(h)
 			
 
@@ -78,6 +78,10 @@ def process_main(iso_language_hash):
 	phrases_script_path = os.path.join(os.environ['PROJECT_HOME'], 'web/scripts/scraper/generate_phrases.py')
 	run_cmd("python %s %s" % (phrases_script_path, iso_code))
 
+	# Add extra words
+	add_sampled_script_path = os.path.join(os.environ['PROJECT_HOME'], 'web/scripts/scraper/add_sampled_phrases.py')
+	run_cmd("python %s %s" % (add_sampled_script_path, iso_code))
+
 	# Find translations
 	translate_script_path = os.path.join(os.environ['PROJECT_HOME'], 'web/scripts/scraper/generate_translations.py')
 	run_cmd("python %s %s" % (translate_script_path, iso_code))
@@ -87,7 +91,7 @@ def process_main(iso_language_hash):
 	run_cmd("python %s %s" % (dictionary_script_path, iso_code))
 
 	# Remove the XML
-	# run_cmd("rm %s" % xml_local_path)
+	run_cmd("rm %s" % xml_local_path)
 
 
 ################################################################################

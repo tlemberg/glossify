@@ -5,7 +5,7 @@
   define(['storage', 'api', 'strings'], function(storage, api, strings) {
     var _loadPage, _nav, _refreshPage, _template, _validLangs;
     _nav = void 0;
-    _validLangs = ['fr', 'es', 'ru', 'he', 'zh', 'is', 'sw'];
+    _validLangs = ['de', 'eo', 'es', 'fr', 'he', 'ru', 'zh'];
     _template = void 0;
     _loadPage = function(template) {
       var code, constants, langs, options, templateArgs, userProfile;

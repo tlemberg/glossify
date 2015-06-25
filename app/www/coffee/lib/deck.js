@@ -32,18 +32,20 @@
       _refreshDeck(deck);
       return deck;
     };
-    _refreshDeck = function(deck) {
+    _refreshDeck = function(deck, studyMode) {
       var a, fn, i, j, k, lang, len, maxPenalty, p, penalty, phrase, pool, poolPhrases, ref, totalPenalty;
       lang = storage.getLanguage();
       totalPenalty = 0;
-      maxPenalty = deck['phraseList'].length;
+      maxPenalty = deck['phraseList'].length * 2;
       poolPhrases = [];
       i = 0;
       while (totalPenalty < maxPenalty) {
-        console.log(totalPenalty);
-        console.log(maxPenalty);
+        if (i >= deck['phraseList'].length) {
+          break;
+        }
         phrase = deck['phraseList'][i];
-        penalty = 6 - storage.getProgress(phrase['_id']);
+        penalty = 6 - storage.getProgress(phrase['_id'], studyMode);
+        penalty = penalty * penalty;
         totalPenalty += penalty;
         if (totalPenalty > maxPenalty) {
           break;
@@ -51,13 +53,12 @@
         poolPhrases.push(phrase);
         i += 1;
       }
-      console.log("POOL");
-      console.log(poolPhrases);
       p = 0;
       pool = {};
       for (j = 0, len = poolPhrases.length; j < len; j++) {
         phrase = poolPhrases[j];
-        penalty = 6 - storage.getProgress(phrase['_id']);
+        penalty = 6 - storage.getProgress(phrase['_id'], studyMode);
+        penalty = penalty * penalty;
         fn = function(a) {
           p += 1;
           return pool[p] = phrase;
@@ -86,8 +87,8 @@
       createDeck: function(phraseIds) {
         return _createDeck(phraseIds);
       },
-      refreshDeck: function(deck) {
-        return _refreshDeck(deck);
+      refreshDeck: function(deck, studyMode) {
+        return _refreshDeck(deck, studyMode);
       },
       drawPhrase: function(deck) {
         return _drawPhrase(deck);

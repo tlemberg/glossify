@@ -44,28 +44,29 @@ define ['utils', 'storage'], (utils, storage) ->
 	# _refreshDeck
 	#
 	############################################################################
-	_refreshDeck = (deck) ->
+	_refreshDeck = (deck, studyMode) ->
 
 		# Get local values
 		lang     = storage.getLanguage()
 
 		# Init list accumulators
 		totalPenalty = 0
-		maxPenalty   = deck['phraseList'].length
+		maxPenalty   = deck['phraseList'].length * 2
 		poolPhrases    = []
 		i            = 0
 
 		# Construct a pool to draw from
 		while totalPenalty < maxPenalty
 
-			console.log(totalPenalty)
-			console.log(maxPenalty)
+			# Exit when all cards in deck
+			if i >= deck['phraseList'].length then break
 
 			# Grab a phrase from the deck
 			phrase = deck['phraseList'][i]
 
 			# Increase the total penalty and exit the loop if it is too great
-			penalty = 6 - storage.getProgress(phrase['_id']) # Penalty ranges from 0 to 5
+			penalty = 6 - storage.getProgress(phrase['_id'], studyMode) # Penalty ranges from 0 to 5
+			penalty = penalty * penalty
 			totalPenalty += penalty
 			if totalPenalty > maxPenalty then break
 
@@ -74,14 +75,12 @@ define ['utils', 'storage'], (utils, storage) ->
 
 			i += 1
 
-		console.log("POOL")
-		console.log(poolPhrases)
-
 		# Convert the pool phrases into a distribution pool
 		p    = 0
 		pool = {}
 		for phrase in poolPhrases
-			penalty = 6 - storage.getProgress(phrase['_id'])
+			penalty = 6 - storage.getProgress(phrase['_id'], studyMode)
+			penalty = penalty * penalty
 			for a in [0..(penalty-1)]
 				do (a) ->
 					p += 1
@@ -97,6 +96,7 @@ define ['utils', 'storage'], (utils, storage) ->
 	#
 	############################################################################
 	_drawPhrase = (deck) ->
+		
 		console.log(deck)
 
 		while not phrase? or phrase in deck['buffer']
@@ -107,6 +107,8 @@ define ['utils', 'storage'], (utils, storage) ->
 		deck['buffer'].push(phrase)
 		if deck['buffer'].length > MAX_BUFFER
 			deck['buffer'].shift()
+
+		
 
 		# Return the phrase
 		phrase
@@ -121,8 +123,8 @@ define ['utils', 'storage'], (utils, storage) ->
 		createDeck: (phraseIds) ->
 			_createDeck(phraseIds)
 
-		refreshDeck: (deck) ->
-			_refreshDeck(deck)
+		refreshDeck: (deck, studyMode) ->
+			_refreshDeck(deck, studyMode)
 		
 		drawPhrase: (deck) ->
 			_drawPhrase(deck)

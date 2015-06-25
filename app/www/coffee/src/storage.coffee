@@ -15,6 +15,7 @@ define ['utils'], (utils) ->
 	PROGRESS_KEY     = 'progress'
 	STUDY_MODE_KEY   = 'study_mode'
 	STUDY_ORDER_KEY  = 'study_order'
+	SHOW_PRON_KEY    = 'show_pron'
 	PROGRESS_UPDATES_KEY  = 'card_updates'
 	ACCOUNT_CONFIRMED_KEY = 'account_confirmed'
 
@@ -137,6 +138,14 @@ define ['utils'], (utils) ->
 
 	_setStudyOrder = (v) ->
 		_setLocalStorageItem(STUDY_ORDER_KEY, v)
+
+
+	_getShowPron = ->
+		_getLocalStorageItem(SHOW_PRON_KEY)
+
+
+	_setShowPron = (v) ->
+		_setLocalStorageItem(SHOW_PRON_KEY, v)
 
 
 	_getAccountConfirmed = ->
@@ -267,6 +276,9 @@ define ['utils'], (utils) ->
 			_getDictionary(lang)
 
 		setDictionary: (lang, v) ->
+			constants = require('constants')
+			for dictLang in Object.keys(constants.langMap)
+				_removeDictionary(dictLang)
 			_setDictionary(lang, v)
 
 		getSection: ->
@@ -292,6 +304,12 @@ define ['utils'], (utils) ->
 
 		setStudyOrder: (v) ->
 			_setStudyOrder(v)
+
+		getShowPron: ->
+			_getShowPron()
+
+		setShowPron: (v) ->
+			_setShowPron(v)
 
 		getAccountConfirmed: ->
 			_getAccountConfirmed()

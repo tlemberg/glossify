@@ -1,7 +1,15 @@
 define ['storage', 'api', 'strings'], (storage, api, strings) ->
 
 	_nav = undefined
-	_validLangs = ['fr', 'es', 'ru', 'he', 'zh', 'is', 'sw']
+	_validLangs = [
+		'de',
+		'eo',
+		'es',
+		'fr',
+		'he',
+		'ru',
+		'zh',
+	]
 	_template = undefined
 
 

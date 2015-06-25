@@ -1,19 +1,44 @@
 <ul>
 	{{#each boxes}}
 		<li>
-			<div class="box-div" data-index="{{index}}">
+			<div class="box-div box-div-{{index}}" data-index="{{index}}">
 				<div class="box-group-1">
+					<div class="level-1">
+						cards {{minCard}}-{{maxCard}}
+					</div>
+				</div>
+				<div class="box-group-2">
 					<div class="box-group-left-content">
 						{{sample}}
 					</div>
 				</div>
+				<div class="box-group-3">
+					<div class="v-align-wrapper">
+						<div class="progress-label">Definitions</div>
+						{{#if include_pron}}
+							<div class="progress-label progress-label-bottom">Pronunciation</div>
+						{{/if}}
+					</div>
+				</div>
 				<div class="box-group-4">
-					<div class="box-group-right-content">
-						{{#if includePron}}
-							Definitions: {{percentDefs}}%
-							Pronunciation: {{percentPron}}%
-						{{else}}
-							{{percentDefs}}%
+					<div class="v-align-wrapper">
+						<div class="progress-box progress-box-defs">
+							<div class="progress-level">
+								{{#each progressLevels}}
+									<div class="progress-bar progress-bar-{{this}}" data-progress="{{this}}">
+									</div>
+								{{/each}}
+							</div>
+						</div>
+						{{#if include_pron}}
+							<div class="progress-box progress-box-pron">
+								<div class="progress-level progress-level-bottom">
+									{{#each progressLevels}}
+										<div class="progress-bar progress-bar-{{this}}" data-progress="{{this}}">
+										</div>
+									{{/each}}
+								</div>
+							</div>
 						{{/if}}
 					</div>
 				</div>

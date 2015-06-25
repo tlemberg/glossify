@@ -118,11 +118,17 @@ define [
 		plan        = storage.getPlan(lang)
 
 		# Construct arguments
+		boxes = stack.getBoxes(plan, dictionary, section, lang, 100)
 		templateArgs =
-			boxes : stack.getBoxes(plan, dictionary, section, lang, 100)
+			boxes : boxes
 
 		# Render template
 		$(".overview-page .box-list-#{section}").html(boxListTemplate(templateArgs))
+
+		# Do the progress bars
+		for box in boxes
+			stack.updateProgressBars("box-div-#{ box.index }", box.phraseIds)
+
 		$(".overview-page .box-list-#{section}").css("width", utils.withUnit(utils.windowWidth(), 'px'))
 
 		$(".overview-page .box-list-container").css("width", utils.withUnit(utils.windowWidth() * 10, 'px'))

@@ -65,7 +65,7 @@
       return $(".overview-page .interval-text").html(s);
     };
     _loadBoxList = function(transition) {
-      var dictionary, lang, matchWidth, plan, section, templateArgs, userProfile;
+      var box, boxes, dictionary, i, lang, len, matchWidth, plan, section, templateArgs, userProfile;
       if (transition == null) {
         transition = true;
       }
@@ -74,10 +74,15 @@
       dictionary = storage.getDictionary(lang);
       section = storage.getSection();
       plan = storage.getPlan(lang);
+      boxes = stack.getBoxes(plan, dictionary, section, lang, 100);
       templateArgs = {
-        boxes: stack.getBoxes(plan, dictionary, section, lang, 100)
+        boxes: boxes
       };
       $(".overview-page .box-list-" + section).html(boxListTemplate(templateArgs));
+      for (i = 0, len = boxes.length; i < len; i++) {
+        box = boxes[i];
+        stack.updateProgressBars("box-div-" + box.index, box.phraseIds);
+      }
       $(".overview-page .box-list-" + section).css("width", utils.withUnit(utils.windowWidth(), 'px'));
       $(".overview-page .box-list-container").css("width", utils.withUnit(utils.windowWidth() * 10, 'px'));
       matchWidth = $(".overview-page .box-list-" + section).css("width");

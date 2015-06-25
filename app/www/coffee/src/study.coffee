@@ -6,8 +6,9 @@ define [
 	'deck',
 	'pageview',
 	'api',
+	'constants',
 	'hbs!../../hbs/src/wordref',
-], (utils, stack, storage, nav, deck, pageview, api, wordrefTemplate) ->
+], (utils, stack, storage, nav, deck, pageview, api, constants, wordrefTemplate) ->
 
 
 	############################################################################
@@ -58,7 +59,7 @@ define [
 		_deck = deck.createDeck(_phraseIds, dictionary)
 
 		# Draw a phrase to start the deck
-		_phrase = deck.drawPhrase(_deck)
+		_phrase = deck.drawPhrase(_deck, studyMode)
 
 		# Set other properties
 		_isFlipped = false
@@ -98,6 +99,26 @@ define [
 		_registerEvents()
 
 		_resetProgress()
+		_updateConsole()
+
+
+	############################################################################
+	# _updateConsole
+	#
+	############################################################################
+	_updateConsole = ->
+		showPron = storage.getShowPron()
+		if showPron
+			$('.study-page .show-pron-btn').html('Hide pronunciation')
+		else
+			$('.study-page .show-pron-btn').html('Show pronunciation')
+		studyMode = storage.getStudyMode()
+		if studyMode == 'defs'
+			$('.study-page .show-pron-btn').show()
+			$('.study-page .change-study-mode-btn').html('Study pronunciation')
+		else
+			$('.study-page .show-pron-btn').hide()
+			$('.study-page .change-study-mode-btn').html('Study definitions')
 
 
 	############################################################################
@@ -105,6 +126,16 @@ define [
 	#
 	############################################################################
 	_registerEvents = ->
+		$('.study-page .show-pron-btn').click (event) ->
+			showPron = storage.getShowPron()
+			if showPron
+				showPron = false
+			else
+				showPron = true
+			storage.setShowPron(showPron)
+			_updateConsole()
+			_resetCard()
+
 		$('.study-page .flip-btn').click (event) ->
 			_isFlipped = true
 			_resetCard()
@@ -115,7 +146,8 @@ define [
 			storage.setProgress(_phrase['_id'], $(this).data('progress'), storage.getStudyMode())
 
 			# Refresh the deck
-			deck.refreshDeck(_deck)
+			studyMode = storage.getStudyMode()
+			deck.refreshDeck(_deck, studyMode)
 
 			# Draw a new card
 			_phrase = deck.drawPhrase(_deck)
@@ -125,23 +157,29 @@ define [
 			_resetCard()
 			_resetProgress()
 
-		$('.study-page .study-mode-select').change (event) ->
-			studyDescription = $(this).val()
-			if studyDescription == 'phrase-def'
-				studyMode = 'defs'
-				studyOrder = 'toEnglish'
-			else if studyDescription == 'def-phrase'
-				studyMode = 'defs'
+		$('.change-order-btn').click (event) ->
+			studyOrder = storage.getStudyOrder()
+			if studyOrder == 'toEnglish'
 				studyOrder = 'fromEnglish'
-			else if studyDescription == 'phrase-pron'
-				studyMode = 'pron'
+			else
 				studyOrder = 'toEnglish'
-			else if studyDescription == 'pron-phrase'
-				studyMode = 'pron'
-				studyOrder = 'fromEnglish'
-			storage.setStudyMode(studyMode)
 			storage.setStudyOrder(studyOrder)
-			_nav.loadPage('study')
+			_resetCard()
+			_updateConsole()
+
+		$('.change-study-mode-btn').click (event) ->
+			studyMode = storage.getStudyMode()
+			if studyMode == 'defs'
+				studyMode = 'pron'
+			else
+				studyMode = 'defs'
+			storage.setStudyMode(studyMode)
+			_resetCard()
+			_updateConsole()
+
+		$('.study-page .card-reveal-btn').click (event) ->
+			$('.study-page .card-reveal-txt').show()
+			$('.study-page .card-reveal-btn').hide()
 
 
 	############################################################################
@@ -149,23 +187,7 @@ define [
 	#
 	############################################################################
 	_resetProgress = ->
-		for studyMode in ['defs', 'pron']
-			progressHash = {
-				1: 0
-				2: 0
-				3: 0
-				4: 0
-				5: 0
-			}
-			for phraseId in _phraseIds
-				progress = storage.getProgress(phraseId, studyMode)
-				if progress > 0
-					progressHash[progress] += 1
-			for progress in Object.keys(progressHash)
-				count = progressHash[progress]
-				percent = (count / _phraseIds.length * 98) + 2
-				widthStr = utils.withUnit(percent, '%')
-				$(".study-page .progress-box-#{ studyMode } .progress-bar-#{ progress }").css('width', widthStr)
+		stack.updateProgressBars('study-page', _phraseIds)
 
 
 	############################################################################
@@ -189,21 +211,26 @@ define [
 			else
 				studyDescription = 'pron-phrase'
 
-
 		# Set the text to match the card
 		phraseText = ''
 		if studyDescription == 'phrase-def'
-			#if _phrase['pron']?
-			#	phraseText = "#{_phrase['base']} (#{_phrase['pron']})"
-			#else
-			phraseText = _phrase['base']
+			if storage.getShowPron() and _phrase['pron']?
+				phraseText = "#{_phrase['base']} (#{_phrase['pron']})"
+			else
+				phraseText = _phrase['base']
 		else
 			phraseText = _phrase['base']
 
 		# Get a translation summary and set it in the UI
-		defText = ''
-		if studyDescription == 'phrase-def' or studyDescription == 'def-phrase'
-			defText = _getTxSummary(_phrase['txs'])			
+		defText = _getTxSummary(_phrase['txs'])		
+
+		$('.study-page .card-reveal-txt').html(defText)
+		if _isFlipped and studyMode == 'pron' and studyOrder == 'toEnglish'
+			$('.study-page .card-reveal-btn').show()
+			$('.study-page .card-reveal-txt').hide()
+		else
+			$('.study-page .card-reveal-btn').hide()
+			$('.study-page .card-reveal-txt').hide()
 
 		# Get the pronunciation text
 		pronText = ''
@@ -293,8 +320,28 @@ define [
 	############################################################################
 	_showFlipButton = ->
 		$('.study-page .flip-btn').show()
-		$('.study-page .card-bottom-text').hide()
 		$('.study-page .btn-container').hide()
+
+		$('.study-page .card-bottom-text').addClass('not-flipped')
+
+		studyMode = storage.getStudyMode()
+		studyOrder = storage.getStudyOrder()
+		if studyMode == 'defs'
+			if studyOrder == 'toEnglish'
+				_setBottomText('in English?')
+			else
+				langName = constants.langMap[storage.getLanguage()]
+				_setBottomText("in #{langName}?")
+		else
+			if studyOrder == 'toEnglish'
+				_setBottomText('pronunciation?')
+			else
+				langName = constants.langMap[storage.getLanguage()]
+				_setBottomText("in #{langName}?")
+
+		$('.study-page .card-reveal-btn').hide()
+		$('.study-page .card-reveal-txt').hide()
+		
 
 
 	############################################################################
@@ -303,8 +350,14 @@ define [
 	############################################################################
 	_hideFlipButton = ->
 		$('.study-page .flip-btn').hide()
-		$('.study-page .card-bottom-text').show()
 		$('.study-page .btn-container').show()
+		$('.study-page .card-bottom-text').removeClass('not-flipped')
+
+		studyMode = storage.getStudyMode()
+		studyOrder = storage.getStudyOrder()
+
+		if studyMode == 'pron' and studyOrder == 'toEnglish'
+			$('.study-page .card-reveal-btn').show()
 
 
 	############################################################################
