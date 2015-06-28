@@ -1,0 +1,4 @@
+rm -rf $PROJECT_HOME/mobile/glossify/www/*
+cp -rf $PROJECT_HOME/app/www/* $PROJECT_HOME/mobile/glossify/www/
+cd $PROJECT_HOME/mobile/glossify
+phonegap compile ios

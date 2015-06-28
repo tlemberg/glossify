@@ -29,7 +29,7 @@ def main():
 	h = None
 	good_h = []
 	for h in iso_language_hashes:
-		if h['isoCode'] in ['ja', 'de', 'th', 'ko']:
+		if h['isoCode'] in ['cy']:
 			good_h.append(h)
 			
 

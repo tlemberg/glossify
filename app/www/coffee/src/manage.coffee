@@ -2,6 +2,7 @@ define ['storage', 'api', 'strings'], (storage, api, strings) ->
 
 	_nav = undefined
 	_validLangs = [
+		'cy',
 		'de',
 		'eo',
 		'es',
