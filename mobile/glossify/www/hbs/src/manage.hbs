@@ -1,0 +1,27 @@
+{{#each langs}}
+	<div class="box" data-lang-code="{{this.code}}">
+		<div class="box-content">
+			{{this.name}}
+		</div>
+	</div>
+{{/each}}
+
+<div class="add-language-header">
+	Add language
+</div>
+
+<div class="add-language-inputs">
+	<select class="add-language-select">
+		{{#each options}}
+			<option value="{{this.code}}">{{this.name}}</option>
+		{{/each}}
+	</select>
+</div>
+
+<div class="add-language-btns">
+	<a>
+		<div class="facebook-signup-btn add-language-btn">
+			Add
+		</div>
+	</a>
+</div>

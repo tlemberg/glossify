@@ -1,0 +1,44 @@
+<div class="content">
+
+	<div class="content-meta-group">
+
+		{{#if lockdown}}
+			<div class="content-group-1">
+				Request access to glossify.net
+			</div>
+
+			<div class="content-group-2">
+				We are currently testing our app. Use your email to reach out to us if you are interested in becoming a tester.
+			</div>
+		{{else}}
+			<div class="content-group-1">
+				Create an account
+			</div>
+
+			<div class="content-group-2">
+				Enter your email and create a password
+			</div>
+		{{/if}}
+
+		<div class="content-group-3">
+			<div class='error'></div>
+			<div><input class="email-input" type="text" placeholder="email"/></div>
+			{{#if lockdown}}
+				<a>
+					<div class="facebook-signup-btn signup-btn">
+						Request an account
+					</div>
+				</a>
+			{{else}}
+				<div><input class="password-input-1" type="password" placeholder="password"/></div>
+				<div><input class="password-input-2" type="password" placeholder="confirm password"/></div>
+				<a>
+					<div class="facebook-signup-btn signup-btn">
+						Create account
+					</div>
+				</a>
+			{{/if}}
+		</div>
+
+	</div>
+</div>

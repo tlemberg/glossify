@@ -1,0 +1,801 @@
+@divColor1: #dfd;
+
+@textColor1: #fff;
+@textColor2: #fff;
+@textColor3: #3399ff;
+
+@btnColor1: #dfd;
+@btnColor2: #3399ff;
+
+@progressColor1: #0099FF;
+@progressColor2: #66CCFF;
+@progressColor3: #CCFFFF;
+@progressColor4: #00FFCC;
+@progressColor5: #66FF33;
+
+@headerColor: #333333;
+@backgroundColor: #666666;
+
+@cardColor: #ffffff;
+@cardTextColor: #000000;
+@flipBtnColor: #333333;
+
+@alertBackgroundColor: #999999;
+@alertTextColor: #00FFCC;
+
+ul {
+	padding: 0px;
+	margin: 0px;
+}
+
+.vertical-align(@ty: 50%) {
+  position: relative;
+  top: @ty;
+  -webkit-transform: translateY(-@ty);
+  -ms-transform: translateY(-@ty);
+  transform: translateY(-@ty);
+}
+
+body {
+	width: 100%;
+	height: 100%;
+	margin: 0px;
+	padding: 0px;
+	color: @textColor1;
+	font-family: Helvetica Neue, Helvetica, Arial, sans-serif;
+	background-color: @backgroundColor;
+	overflow-y: hidden;
+	overfloy-x: hidden;
+}
+
+
+.v-align-wrapper {
+	.vertical-align;
+	display: inline-block;
+	width: 100%;
+}
+
+
+input[type="text"], input[type="password"] {
+  padding: 10px;
+  border: solid 1px #dcdcdc;
+  transition: box-shadow 0.3s, border 0.3s;
+  font-size: 20px;
+}
+input[type="text"]:focus,
+input[type="text"].focus,
+input[type="password"]:focus,
+input[type="password"].focus {
+  border: solid 1px #707070;
+  box-shadow: 0 0 5px 1px #969696;
+}
+
+.container {
+	margin-bottom: 30px;
+}
+
+.header {
+	width: 100%;
+	height: 100px;
+	text-align: center;
+	background-color: @headerColor;
+	position: relative;
+	z-index: 2;
+}
+
+.viewer {
+	height: 90%;
+	overflow-x: hidden;
+	overflow-y: scroll;
+}
+
+.page {
+	float: left;
+	overflow-x: hidden;
+	height: 100%;
+}
+
+.header-group-left {
+	float: left;
+	width: 33%;
+}
+
+.header-group-center {
+	.vertical-align;
+	font-size: 28px;
+	font-weight: bold;
+	font-style : italic;
+	cursor: pointer;
+	display: inline-block;
+	width: 34%;
+	float: left;
+}
+
+.header-group-right {
+	float: right;
+	width: 33%;
+}
+
+.header .back-btn {
+	background-color: @btnColor1;
+	color: #000000;
+	padding: 10px;
+	display: inline-block;
+	border-radius: 10px;
+	width: 60px;
+	cursor: pointer;
+	float: left;
+	margin-left: 10px;
+	margin-top: 10px;
+	visibility: hidden;
+}
+
+.alert-div {
+	background-color: @alertBackgroundColor;
+	color: @alertTextColor;
+	text-align: center;
+	border-bottom-style: solid;
+	border-bottom-width: 1px;
+	border-bottom-color: #cccccc;
+	border-top-style: solid;
+	border-top-width: 1px;
+	border-top-color: #cccccc;
+	position: relative;
+	z-index: 1;
+	visibility: hidden;
+	height: 60px;
+	display: inline-block;
+	width: 100%;
+}
+
+.alert-div .message-container {
+	float: left;
+	width: 75%;
+	text-align: left;
+	height: 100%;
+	display: inline-block;
+}
+
+.alert-div .alert-btn-container {
+	float: right;
+	width: 25%;
+	height: 100%;
+	display: inline-block;
+	text-align: right;
+}
+
+.alert-div .message {
+	.vertical-align;
+	margin-left: 20px;
+	margin-right: 20px;
+	display: inline-block;
+}
+
+.alert-div .alert-btn {
+	background-color: @btnColor1;
+	color: #000000;
+	padding: 10px;
+	display: inline-block;
+	border-radius: 10px;
+	width: 100px;
+	cursor: pointer;
+	.vertical-align;
+	margin-right: 20px;
+	text-align: center;
+}
+
+.modal-div {
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	width: 100%;
+	height: 100%;
+	background-color: rgba(0, 0, 0, .75);
+	z-index: 99999;
+	text-align: center;
+	visibility: hidden;
+	cursor: auto;
+}
+
+.modal-block {
+	position: relative;
+	dislpay: inline-block;
+	.vertical-align;
+	background-color: @alertBackgroundColor;
+	color: @alertTextColor;
+	border-radius: 14px;
+	border-style: solid;
+	border-width: 1px;
+	border-color: #cccccc;
+	width: 300px;
+	margin-left: auto;
+	margin-right: auto;
+	padding: 20px;
+}
+
+.modal-div .ajax-loader {
+	margin-top: 10px;
+}
+
+.modal-div .ajax-loader-img {
+	width: 32px;
+	height: 32px;
+}
+
+.modal-div .btn {
+	background-color: @btnColor1;
+	color: #000000;
+	padding: 10px;
+	display: inline-block;
+	border-radius: 10px;
+	width: 100px;
+	cursor: pointer;
+	margin-top: 20px;
+}
+
+.facebook-signup-btn {
+	background-color: @btnColor2;
+	color: @textColor2;
+	width: 300px;
+	display: inline-block;
+	padding-top: 20px;
+	padding-bottom: 20px;
+	border-radius: 13px;
+	cursor: pointer;
+	text-align: center;
+}
+
+.content {
+	padding-top: 30px;
+	padding-bottom: 30px;
+	text-align: center;
+}
+
+.footer {
+	text-align: center;
+	padding-top: 30px;
+	height: 40px;
+}
+
+.login-page .content-meta-group {
+	width: auto;
+	display: inline-block;
+}
+
+.login-page .content-group-1,
+.signup-page .content-group-1 {
+	font-size: 35px;
+}
+
+.login-page .content-group-2,
+.signup-page .content-group-2 {
+	font-size: 20px;
+	padding-top: 20px;
+	padding-left: 40px;
+	padding-right: 40px;
+}
+
+.login-page .content-group-3,
+.signup-page .content-group-3 {
+	font-size: 20px;
+	padding-top: 40px;
+}
+
+.login-page .content-group-4,
+.signup-page .content-group-4 {
+	font-size: 14px;
+	padding-top: 20px;
+}
+
+.login-page .content-group-5,
+.signup-page .content-group-5 {
+	font-size: 20px;
+	padding-top: 20px;
+}
+
+.login-page .email-signup-link {
+	color: @textColor3;
+	cursor: pointer;
+}
+
+.login-page .icon {
+	width: 30px;
+	height: 30px;
+	float: left;
+}
+
+.login-page .store-btn-div {
+	width: 120px;
+	height: 40px;
+	display: inline-block;
+	cursor: pointer;
+}
+
+.login-page .store-btn-div-right {
+	margin-left: 30px;
+}
+
+.login-page .store-btn-img {
+	width: 100%;
+	height: 100%;
+}
+
+
+.login-page input,
+.signup-page input {
+	width: 300px;
+	margin-bottom: 18px;
+}
+
+.login-page .error {
+	color: red;
+	font-size: 18px;
+	margin-bottom: 10px;
+	font-style: italic;
+}
+
+.manage-page .box {
+	width: 100%;
+	border-bottom-style: solid;
+	border-bottom-width: 1px;
+	border-bottom-color: #999999;
+	cursor: pointer;
+}
+
+.manage-page .box-content {
+	padding-left: 30px;
+	padding-right: 30px;
+	padding-top: 20px;
+	padding-bottom: 20px;
+}
+
+.manage-page select {
+	-webkit-appearance: none;
+	font-size: 20px;
+	padding: 16px;
+	min-width: 300px;
+	max-width: 300px;
+}
+
+.manage-page .add-language-header {
+	text-align: center;
+	width: 100%;
+	font-size: 30px;
+	margin-top: 15px;
+}
+
+.manage-page .add-language-inputs {
+	text-align: center;
+	width: 100%;
+	font-size: 20px;
+	margin-top: 15px;
+}
+
+.manage-page .add-language-btns {
+	text-align: center;
+	width: 100%;
+	margin-top: 15px;
+}
+
+.overview-page .progress-label {
+	margin-bottom: 5px;
+}
+
+.overview-page .progress-label-bottom {
+	margin-bottom: 0px;
+	margin-top: 8px;
+}
+
+.overview-page ul {
+	list-style-type: none;
+}
+
+.overview-page .nav-header {
+	height: 50px;
+	text-align: center;
+	width: 100%;
+	margin-top: 30px;
+	margin-bottom: 30px;
+}
+
+.overview-page .nav-header-1 {
+	float: left;
+	width: 15%;
+	display: inline-block;
+	text-align: center;
+	height: 100%;
+}
+
+.overview-page .nav-header-2 {
+	float: left;
+	width: 70%;
+	display: inline-block;
+	text-align: center;
+	height: 100%;
+}
+
+.overview-page .nav-header-3 {
+	float: left;
+	width: 15%;
+	display: inline-block;
+	text-align: center;
+	height: 100%;
+}
+
+.overview-page .arrow-btn-left {
+	.vertical-align;
+	display: inline-block;
+}
+
+.overview-page .interval-text {
+	.vertical-align;
+	display: inline-block;
+	font-size: 20px;
+	font-weight: bold;
+}
+
+.overview-page .arrow-btn-right {
+	.vertical-align;
+	display: inline-block;
+}
+
+.overview-page .arrow-btn-bg {
+	background-color: #cccccc;
+	width: 45px;
+	height: 45px;
+	display: inline-block;
+	border-radius: 10px;
+	cursor: pointer;
+}
+
+.overview-page .arrow-img {
+	width: 80%;
+	height: 80%;
+	.vertical-align;
+}
+
+.overview-page .box-div {
+	width: 100%;
+	border-top-style: solid;
+	border-top-width: 1px;
+	border-top-color: #999999;
+	cursor: pointer;
+	display: inline-block;
+	height: 80px;
+}
+
+.overview-page .box-group-1 {
+	float: left;
+	width: 15%;
+	display: inline-block;
+	height: 100%;
+	text-align: left;
+	font-weight: bold;
+}
+
+.overview-page .box-group-1 .level-1 {
+	margin-left: 20px;
+	.vertical-align;
+}
+
+.overview-page .box-group-2 {
+	float: left;
+	width: 55%;
+	display: inline-block;
+	height: 100%;
+	text-align: left;
+}
+
+.overview-page .box-group-3 {
+	float: left;
+	width: 10%;
+	height: 100%;
+	text-align: right;
+	display: inline-block;
+}
+
+.overview-page .box-group-4 {
+	float: right;
+	width: 20%;
+	height: 100%;
+	text-align: center;
+	display: inline-block;
+}
+
+.overview-page .small-btn {
+	background-color: @btnColor2;
+	color: @textColor2;
+	display: inline-block;
+	width: 90%;
+	padding-top: 14px;
+	padding-bottom: 14px;
+	font-size: 14px;
+	border-radius: 8px;
+	cursor: pointer;
+	text-align: center;
+	.vertical-align;
+}
+
+.overview-page .box-group-left-content {
+	margin-left: 44px;
+	width: 100%;
+	font-style: italic;
+	.vertical-align;
+	display: inline-block;
+}
+
+.overview-page .box-group-right-content {
+	margin-right: 44px;
+	font-style: italic;
+	.vertical-align;
+	display: inline-block;
+}
+
+.overview-page .box-list-container {
+	display: inline-block;
+}
+
+.overview-page .box-list {
+	float: left;
+	height: 100%;
+}
+
+.study-page .group-left {
+	width: 20%;
+	height:100%;
+	float: left;
+	text-align: center;
+}
+
+.study-page .group-middle {
+	width: 60%;
+	height:100%;
+	float: left;
+}
+
+.study-page .group-right {
+	width: 20%;
+	height:100%;
+	float: left;
+	text-align: center;
+}
+
+.study-page .group-right .facebook-signup-btn {
+	width: 80%;
+	margin-bottom: 10px;
+}
+
+.study-page .section-title {
+	margin-bottom: 10px;
+}
+
+.study-page .section-title-not-first {
+	margin-bottom: 10px;
+	margin-top: 20px;
+}
+
+.study-page select {
+	-webkit-appearance: none;
+	font-size: 20px;
+	padding: 16px;
+	width: 80%;
+}
+
+.study-page .progress-box,
+.overview-page .progress-box {
+	width: 80%;
+	text-align: left;
+	display: inline-block;
+}
+
+.study-page .progress-level,
+.overview-page .progress-level {
+	width: 100%;
+	height: 20px;
+	margin-bottom: 5px;
+	display: inline-block;
+	border-radius: 5px;
+	border-style: solid;
+	border-width: 2px;
+	border-color: #ffffff;
+	overflow-x: hidden;
+	overflow-y: hidden;
+	background-color: #cccccc;
+}
+
+.overview-page .progress-level-bottom {
+	margin-bottom: 0px;
+	margin-top: 10px;
+}
+
+.study-page .progress-bar,
+.overview-page .progress-bar {
+	height: 100%;
+	width: 0%;
+	float: left;
+	display: inline-block;
+}
+
+.study-page .pron-btn-group {
+}
+
+.study-page .pron-btn-group-top {
+	margin-top: 10px;
+}
+
+.study-page .progress-counter {
+	height: 100%;
+	width: 20%;
+	float: right;
+	text-align: right;
+	display: inline-block;
+}
+
+.study-page .btn-container {
+	display: inline-block;
+}
+
+.study-page .btn {
+	float: left;
+	width: 100px;
+	height: 100px;
+	border-radius: 13px;
+	font-weight: bold;
+	cursor: pointer;
+}
+
+.study-page .btn-1,
+.study-page .progress-bar-1,
+.overview-page .progress-bar-1 {
+	background-color: @progressColor1;
+}
+
+.study-page .btn-2,
+.study-page .progress-bar-2,
+.overview-page .progress-bar-2 {
+	background-color: @progressColor2;
+}
+
+.study-page .btn-3,
+.study-page .progress-bar-3,
+.overview-page .progress-bar-3 {
+	background-color: @progressColor3;
+}
+
+.study-page .btn-4,
+.study-page .progress-bar-4,
+.overview-page .progress-bar-4 {
+	background-color: @progressColor4;
+}
+
+.study-page .btn-5,
+.study-page .progress-bar-5,
+.overview-page .progress-bar-5 {
+	background-color: @progressColor5;
+}
+
+.study-page .btn-text {
+	.vertical-align;
+}
+
+.study-page .card {
+	border-style: solid;
+	border-width: 1px;
+	border-color: #999999;
+	border-radius: 13px;
+	display: inline-block;
+	background-color: @cardColor;
+	color: @cardTextColor;
+	width: 100%;
+}
+
+.study-page .card-progress-0 {
+
+}
+
+.study-page .card-progress-1 {
+	margin-left: -2px;
+	border-style: solid;
+	border-width: 4px;
+	border-color: @progressColor1;
+}
+
+.study-page .card-progress-2 {
+	margin-left: -2px;
+	border-style: solid;
+	border-width: 4px;
+	border-color: @progressColor2;
+}
+
+.study-page .card-progress-3 {
+	margin-left: -2px;
+	border-style: solid;
+	border-width: 4px;
+	border-color: @progressColor3;
+}
+
+.study-page .card-progress-4 {
+	margin-left: -2px;
+	border-style: solid;
+	border-width: 4px;
+	border-color: @progressColor4;
+}
+
+.study-page .card-progress-5 {
+	margin-left: -2px;
+	border-style: solid;
+	border-width: 4px;
+	border-color: @progressColor5;
+}
+
+.study-page .card-half {
+	height: 50%;
+	margin-left: 20px;
+	margin-right: 20px;
+}
+
+.study-page .card-top {
+	border-bottom-style: solid;
+	border-bottom-width: 1px;
+	border-bottom-color: #999999;
+}
+
+.study-page .card-top-text {
+	display: inline-block;
+	.vertical-align;
+}
+
+.study-page .big-font-half {
+	font-size: 26;
+}
+
+.study-page .small-font-half {
+	font-size: 16;
+}
+
+.study-page .card-bottom-content {
+	display: inline-block;
+	width: 100%;
+	.vertical-align;
+}
+
+.study-page .card-bottom-text {
+	display: inline-block;
+	width: 100%;
+	text-align: center;
+}
+
+.study-page .card-reveal-btn {
+	background-color: @btnColor2;
+	color: @textColor2;
+	width: 200px;
+	display: inline-block;
+	margin-top: 20px;
+	padding-top: 10px;
+	padding-bottom: 8px;
+	border-radius: 7px;
+	cursor: pointer;
+	text-align: center;
+}
+
+.study-page .card-reveal-txt {
+	margin-top: 20px;
+}
+
+.study-page .not-flipped {
+	font-size: 26;
+	font-style: italic;
+	color: #999999;
+}
+
+.study-page .flip-btn {
+	margin-top: 10px;
+	background-color: @flipBtnColor;
+	border-radius: 13px;
+	cursor: pointer;
+}
+
+.study-page .flip-btn-text {
+	.vertical-align;
+	font-size: 18px;
+}
