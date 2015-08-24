@@ -8,7 +8,8 @@ define [
 	'api',
 	'constants',
 	'hbs!../../hbs/src/wordref',
-], (utils, stack, storage, nav, deck, pageview, api, constants, wordrefTemplate) ->
+	'hbs!../../hbs/src/summary',
+], (utils, stack, storage, nav, deck, pageview, api, constants, wordrefTemplate, summaryTemplate) ->
 
 
 	############################################################################
@@ -21,6 +22,9 @@ define [
 	_deck      = undefined
 	_template  = undefined
 	_phraseIds = undefined
+	_excerpt   = undefined
+	strokesUrlBase = 'https://s3-us-west-2.amazonaws.com/glossify.net/strokes'
+	strokesUrlExt  = '.gif'
 
 
 	############################################################################
@@ -29,6 +33,16 @@ define [
 	############################################################################
 	MAX_BUTTON_AREA_WIDTH = 600
 	CARD_ASPECT = .68
+
+
+	############################################################################
+	# _getStrokesUrl
+	#
+	############################################################################
+	_getStrokesUrls = ->
+		gbk_strs = _phrase['strokes']
+		if gbk_strs?
+			("#{ strokesUrlBase }/#{ gbk_str }#{ strokesUrlExt }" for gbk_str in gbk_strs)
 
 
 	############################################################################
@@ -45,6 +59,7 @@ define [
 		section     = storage.getSection()
 		box         = storage.getBox()
 		plan        = storage.getPlan(lang)
+		planMode    = storage.getPlanMode()
 		dictionary  = storage.getDictionary(lang)
 
 		studyMode = storage.getStudyMode() ? 'defs'
@@ -52,8 +67,8 @@ define [
 		storage.setStudyMode(studyMode)
 		storage.setStudyOrder(studyOrder)
 
-		# Get phrase IDs for the current box
-		_phraseIds = stack.getPhraseIds(plan, section, box, lang)
+		# Set info about the deck in module vars
+		_setDeckProperties()
 
 		# Construct a deck and store is as a module variable
 		_deck = deck.createDeck(_phraseIds, dictionary)
@@ -71,6 +86,16 @@ define [
 
 		constants = require('constants')
 
+		summaryPhrases = []
+		for phraseId in _phraseIds
+			phrase = dictionary['dictionary'][phraseId]
+			defText = _getTxSummary(phrase['txs'])
+			summaryPhrases.push
+				base: phrase['base']
+				pron: phrase['pron']
+				tx_summary: defText
+				phrase_id: phrase['_id']
+
 		templateArgs =
 			buttons: [
 				{ progress: 1, text: "don't know"},
@@ -81,6 +106,7 @@ define [
 			]
 			lang_name: constants.langMap[lang]
 			include_pron: includePron
+			excerpt: _excerpt
 
 		$(".study-page").html(template(templateArgs))
 
@@ -89,17 +115,36 @@ define [
 		_resetCard()
 
 		_nav.showBackBtn "Done", (event) ->
-			progressUpdates = storage.getProgressUpdates()
-			if progressUpdates? and progressUpdates != {}
-				api.updateProgress (json) ->
-					_nav.loadPage('overview')
-			else
+			api.updateProgress (json) ->
 				_nav.loadPage('overview')
+
+		# Refresh the summary
+		_resetSummary()
 
 		_registerEvents()
 
 		_resetProgress()
 		_updateConsole()
+
+
+
+	############################################################################
+	# _setDeckProperties
+	#
+	############################################################################
+	_setDeckProperties = ->
+		lang        = storage.getLanguage()
+		section     = storage.getSection()
+		box         = storage.getBox()
+		plan        = storage.getPlan(lang)
+		planMode    = storage.getPlanMode()
+
+		# Get phrase IDs for the current box
+		_phraseIds = stack.getPhraseIds(plan, section, box, lang)
+		if planMode == 'example'
+			_excerpt = stack.getExcerpt(plan, section, box)
+		else
+			_excerpt = undefined
 
 
 	############################################################################
@@ -191,6 +236,53 @@ define [
 
 
 	############################################################################
+	# _resetSummary
+	#
+	############################################################################
+	_resetSummary = ->
+
+		lang = storage.getLanguage()
+		dictionary = storage.getDictionary(lang)
+
+		summaryPhrases = []
+		for phraseId in _phraseIds
+			phrase = dictionary['dictionary'][phraseId]
+			defText = _getTxSummary(phrase['txs'])
+			summaryPhrases.push
+				base: phrase['base']
+				pron: phrase['pron']
+				tx_summary: defText
+				phrase_id: phrase['_id']
+
+		templateArgs =
+			summary_phrases: summaryPhrases
+		
+		$(".deck-summary").html(summaryTemplate(templateArgs))
+
+		$('.study-page .delete-card-btn').click (event) ->
+			phraseId = $(this).data('phrase-id')
+			storage.deleteCard(storage.getBox(), phraseId)
+
+			# Set info about the deck in module vars
+			_setDeckProperties()
+
+			# Refresh the deck
+			studyMode = storage.getStudyMode()
+			deck.refreshDeck(_deck, studyMode)
+
+			# Draw a new card
+			_phrase = deck.drawPhrase(_deck)
+
+			# Refresh the page
+			_isFlipped = false
+			_resetCard()
+			_resetProgress()
+
+			# Refresh the summary
+			_resetSummary()
+
+
+	############################################################################
 	# _resetCard
 	#
 	############################################################################
@@ -221,11 +313,34 @@ define [
 		else
 			phraseText = _phrase['base']
 
+		# Get the context within an excerpt
+		excerptHtml = undefined
+		if _excerpt and studyMode == 'defs'?
+			index = 0
+			phraseLength = _phrase['base'].length
+			for i in [0.._excerpt.length-phraseLength+1]
+				j = i + phraseLength
+				sub = _excerpt.substring(i, j)
+				if sub == _phrase['base']
+					index = i
+					break
+			leftIndex = Math.max(0, index - 8)
+			rightIndex = Math.min(_excerpt.length, index + phraseLength + 8)
+			left = _excerpt.substring(leftIndex, index)
+			right = _excerpt.substring(index + phraseLength, rightIndex)
+			leftElipses = ''
+			rightElipses = ''
+			if left != 0
+				leftElipses = '...'
+			if rightIndex != _excerpt.length
+				rightElipses = '...'
+			excerptHtml = "#{ leftElipses }#{ left }<span style='color:red'>#{ _phrase['base'] }</span>#{ right }#{ rightElipses }"
+
 		# Get a translation summary and set it in the UI
 		defText = _getTxSummary(_phrase['txs'])		
 
 		$('.study-page .card-reveal-txt').html(defText)
-		if _isFlipped and studyMode == 'pron' and studyOrder == 'toEnglish'
+		if _isFlipped and studyMode == 'pron'
 			$('.study-page .card-reveal-btn').show()
 			$('.study-page .card-reveal-txt').hide()
 		else
@@ -251,12 +366,15 @@ define [
 		# Set the top text
 		if studyDescription == 'phrase-def'
 			_setTopText(phraseText)
+			
 		else if studyDescription == 'def-phrase'
 			_setTopText(defText)
 		else if studyDescription == 'phrase-pron'
 			_setTopText(phraseText)
 		else if studyDescription == 'pron-phrase'
 			_setTopText(pronText)
+
+		_setTopExcerpt(excerptHtml)
 
 		# Set the border color to indicate progress
 		progressValue = storage.getProgress(_phrase['_id'], studyMode)
@@ -275,7 +393,11 @@ define [
 			else if studyDescription == 'phrase-pron'
 				_setBottomText(pronText)
 			else if studyDescription == 'pron-phrase'
-				_setBottomText(phraseText)
+				strokeUrls = _getStrokesUrls(_phrase)
+				if strokeUrls?
+					_setBottomStrokes(strokeUrls)
+				else
+					_setBottomText(phraseText)
 
 			# Show the appropriate divs
 			_hideFlipButton()
@@ -299,11 +421,36 @@ define [
 
 
 	############################################################################
+	# _setTopExcerpt
+	#
+	############################################################################
+	_setTopExcerpt = (excerptHtml) ->
+		$('.study-page .card-top-excerpt').html(excerptHtml)
+
+
+	############################################################################
 	# _setBottomText
 	#
 	############################################################################
 	_setBottomText = (text) ->
 		$('.study-page .card-bottom-text').html(text)
+
+
+	############################################################################
+	# _setBottomStrokes
+	#
+	############################################################################
+	_setBottomStrokes = (strokeUrls) ->
+		$(".study-page .stroke-holder").attr('src', '#')
+		$(".study-page .stroke-holder").css('width', '0px')
+		$(".study-page .stroke-holder").css('visibility', 'hidden')
+		for i in [1..strokeUrls.length]
+			strokeUrl = strokeUrls[i-1]
+			$(".study-page .stroke-holder-#{ i }").attr('src', strokeUrl)
+			$(".study-page .stroke-holder-#{ i }").css('width', '60px')
+			$(".study-page .stroke-holder-#{ i }").css('visibility', 'visible')
+		$('.study-page .card-bottom-text').html('')
+		$(".study-page .stroke-holder").show()
 
 
 	############################################################################
@@ -323,6 +470,8 @@ define [
 		$('.study-page .btn-container').hide()
 
 		$('.study-page .card-bottom-text').addClass('not-flipped')
+
+		$(".study-page .stroke-holder").hide()
 
 		studyMode = storage.getStudyMode()
 		studyOrder = storage.getStudyOrder()
@@ -356,7 +505,7 @@ define [
 		studyMode = storage.getStudyMode()
 		studyOrder = storage.getStudyOrder()
 
-		if studyMode == 'pron' and studyOrder == 'toEnglish'
+		if studyMode == 'pron'
 			$('.study-page .card-reveal-btn').show()
 
 
@@ -371,7 +520,10 @@ define [
 		for k in types[0..1]
 			v = txs[k]
 			lines = ("#{ i + 1 }. #{ v[i] }" for i in [0..Math.min(v.length - 1, 1)])
-			chunks.push("<div><b>#{ k }</b>" + "<br />" + lines.join("<br />") + "</div>")
+			if k == 'unknown'
+				chunks.push(lines.join("<br />"))
+			else
+				chunks.push("<div><b>#{ k }</b>" + "<br />" + lines.join("<br />") + "</div>")
 		chunks.join("<br />")
 
 

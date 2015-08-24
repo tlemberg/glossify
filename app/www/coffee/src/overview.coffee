@@ -1,19 +1,23 @@
 define [
 	'utils',
 	'storage',
+	'api',
 	'nav',
 	'css',
 	'deck',
 	'stack',
+	'strings',
 	'hbs!../../hbs/src/box-list',
 ],
 (
 	utils,
 	storage,
+	api,
 	nav,
 	css,
 	deck,
 	stack,
+	strings,
 	boxListTemplate,
 ) ->
 
@@ -120,7 +124,7 @@ define [
 		# Construct arguments
 		boxes = stack.getBoxes(plan, dictionary, section, lang, 100)
 		templateArgs =
-			boxes : boxes
+			boxes      : boxes
 
 		# Render template
 		$(".overview-page .box-list-#{section}").html(boxListTemplate(templateArgs))
@@ -158,74 +162,6 @@ define [
 
 
 	############################################################################
-	# _setPickerHtml
-	#
-	############################################################################
-	_setPickerHtml = ->
-		section     = storage.getSection()
-		lang        = storage.getLanguage()
-		userProfile = storage.getUserProfile()
-		dictionary  = storage.getDictionary(lang)
-
-		minIndex = (section - 1) * 1000
-		maxIndex = section * 1000 - 1
-
-		boxes = {}
-		nBoxes = deck.pageSize() / deck.boxSize()
-
-		for boxIndex in [0..nBoxes-1]
-			minIndex = (section - 1) * deck.boxSize() + boxIndex * deck.boxSize()
-			maxIndex = minIndex + deck.boxSize()
-			boxCards = userProfile['langs'][lang].slice(minIndex, maxIndex)
-			progressList = parseInt(card['progress']) for card in boxCards
-			boxProgress = Math.min(progressList)
-
-			if boxProgress.toString() not in Object.keys(boxes)
-				boxes[boxProgress] = []
-
-			boxes[boxProgress].push(boxIndex)
-
-		containerDivs = []
-		for progress in Object.keys(boxes)
-			rowDivs = []
-			for boxIndex in boxes[progress]
-				minSampleIndex = (section - 1) * deck.pageSize() + boxIndex * deck.boxSize()
-				maxSampleIndex = minSampleIndex + 3
-				sampleCards = userProfile['langs'][lang].slice(minSampleIndex, maxSampleIndex)
-				sampleWords = (dictionary['dictionary'][card['phrase_id']]['base'] for card in sampleCards)
-				sampleStr = sampleWords.join(', ') + "..."
-				rowDivHtml = """
-					<a class='overview-block-row-link' data-index=#{ boxIndex }><div class='overview-block-row'>
-						<div class='overview-block-sample'>#{ sampleStr }</div>
-					</div>
-				"""
-				rowDivs.push(rowDivHtml)
-
-			allRowDivsHtml = rowDivs.join('')
-
-			containerDivHtml = """
-				<div class='overview-block'>
-					<div class='overview-block-header'>
-						HEADER
-					</div>
-					#{ allRowDivsHtml}
-				</div>
-			"""
-
-			containerDivs.push(containerDivHtml)
-
-		# Build the picker UI
-		allBlocksHtml = containerDivs.join('')
-
-		pickerHtml = """
-			#{ allBlocksHtml }
-		"""
-
-		$('#overview-content').html(pickerHtml)
-		_nav.refreshPage()
-
-
-	############################################################################
 	# _registerEvents
 	#
 	############################################################################
@@ -242,6 +178,48 @@ define [
 			storage.setSection(storage.getSection() + 1)
 			_loadBoxList()
 			_loadNavHeader()
+
+
+		$('.overview-page .plan-mode').click (event) ->
+			plan_mode = $(this).data('mode')
+			storage.setPlanMode(plan_mode)
+			_reloadPlan()
+
+
+		$('.overview-page .add-example-btn').click (event) ->
+			excerpt = $('.overview-page .add-example-text').val()
+			api.addExcerpt excerpt, (json) ->
+				if json['success']
+					_reloadPlan()
+				else
+					# Error adding excerpt
+					$('.login-page .error').html(strings.getString('unexpectedFailure'))
+
+
+	############################################################################
+	# _reloadPlan
+	#
+	############################################################################
+	_reloadPlan = ->
+		plan_mode = storage.getPlanMode()
+		lang = storage.getLanguage()
+		api.ensurePlan (json) ->
+			if json['success']
+				api.ensureExcerptDictionary lang, (json) ->
+					console.log(json)
+					if json['success']
+						storage.setSection(1)
+						if plan_mode == 'example'
+							$('.overview-page .add-example-div').show()
+						else
+							$('.overview-page .add-example-div').hide()
+						_loadBoxList()
+					else
+						# Error getting excerpt dictionary
+						$('.login-page .error').html(strings.getString('unexpectedFailure'))
+			else
+				# Error ensuring plan
+				$('.login-page .error').html(strings.getString('unexpectedFailure'))
 
 
 	############################################################################

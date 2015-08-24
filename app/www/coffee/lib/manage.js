@@ -8,16 +8,18 @@
     _validLangs = ['cy', 'de', 'eo', 'es', 'fr', 'he', 'ru', 'zh'];
     _template = void 0;
     _loadPage = function(template) {
-      var code, constants, langs, options, templateArgs, userProfile;
+      var code, constants, langs, options, planMode, ref, templateArgs, userProfile;
       _template = template;
       userProfile = storage.getUserProfile();
       constants = require('constants');
+      planMode = (ref = storage.getPlanMode()) != null ? ref : 'frequency';
+      storage.setPlanMode(planMode);
       langs = (function() {
-        var i, len, ref, results;
-        ref = userProfile.langs;
+        var i, len, ref1, results;
+        ref1 = userProfile.langs;
         results = [];
-        for (i = 0, len = ref.length; i < len; i++) {
-          code = ref[i];
+        for (i = 0, len = ref1.length; i < len; i++) {
+          code = ref1[i];
           results.push({
             'code': code,
             'name': constants.langMap[code]

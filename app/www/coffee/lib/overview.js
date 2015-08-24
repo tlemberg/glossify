@@ -2,8 +2,8 @@
 (function() {
   var indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
-  define(['utils', 'storage', 'nav', 'css', 'deck', 'stack', 'hbs!../../hbs/src/box-list'], function(utils, storage, nav, css, deck, stack, boxListTemplate) {
-    var PICKER_TILE_MARGIN, _createEmptyProgress, _loadBoxList, _loadNavHeader, _loadPage, _nPages, _nav, _refreshPage, _registerEvents, _setPickerHtml;
+  define(['utils', 'storage', 'api', 'nav', 'css', 'deck', 'stack', 'strings', 'hbs!../../hbs/src/box-list'], function(utils, storage, api, nav, css, deck, stack, strings, boxListTemplate) {
+    var PICKER_TILE_MARGIN, _createEmptyProgress, _loadBoxList, _loadNavHeader, _loadPage, _nPages, _nav, _refreshPage, _registerEvents, _reloadPlan;
     _nav = void 0;
     _nPages = 10;
     PICKER_TILE_MARGIN = 10;
@@ -107,73 +107,58 @@
         return $(".box-list-container").css("margin-left", utils.withUnit(-1 * (section - 1) * utils.windowWidth(), 'px'));
       }
     };
-    _setPickerHtml = function() {
-      var allBlocksHtml, allRowDivsHtml, boxCards, boxIndex, boxProgress, boxes, card, containerDivHtml, containerDivs, dictionary, i, j, k, l, lang, len, len1, len2, maxIndex, maxSampleIndex, minIndex, minSampleIndex, nBoxes, pickerHtml, progress, progressList, ref, ref1, ref2, ref3, rowDivHtml, rowDivs, sampleCards, sampleStr, sampleWords, section, userProfile;
-      section = storage.getSection();
-      lang = storage.getLanguage();
-      userProfile = storage.getUserProfile();
-      dictionary = storage.getDictionary(lang);
-      minIndex = (section - 1) * 1000;
-      maxIndex = section * 1000 - 1;
-      boxes = {};
-      nBoxes = deck.pageSize() / deck.boxSize();
-      for (boxIndex = i = 0, ref = nBoxes - 1; 0 <= ref ? i <= ref : i >= ref; boxIndex = 0 <= ref ? ++i : --i) {
-        minIndex = (section - 1) * deck.boxSize() + boxIndex * deck.boxSize();
-        maxIndex = minIndex + deck.boxSize();
-        boxCards = userProfile['langs'][lang].slice(minIndex, maxIndex);
-        for (j = 0, len = boxCards.length; j < len; j++) {
-          card = boxCards[j];
-          progressList = parseInt(card['progress']);
-        }
-        boxProgress = Math.min(progressList);
-        if (ref1 = boxProgress.toString(), indexOf.call(Object.keys(boxes), ref1) < 0) {
-          boxes[boxProgress] = [];
-        }
-        boxes[boxProgress].push(boxIndex);
-      }
-      containerDivs = [];
-      ref2 = Object.keys(boxes);
-      for (k = 0, len1 = ref2.length; k < len1; k++) {
-        progress = ref2[k];
-        rowDivs = [];
-        ref3 = boxes[progress];
-        for (l = 0, len2 = ref3.length; l < len2; l++) {
-          boxIndex = ref3[l];
-          minSampleIndex = (section - 1) * deck.pageSize() + boxIndex * deck.boxSize();
-          maxSampleIndex = minSampleIndex + 3;
-          sampleCards = userProfile['langs'][lang].slice(minSampleIndex, maxSampleIndex);
-          sampleWords = (function() {
-            var len3, m, results;
-            results = [];
-            for (m = 0, len3 = sampleCards.length; m < len3; m++) {
-              card = sampleCards[m];
-              results.push(dictionary['dictionary'][card['phrase_id']]['base']);
-            }
-            return results;
-          })();
-          sampleStr = sampleWords.join(', ') + "...";
-          rowDivHtml = "<a class='overview-block-row-link' data-index=" + boxIndex + "><div class='overview-block-row'>\n	<div class='overview-block-sample'>" + sampleStr + "</div>\n</div>";
-          rowDivs.push(rowDivHtml);
-        }
-        allRowDivsHtml = rowDivs.join('');
-        containerDivHtml = "<div class='overview-block'>\n	<div class='overview-block-header'>\n		HEADER\n	</div>\n	" + allRowDivsHtml + "\n</div>";
-        containerDivs.push(containerDivHtml);
-      }
-      allBlocksHtml = containerDivs.join('');
-      pickerHtml = "" + allBlocksHtml;
-      $('#overview-content').html(pickerHtml);
-      return _nav.refreshPage();
-    };
     _registerEvents = function() {
       $('.overview-page .arrow-btn-left').click(function(event) {
         storage.setSection(storage.getSection() - 1);
         _loadBoxList();
         return _loadNavHeader();
       });
-      return $('.overview-page .arrow-btn-right').click(function(event) {
+      $('.overview-page .arrow-btn-right').click(function(event) {
         storage.setSection(storage.getSection() + 1);
         _loadBoxList();
         return _loadNavHeader();
+      });
+      $('.overview-page .plan-mode').click(function(event) {
+        var plan_mode;
+        plan_mode = $(this).data('mode');
+        storage.setPlanMode(plan_mode);
+        return _reloadPlan();
+      });
+      return $('.overview-page .add-example-btn').click(function(event) {
+        var excerpt;
+        excerpt = $('.overview-page .add-example-text').val();
+        return api.addExcerpt(excerpt, function(json) {
+          if (json['success']) {
+            return _reloadPlan();
+          } else {
+            return $('.login-page .error').html(strings.getString('unexpectedFailure'));
+          }
+        });
+      });
+    };
+    _reloadPlan = function() {
+      var lang, plan_mode;
+      plan_mode = storage.getPlanMode();
+      lang = storage.getLanguage();
+      return api.ensurePlan(function(json) {
+        if (json['success']) {
+          return api.ensureExcerptDictionary(lang, function(json) {
+            console.log(json);
+            if (json['success']) {
+              storage.setSection(1);
+              if (plan_mode === 'example') {
+                $('.overview-page .add-example-div').show();
+              } else {
+                $('.overview-page .add-example-div').hide();
+              }
+              return _loadBoxList();
+            } else {
+              return $('.login-page .error').html(strings.getString('unexpectedFailure'));
+            }
+          });
+        } else {
+          return $('.login-page .error').html(strings.getString('unexpectedFailure'));
+        }
       });
     };
     _createEmptyProgress = function() {

@@ -10,6 +10,7 @@ from xml.etree.ElementTree import iterparse, XMLParser
 
 yaml_file = os.path.join(os.environ['PROJECT_HOME'], 'web/wikidumps.yaml')
 iso_codes_path = os.path.join(os.environ['PROJECT_HOME'], 'web/iso_language_codes.yaml')
+gb2312_path = os.path.join(os.environ['PROJECT_HOME'], 'web/gb2312.yaml')
 
 
 
@@ -186,11 +187,37 @@ def get_section_text(db, lang, base):
 
 
 ################################################################################
+# remove_0x
+#
+################################################################################
+def remove_0x(s):
+	return s[2:]
+
+
+################################################################################
+# get_gb2312_str
+#
+################################################################################
+def get_gb2312_str(utf8_char):
+	gb2312_char = utf8_char.encode(encoding='gbk')
+	gb2312_str  = ''.join([remove_0x(hex(ord(c))) for c in gb2312_char])
+	return gb2312_str
+
+
+################################################################################
 # Read
 #
 ################################################################################
 def get_iso_codes_hash():
 	return yaml.load(open(iso_codes_path, 'r'))
+
+
+################################################################################
+# Read
+#
+################################################################################
+def get_gb2312_hash():
+	return yaml.load(open(gb2312_path, 'r'))
 
 
 ################################################################################
@@ -210,4 +237,12 @@ def get_viewable_txs(phrase):
 		x = [tx['text'] for tx in x]
 		new_txs[k] = x
 	return new_txs
+
+
+################################################################################
+# load_cedict
+#
+################################################################################
+def load_cedict():
+	return yaml.load(open('/home/ubuntu/cedict.yaml', 'r'))
 

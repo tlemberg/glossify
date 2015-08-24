@@ -13,6 +13,7 @@ define ['utils'], (utils) ->
 	SECTION_KEY      = 'section'
 	BOX_KEY          = 'box'
 	PROGRESS_KEY     = 'progress'
+	PLAN_MODE_KEY    = 'plan_mode'
 	STUDY_MODE_KEY   = 'study_mode'
 	STUDY_ORDER_KEY  = 'study_order'
 	SHOW_PRON_KEY    = 'show_pron'
@@ -49,6 +50,7 @@ define ['utils'], (utils) ->
 		_removeLocalStorageItem(BOX_KEY)
 		_removeLocalStorageItem(STUDY_MODE_KEY)
 		_removeLocalStorageItem(STUDY_ORDER_KEY)
+		_removeLocalStorageItem(PLAN_MODE_KEY)
 
 		constants = require('constants')
 
@@ -124,6 +126,14 @@ define ['utils'], (utils) ->
 		_setLocalStorageItem(BOX_KEY, v)
 
 
+	_getPlanMode = ->
+		_getLocalStorageItem(PLAN_MODE_KEY)
+
+
+	_setPlanMode = (v) ->
+		_setLocalStorageItem(PLAN_MODE_KEY, v)
+
+
 	_getStudyMode = ->
 		_getLocalStorageItem(STUDY_MODE_KEY)
 
@@ -163,7 +173,15 @@ define ['utils'], (utils) ->
 
 	_getProgressUpdates = ->
 		lang = _getLanguage()
-		_getLocalStorageItem("progress_updates_#{ lang }")
+		progressUpdates = _getLocalStorageItem("progress_updates_#{ lang }")
+
+		if !progressUpdates?
+			progressUpdates = {
+				'defs': {},
+				'pron': {},
+			}
+
+		progressUpdates
 
 
 	_addProgressUpdate = (phraseId, progressValue, studyMode) ->
@@ -171,13 +189,7 @@ define ['utils'], (utils) ->
 		lang = _getLanguage()
 		studyMode ?= 'defs'
 
-		# Get the progressUpdates hash, defaulting to an empty hash
 		progressUpdates = _getProgressUpdates()
-		if !progressUpdates?
-			progressUpdates = {
-				'defs': {},
-				'pron': {},
-			}
 
 		# Modify the hash
 		progressUpdates[studyMode][phraseId] = progressValue
@@ -214,29 +226,73 @@ define ['utils'], (utils) ->
 
 
 	_getPlan = (lang) ->
-		_getLocalStorageItem("plan_#{ lang }")
+		planMode = _getPlanMode()
+		_getLocalStorageItem("plan_#{ lang }_#{ planMode }")
 
 
 	_setPlan = (lang, v) ->
-		_setLocalStorageItem("plan_#{ lang }", v)
+		planMode = _getPlanMode()
+		_setLocalStorageItem("plan_#{ lang }_#{ planMode }", v)
 
 
 	_removePlan = (lang) ->
-		_removeLocalStorageItem("plan_#{ lang }")
+		_removeLocalStorageItem("plan_#{ lang }_frequency")
+		_removeLocalStorageItem("plan_#{ lang }_example")
 
 
 	_isLoggedIn = ->
 		userProfile = _getUserProfile()
 		lang        = _getLanguage()
 
-		console.log(userProfile)
-		console.log(lang)
-
 		if userProfile? and lang?
 			dictionary  = _getDictionary(lang)
 			if dictionary?
 				return true
 		return false
+
+
+	_deleteCard = (deckIndex, phraseId) ->
+		lang = _getLanguage()
+		plan = _getPlan(lang)
+		phraseIds = plan[deckIndex]['phraseIds']
+		newPhraseIds = []
+		for matchedPhraseId in phraseIds
+			if phraseId != matchedPhraseId
+				newPhraseIds.push(matchedPhraseId)
+		plan[deckIndex]['phraseIds'] = newPhraseIds
+		_setPlan(lang, plan)
+
+		deckId = plan[deckIndex]['deckId']
+		_addDeckUpdate(deckId, newPhraseIds)
+
+
+	_addDeckUpdate = (deckId, phraseIds) ->
+
+		# Get the progressUpdates hash, defaulting to an empty hash
+		deckUpdates = _getDeckUpdates()
+		if !deckUpdates?
+			deckUpdates = {}
+
+		# Modify the hash
+		deckUpdates[deckId] = phraseIds
+
+		# Store the modified value locally
+		_setDeckUpdates(deckUpdates)
+
+
+	_getDeckUpdates = ->
+		deckUpdates = _getLocalStorageItem("deck_updates")
+		if !deckUpdates?
+			deckUpdates = {}
+		deckUpdates
+
+
+	_setDeckUpdates = (v) ->
+		_setLocalStorageItem("deck_updates", v)
+
+
+	_clearDeckUpdates = ->
+		_removeLocalStorageItem("deck_updates")
 
 
 	############################################################################
@@ -293,6 +349,12 @@ define ['utils'], (utils) ->
 		setBox: (v) ->
 			_setBox(v)
 
+		getPlanMode: ->
+			_getPlanMode()
+
+		setPlanMode: (v) ->
+			_setPlanMode(v)
+
 		getStudyMode: ->
 			_getStudyMode()
 
@@ -316,6 +378,12 @@ define ['utils'], (utils) ->
 
 		setAccountConfirmed: (v) ->
 			_setAccountConfirmed(v)
+
+		getDeckUpdates: ->
+			_getDeckUpdates()
+
+		clearDeckUpdates: ->
+			_clearDeckUpdates()
 
 		getProgressUpdates: ->
 			_getProgressUpdates()
@@ -343,6 +411,10 @@ define ['utils'], (utils) ->
 
 		isLoggedIn: ->
 			_isLoggedIn()
+
+		deleteCard: (deckIndex, phraseId) ->
+			_deleteCard(deckIndex, phraseId)
+
 
 	}
 

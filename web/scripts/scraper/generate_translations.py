@@ -87,6 +87,21 @@ def Main() :
 			else:
 				continue
 
+		if args.lang == 'zh':
+			entry = db.translations_zh.find_one({ 'base': phrase['base'] })
+			if entry:
+				txs = [{
+					"text"   : entry['txs'][rank],
+					"rank"   : rank,
+					"deleted": False,
+				} for rank in xrange(len(entry['txs']))]
+				write_translations(phrase['base'], { 'unknown': txs })
+				count += 1
+				if count % 100 == 0:
+					print count
+				continue
+
+
 		#print phrase['base']
 		t0 = datetime.now()
 		section = dbutils.get_section_for_phrase(db, phrase)

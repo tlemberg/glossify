@@ -23,6 +23,9 @@ define ['storage', 'api', 'strings'], (storage, api, strings) ->
 		userProfile = storage.getUserProfile()
 		constants = require('constants')
 
+		planMode = storage.getPlanMode() ? 'frequency'
+		storage.setPlanMode(planMode)
+
 		langs = ({
 			'code': code
 			'name': constants.langMap[code]

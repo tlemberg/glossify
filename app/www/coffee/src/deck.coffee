@@ -5,7 +5,7 @@ define ['utils', 'storage'], (utils, storage) ->
 	# Module properties
 	#
 	############################################################################
-	MAX_BUFFER = 3
+	MAX_BUFFER = 1
 
 
 	############################################################################
@@ -55,6 +55,8 @@ define ['utils', 'storage'], (utils, storage) ->
 		poolPhrases    = []
 		i            = 0
 
+		console.log(deck)
+
 		# Construct a pool to draw from
 		while totalPenalty < maxPenalty
 
@@ -66,14 +68,15 @@ define ['utils', 'storage'], (utils, storage) ->
 
 			# Increase the total penalty and exit the loop if it is too great
 			penalty = 6 - storage.getProgress(phrase['_id'], studyMode) # Penalty ranges from 0 to 5
-			penalty = penalty * penalty
+			penalty = penalty # * penalty
 			totalPenalty += penalty
-			if totalPenalty > maxPenalty then break
 
 			# Add the phrase to the pool
 			poolPhrases.push phrase
 
 			i += 1
+
+			if totalPenalty > maxPenalty then break
 
 		# Convert the pool phrases into a distribution pool
 		p    = 0
@@ -97,9 +100,9 @@ define ['utils', 'storage'], (utils, storage) ->
 	############################################################################
 	_drawPhrase = (deck) ->
 		
-		console.log(deck)
-
-		while not phrase? or phrase in deck['buffer']
+		while not phrase?
+			console.log(deck)
+			console.log(p)
 			p = utils.randomInt(0, deck['poolSize'] - 1)
 			phrase = deck['pool'][p]
 

@@ -34,6 +34,12 @@ for section in db.sections.find({ 'lang': args.lang }, { 'base': 1 }):
 	if bases.get(base):
 		new_bases.append(base)
 
+if args.lang == 'zh':
+	for translation in db.translations_zh.find({ }, { 'base': 1 }):
+		base = translation['base']
+		if not bases.get(base) == 1:
+			new_bases.append(base)
+
 max_rank = coll.find({}, {'rank': 1}).sort('rank', pymongo.DESCENDING).limit(1)[0]['rank']
 
 print "Adding %d new phrases" % len(new_bases)
@@ -46,6 +52,6 @@ docs = [
 		'count': 0,
 		'rank': max_rank + i + 1,
 	}
-for i in range(0,min(10000,len(new_bases)))]
+for i in xrange(len(new_bases))]
 
 coll.insert(docs)

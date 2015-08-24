@@ -1,4 +1,4 @@
-define ['utils', 'storage', 'nav', 'strings', 'config'], (utils, storage, nav, strings, config) ->
+define ['utils', 'storage', 'nav', 'strings', 'config', 'stack'], (utils, storage, nav, strings, config, stack) ->
 
 
 	############################################################################
@@ -49,7 +49,7 @@ define ['utils', 'storage', 'nav', 'strings', 'config'], (utils, storage, nav, s
 			method   : "POST"
 			data     : { email: email, password: password }
 			dataType : 'json'
-			timeout  : 10 * 1000
+			timeout  : 30 * 1000
 			success  : (json) ->
 				_nav.hideModal()
 				handler(json)
@@ -68,7 +68,7 @@ define ['utils', 'storage', 'nav', 'strings', 'config'], (utils, storage, nav, s
 			method   : "POST"
 			data     : { email: email, password: password }
 			dataType : 'json'
-			timeout  : 10 * 1000
+			timeout  : 30 * 1000
 			success  : (json) ->
 				_nav.hideModal()
 				if json['success']
@@ -90,7 +90,7 @@ define ['utils', 'storage', 'nav', 'strings', 'config'], (utils, storage, nav, s
 			method   : "POST"
 			data     : { email: email}
 			dataType : 'json'
-			timeout  : 10 * 1000
+			timeout  : 30 * 1000
 			success  : (json) ->
 				_nav.hideModal()
 				handler(json)
@@ -112,13 +112,16 @@ define ['utils', 'storage', 'nav', 'strings', 'config'], (utils, storage, nav, s
 		$.ajax
 			url      : _apiUrl("get-dictionary/#{ lang }", authenticated = true)
 			dataType : 'json'
-			timeout  : 10 * 1000
+			timeout  : 30 * 1000
 			success  : (json) ->
-				console.log(json)
-				console.log(Object.keys(json['result']['dictionary']).length)
 				_nav.hideModal()
 				if json['success'] is 1
 					dictionary = json['result']
+					baseMap = {}
+					for phraseId of dictionary['dictionary']
+						base = dictionary['dictionary'][phraseId]['base']
+						baseMap[base] = phraseId
+					dictionary['bases'] = baseMap
 					storage.setDictionary(lang, dictionary)
 
 				# Refresh the page now that we have made an attempt at fetching the dictionary
@@ -145,7 +148,7 @@ define ['utils', 'storage', 'nav', 'strings', 'config'], (utils, storage, nav, s
 			method   : 'post'
 			data     : { cards: cards }
 			dataType : 'json'
-			timeout  : 10 * 1000
+			timeout  : 30 * 1000
 			success  : (json) ->
 				_nav.hideModal()
 				if json['success']
@@ -174,6 +177,34 @@ define ['utils', 'storage', 'nav', 'strings', 'config'], (utils, storage, nav, s
 
 
 	############################################################################
+	# _ensureExcerptDictionary
+	#
+	############################################################################
+	_ensureExcerptDictionary = (lang, handler) ->
+		# Show the modal after a certain amount of load time
+		_nav.showModal("Fetching dictionary entries", "ajax", 1000)
+
+		# Construct the data
+		data =
+			lang: lang
+
+		# Send the query
+		$.ajax
+			url      : _apiUrl('get-excerpt-dictionary', authenticated = true)
+			method   : "POST"
+			data     : data
+			dataType : 'json'
+			timeout  : 30 * 1000
+			success  : (json) ->
+				_nav.hideModal()
+				if json['success']
+					stack.addPhrasesToDictionary(json['result'])
+				handler(json)
+			error    : (jqXHR, textStatus, thownError) ->
+				_nav.showModal(strings.getString("ajaxError"), "alert")
+
+
+	############################################################################
 	# _addLanguage
 	#
 	############################################################################
@@ -187,7 +218,7 @@ define ['utils', 'storage', 'nav', 'strings', 'config'], (utils, storage, nav, s
 			method   : "POST"
 			data     : {}
 			dataType : 'json'
-			timeout  : 10 * 1000
+			timeout  : 30 * 1000
 			success  : (json) ->
 				_nav.hideModal()
 				if json['success']
@@ -195,6 +226,33 @@ define ['utils', 'storage', 'nav', 'strings', 'config'], (utils, storage, nav, s
 					userProfile['langs'].push(lang)
 					console.log(userProfile)
 					storage.setUserProfile(userProfile)
+				handler(json)
+			error    : (jqXHR, textStatus, thownError) ->
+				_nav.showModal(strings.getString("ajaxError"), "alert")
+
+
+	############################################################################
+	# _addExcerpt
+	#
+	############################################################################
+	_addExcerpt = (excerpt, handler) ->
+		# Show the modal after a certain amount of load time
+		_nav.showModal("Saving your progress history", "ajax", 1000)
+
+		# Construct the data
+		data =
+			lang: storage.getLanguage()
+			excerpt: excerpt
+
+		# Send the query
+		$.ajax
+			url      : _apiUrl('add-excerpt', authenticated = true)
+			method   : "POST"
+			data     : data
+			dataType : 'json'
+			timeout  : 30 * 1000
+			success  : (json) ->
+				_nav.hideModal()
 				handler(json)
 			error    : (jqXHR, textStatus, thownError) ->
 				_nav.showModal(strings.getString("ajaxError"), "alert")
@@ -212,6 +270,7 @@ define ['utils', 'storage', 'nav', 'strings', 'config'], (utils, storage, nav, s
 		data =
 			lang            : storage.getLanguage()
 			progress_updates: JSON.stringify(storage.getProgressUpdates())
+			deck_updates    : JSON.stringify(storage.getDeckUpdates())
 
 		# Send the query
 		$.ajax
@@ -219,11 +278,12 @@ define ['utils', 'storage', 'nav', 'strings', 'config'], (utils, storage, nav, s
 			method   : "POST"
 			data     : data
 			dataType : 'json'
-			timeout  : 10 * 1000
+			timeout  : 30 * 1000
 			success  : (json) ->
 				_nav.hideModal()
 				if json['success']
 					storage.clearProgressUpdates()
+					storage.clearDeckUpdates()
 				handler(json)
 			error    : (jqXHR, textStatus, thownError) ->
 				_nav.showModal(strings.getString("ajaxError"), "alert")
@@ -248,7 +308,7 @@ define ['utils', 'storage', 'nav', 'strings', 'config'], (utils, storage, nav, s
 			method   : "POST"
 			data     : data
 			dataType : 'json'
-			timeout  : 10 * 1000
+			timeout  : 30 * 1000
 			success  : (json) ->
 				_nav.hideModal()
 				if json['success']
@@ -268,8 +328,10 @@ define ['utils', 'storage', 'nav', 'strings', 'config'], (utils, storage, nav, s
 
 		# Construct the data
 		lang = storage.getLanguage()
+		planMode = storage.getPlanMode()
 		data =
 			lang: lang
+			plan_mode: planMode
 
 		# Send the query
 		$.ajax
@@ -277,12 +339,13 @@ define ['utils', 'storage', 'nav', 'strings', 'config'], (utils, storage, nav, s
 			method   : "POST"
 			data     : data
 			dataType : 'json'
-			timeout  : 10 * 1000
+			timeout  : 30 * 1000
 			success  : (json) ->
 				console.log(json)
 				_nav.hideModal()
 				if json['success']
 					storage.setPlan(lang, json['result'])
+					console.log(json)
 				handler(json)
 			error    : (jqXHR, textStatus, thownError) ->
 				_nav.showModal(strings.getString("ajaxError"), "alert")
@@ -294,15 +357,7 @@ define ['utils', 'storage', 'nav', 'strings', 'config'], (utils, storage, nav, s
 	############################################################################
 	_ensurePlan = (handler) ->
 		# Attempt to get the dictionary from memory
-		lang = storage.getLanguage()
-		plan = storage.getPlan(lang)
-
-		if plan?
-			handler
-				success: 1
-				result : plan
-		else
-			_getPlan(handler)
+		_getPlan(handler)
 
 
 	############################################################################
@@ -335,9 +390,19 @@ define ['utils', 'storage', 'nav', 'strings', 'config'], (utils, storage, nav, s
 			_ensureDictionary(lang, handler)
 
 
+		ensureExcerptDictionary: (lang, handler) ->
+			_nav = require("nav")
+			_ensureExcerptDictionary(lang, handler)
+
+
 		updateUserProfile: (handler) ->
 			_nav = require("nav")
 			_updateUserProfile(handler)
+
+
+		addExcerpt: (excerpt, handler) ->
+			_nav = require("nav")
+			_addExcerpt(excerpt, handler)
 
 
 		updateProgress: (handler) ->

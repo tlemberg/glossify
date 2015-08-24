@@ -41,20 +41,34 @@ def main():
 	cursor = coll.find({ 'txs': {'$exists': 1 } })
 	total_count = cursor.count()
 	for phrase in cursor:
-		section = dbutils.get_section_for_phrase(db, phrase)
-		if section != None:
-			updates = get_pronunciation_f(phrase, section['text'])
-			if updates:
-				coll.update(
-					{
-						'base': phrase['base']
-					},
-					{
-						'$set': updates,
-					},
-					multi=True,
-					upsert=True,
-				)
+		updates = None
+
+		# Special dictionary-based pronunciation
+		if args.lang == 'zh':
+			entry = db.translations_zh.find_one({ 'base': phrase['base'] })
+			if entry:
+				updates = { 'pron': entry['pron'] }
+		
+		# Fall back onto generic wiktionary-based pronunciation
+		if not updates:
+			section = dbutils.get_section_for_phrase(db, phrase)
+			if section != None:
+				updates = get_pronunciation_f(phrase, section['text'])
+
+		# Perform the updates, if they exist
+		if updates:
+			coll.update(
+				{
+					'base': phrase['base']
+				},
+				{
+					'$set': updates,
+				},
+				multi=True,
+				upsert=True,
+			)
+
+		# Increase the ticker
 		count += 1
 		print "\r", "{0:.2f}".format(100. * float(count) / float(total_count)), '%',
 

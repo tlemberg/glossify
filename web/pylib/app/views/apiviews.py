@@ -10,6 +10,9 @@ import app.appconfig
 import json
 import os.path
 
+from bson import ObjectId
+import dictionary
+
 
 ################################################################################
 # get_worksheet
@@ -36,7 +39,6 @@ def get_dictionary(lang):
 		})
 
 	# Return success
-	print os.path.join(app.appconfig.template_folder, 'dictionaries'), "%s.json" % lang
 	return send_from_directory(os.path.join(app.appconfig.template_folder, 'dictionaries'), "%s.json" % lang)
 
 
@@ -57,6 +59,7 @@ def get_plan():
 	try:
 		# Read the parameters
 		lang = request.form['lang']
+		planMode = request.form['plan_mode']
 	except KeyError:
 		# Return failure if the arguments don't exist
 		return json_result({
@@ -66,9 +69,23 @@ def get_plan():
 
 	# Create the plan array
 	plan = []
-	coll = mongo.db["phrases_%s" % lang]
-	for phrase in coll.find({ 'in_plan': 1 }, { '_id': 1 }).sort('rank', 1):
-		plan.append( phrase['_id'] )
+	if planMode == 'frequency':
+		coll = mongo.db["phrases_%s" % lang]
+		for phrase in coll.find({ 'in_plan': 1 }, { '_id': 1 }).sort('rank', 1):
+			plan.append( phrase['_id'] )
+	else:
+		email = user_profile['email']
+		excerpts = mongo.db.excerpts.find({
+			'lang': lang,
+			'email': email })
+		coll = mongo.db["phrases_%s" % lang]
+		for e in excerpts:
+			phrases = coll.find({ '_id': { '$in': e['phrase_ids'] } })
+			plan.append({
+				'deckId': e['_id'],
+				'excerpt': e['excerpt'], 
+				'phraseIds': [p['_id'] for p in phrases],
+			})
 
 	# Return success
 	return json_result({
@@ -166,13 +183,113 @@ def get_progress():
 
 
 ################################################################################
+# add_Excerpt
+#
+################################################################################
+@app.appconfig.app_instance.route('/api/add-excerpt', methods=['POST'])
+def add_excerpt():
+
+	# Authenticate the user
+	user_profile = verify_auth_token()
+	if user_profile is None:
+		return json_result({
+			'success': 0,
+			'error'  : 'authentication failed',
+		})
+
+	# Get user properties
+	email = user_profile['email']
+
+	try:
+		# Read the parameters
+		excerpt = request.form['excerpt']
+		lang = request.form['lang']
+	except KeyError:
+		# Return failure if the arguments don't exist
+		return json_result({
+			'success': 0,
+			'error'  : 'invalid parameters',
+		})
+
+	phrase_ids = []
+	coll = mongo.db["phrases_%s" % lang]
+
+	for phrase_size in xrange(1,5):
+		for i in xrange(0, len(excerpt)-phrase_size+1):
+			j = i + phrase_size
+			phrase = excerpt[i:j]
+			phrase_id = coll.find_one({'base': phrase, 'txs': {'$exists': 1}}, {'_id': 1})
+			if phrase_id:
+				phrase_ids.append(phrase_id['_id'])
+
+	excerpt_id = mongo.db.excerpts.insert({
+		'email': email,
+		'lang': lang,
+		'excerpt': excerpt,
+		'phrase_ids': phrase_ids })
+
+	# Return success
+	return json_result({
+		'success': 1,
+		'result': excerpt_id })
+
+
+################################################################################
+# add_Excerpt
+#
+################################################################################
+@app.appconfig.app_instance.route('/api/get-excerpt-dictionary', methods=['POST'])
+def get_excerpt_dictionary():
+
+	# Authenticate the user
+	user_profile = verify_auth_token()
+	if user_profile is None:
+		return json_result({
+			'success': 0,
+			'error'  : 'authentication failed',
+		})
+
+	try:
+		# Read the parameters
+		lang = request.form['lang']
+	except KeyError:
+		# Return failure if the arguments don't exist
+		return json_result({
+			'success': 0,
+			'error'  : 'invalid parameters',
+		})
+
+	email = user_profile['email']
+
+	excerpts = mongo.db.excerpts.find({
+		'lang': lang,
+		'email': email })
+
+	phrase_ids = []
+	for excerpt in excerpts:
+		phrase_ids += excerpt['phrase_ids']
+
+	print len(set(phrase_ids))
+
+	coll = mongo.db["phrases_%s" % lang]
+
+	cursor = coll.find({ '_id': { '$in': phrase_ids } })
+	d = dictionary.create_dictionary_from_cursor(lang, cursor)
+
+	print len(set(d.keys()))
+
+	return json_result({
+		'success': 1,
+		'result' : d,
+	})
+
+
+################################################################################
 # update_progress
 #
 ################################################################################
 @app.appconfig.app_instance.route('/api/update-progress', methods=['POST'])
 def update_progress():
-
-	print "VERIFYING"
 
 	# Authenticate the user
 	user_profile = verify_auth_token()
@@ -188,10 +305,12 @@ def update_progress():
 	try:
 		# Read the parameters
 		card_updates_json = request.form['progress_updates']
+		deck_updates_json = request.form['deck_updates']
 		lang			  = request.form['lang']
 
 		# Decode JSON parameter
 		card_updates = json.loads(card_updates_json)
+		deck_updates = json.loads(deck_updates_json)
 	except KeyError:
 		# Return failure if the arguments don't exist
 		return json_result({
@@ -199,7 +318,12 @@ def update_progress():
 			'error'  : 'invalid parameters',
 		})
 
-	print card_updates
+	if deck_updates != {}:
+		for deck_id, phrase_ids in deck_updates.iteritems():
+			deck = mongo.db.excerpts.update(
+				{ '_id': ObjectId(deck_id) },
+				{ '$set': { 'phrase_ids': [ObjectId(p) for p in phrase_ids] } },
+			)
 
 	if card_updates != {}:
 

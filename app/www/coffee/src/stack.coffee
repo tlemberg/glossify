@@ -39,10 +39,21 @@ define ['utils', 'storage'], (utils, storage) ->
 	#
 	############################################################################
 	_getPhraseIds = (plan, section, boxIndex, lang) ->
-		minIndex = minIndex = (section - 1) * SECTION_SIZE + boxIndex * boxSize
-		maxIndex = minIndex + boxSize
+		planMode = storage.getPlanMode()
 
-		plan.slice(minIndex, maxIndex)
+		phraseIds = undefined
+		if planMode == 'frequency'
+
+			minIndex = minIndex = (section - 1) * SECTION_SIZE + boxIndex * boxSize
+			maxIndex = minIndex + boxSize
+
+			phraseIds = plan.slice(minIndex, maxIndex)
+
+		else
+
+			phraseIds = plan[(section - 1) * SECTION_SIZE + boxIndex]['phraseIds']
+
+		phraseIds
 
 
 	############################################################################
@@ -50,21 +61,34 @@ define ['utils', 'storage'], (utils, storage) ->
 	#
 	############################################################################
 	_getBoxes = (plan, dictionary, section, lang, cardsPerBox) ->
-		nBoxes = SECTION_SIZE / cardsPerBox
+
+		flat = storage.getPlanMode() is 'frequency'
+
 
 		boxes = []
+		nBoxes = undefined
+		if flat
+			nBoxes = SECTION_SIZE / cardsPerBox
+		else
+			nBoxes = plan.length
 
 		for boxIndex in [0..nBoxes-1]
-			phraseIds = _getPhraseIds(plan, section, boxIndex, lang)
+
+			phraseIds = undefined
+			if flat?
+				phraseIds = _getPhraseIds(plan, section, boxIndex, lang)
+			else
+				phraseIds = plan[boxIndex]['phraseIds']
 
 			if phraseIds.length > 0
 
-				samplePhraseIds = phraseIds[0..3]
-				sampleWords = (dictionary['dictionary'][phraseId]['base'] for phraseId in samplePhraseIds)
-				sample = sampleWords.join(', ') + "..."
-
-				#percentDefs = _getProgressPercentage(phraseIds, 'defs')
-				#percentPron = _getProgressPercentage(phraseIds, 'pron')
+				sample = undefined
+				if flat
+					samplePhraseIds = phraseIds[0..3]
+					sampleWords = (dictionary['dictionary'][phraseId]['base'] for phraseId in samplePhraseIds)
+					sample = sampleWords.join(', ') + ", ..."
+				else
+					sample = plan[boxIndex]['excerpt']
 
 				progressLevels = [1, 2, 3, 4, 5]
 
@@ -130,6 +154,43 @@ define ['utils', 'storage'], (utils, storage) ->
 				widthStr = utils.withUnit(percent, '%')
 				$(".#{ className } .progress-box-#{ studyMode } .progress-bar-#{ progress }").css('width', widthStr)
 				$(".#{ className } .progress-box-#{ studyMode } .progress-counter-#{ progress }").html("#{ count }")
+
+
+	############################################################################
+	# _addExcerpt
+	#
+	############################################################################
+	_addExcerpt = (text) ->
+		lang = storage.getLanguage()
+		dictionary = storage.getDictionary(lang)
+		phraseIds = []
+		for phraseSize in [1..4]
+			for i in [0..text.length-phraseSize+1]
+				j = i + phraseSize
+				phrase = text.substring(i, j)
+				if phrase of dictionary['bases']
+					phraseIds.push(dictionary['bases'][phrase])
+
+		plan = storage.getPlan(lang)
+		plan.push
+			'excerpt': text
+			'phraseIds': phraseIds
+		storage.setPlan(lang, plan)
+
+
+	############################################################################
+	# _getExcerpt
+	#
+	############################################################################
+	_getExcerpt = (plan, section, box) ->
+		planMode = storage.getPlanMode()
+
+		excerpt = undefined
+		if planMode == 'example'
+			excerpt = plan[(section - 1) * SECTION_SIZE + box]['excerpt']
+
+		excerpt
+
 			
 
 	############################################################################
@@ -156,5 +217,25 @@ define ['utils', 'storage'], (utils, storage) ->
 
 		updateProgressBars: (className, phraseIds) ->
 			_updateProgressBars(className, phraseIds)
+
+
+		addExcerpt: (text) ->
+			_addExcerpt(text)
+
+
+		getExcerpt: (plan, section, box) ->
+			_getExcerpt(plan, section, box)
+
+
+		addPhrasesToDictionary: (d) ->
+			lang = storage.getLanguage()
+			dictionary = storage.getDictionary(lang)
+			for k, v of d
+				console.log('adding')
+				console.log(k)
+				console.log(v)
+				dictionary['dictionary'][k] = v
+			console.log(Object.keys(dictionary['dictionary']).length)
+			storage.setDictionary(lang, dictionary)
 
 	}

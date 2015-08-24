@@ -5,6 +5,7 @@ from pymongo import MongoClient
 
 import argparse
 import dbutils
+import dictionary
 import itsdangerous
 from bson.json_util import dumps
 import os
@@ -25,42 +26,13 @@ restrictions = {
 	'txs': {'$exists': 1 },
 }
 include_pron = args.lang in ['he', 'zh']
+include_strokes = args.lang in ['zh']
 if include_pron:
 	restrictions['pron'] = { '$exists': 1 }
 if args.lang == 'zh':
 	restrictions['trad'] = { '$exists': 0 }
 
-cursor = coll.find(
-	restrictions,
-	{
-		"_id" : 1,
-		"lang": 1,
-		"base": 1,
-		"txs" : 1,
-		"rank": 1,
-		"pron": 1
-	}
-)
-
-l = list(cursor)
-q = []
-d = {}
-
-for phrase in l:
-	if 'txs' in phrase and phrase['txs'] != {}:
-		new_txs = scraper.get_viewable_txs(phrase)
-
-		to_append = {
-			'lang': phrase['lang'],
-			'base': phrase['base'],
-			'txs' : new_txs,
-			'_id': str(phrase['_id']),
-		}
-		if include_pron:
-			to_append['pron'] = phrase['pron']
-
-		if new_txs != {}:
-			q.append(to_append)
+cursor = coll.find(restrictions)
 
 coll.update(
 	{ },
@@ -72,8 +44,10 @@ coll.update(
 	multi=True,
 	upsert=True,
 )
-for h in q[0:10000]:
-	d[h['_id']] = h
+
+d = dictionary.get_dictionary_from_cursor(lang, cursor)
+
+for h in d.values():
 	coll.update(
 		{
 			'base': h['base'],
@@ -87,12 +61,10 @@ for h in q[0:10000]:
 		upsert=True,
 	)
 
-print len(d.keys())
-
 obj = {
 	'success': 1,
 	'result' : {
-		'lang': 'is',
+		'lang': 'args.lang',
 		'dictionary': d,
 	},
 }

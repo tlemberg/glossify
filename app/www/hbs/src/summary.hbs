@@ -1,0 +1,16 @@
+{{#each summary_phrases}}
+	<div class='summary-row'>
+		<div class='summary-row-1'>
+			{{base}}
+		</div>
+		<div class='summary-row-2'>
+			{{pron}}
+		</div>
+		<div class='summary-row-3'>
+			{{{tx_summary}}}
+		</div>
+		<div class='summary-row-4'>
+			<div class='delete-card-btn' data-phrase-id='{{phrase_id}}'>Delete</div>
+		</div>
+	</div>
+{{/each}}
