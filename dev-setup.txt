@@ -39,7 +39,13 @@ export PYTHONPATH=$PYTHONPATH:$PROJECT_HOME/web/pylib
 # Dev port
 export DEV_NUMBER=[[PICK A 1-DIGIT NUMBER!!]]
 export DEV_APP_PORT=800$DEV_NUMBER
-export DEV_WEB_PORT=800$DEV_NUMBER
+export DEV_WEB_PORT=500$DEV_NUMBER
+
+
+5 Set up watch scripts for CoffeeScript and LESS
+
+$PROJECT_HOME/app/scripts/watch_coffee
+$PROJECT_HOME/app/scripts/watch_less
 
 
 5. Run a dev server for the back-end
@@ -47,7 +53,12 @@ export DEV_WEB_PORT=800$DEV_NUMBER
 ~/work/glossify/scripts/run_web_devserver
 
 
-6. Run a dev server for the front-end
+6. Update the app config for your port
+
+vim $PROJECT_HOME/app/www/coffee/src/config.coffee
+
+
+7. Run a dev server for the front end
 
 ~/work/glossify/scripts/run_app_devserver
 
