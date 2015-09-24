@@ -1,3 +1,4 @@
 #!/bin/bash
+[-d $PROJECT_HOME/app/www ] || mkdir $PROJECT_HOME/app/www
 cd $PROJECT_HOME/app/www
 python -m SimpleHTTPServer 8000
