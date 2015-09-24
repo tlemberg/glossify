@@ -1,0 +1,2 @@
+cd $PROJECT_HOME/web
+python main.py

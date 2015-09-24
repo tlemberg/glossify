@@ -48,8 +48,8 @@ if 'ISDEV' in os.environ:
 	app_domain = 'http://glossify.net'
 	web_domain = 'https://glossify.net'
 else:
-	app_domain = '52.25.87.1:5000'
-	web_domain = '52.25.87.1:5000'
+	app_domain = "52.25.87.1:%s" % os.environ['DEV_APP_PORT']
+	web_domain = "52.25.87.1:%s" % os.environ['DEV_WEB_PORT']
 
 
 # jinja2
