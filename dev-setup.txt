@@ -1,0 +1,54 @@
+1. Clone the git repo into a specific directory
+
+mkdir ~/work
+cd ~/work
+git clone git@bitbucket.org:tlemberg/glossify.git
+
+
+2. Set up a virtualenv
+
+export WORKON_HOME=~/Envs
+mkdir -p $WORKON_HOME
+source /usr/local/bin/virtualenvwrapper.sh
+mkvirtualenv glossify
+
+
+3. Unfreeze requirements
+
+cd ~/work/glossify/web
+pip install -r requirements.txt
+
+
+4. Set up some commands and environment variables in your .bash_profile
+
+# App
+export ISDEV=1
+
+# VIRTUALENV
+export WORKON_HOME=$HOME/Envs
+source /usr/local/bin/virtualenvwrapper.sh
+
+# Environment Variables
+export AWS_ACCESS_KEY_ID=AKIAJWD3IGNEY7DNIZAA
+export AWS_SECRET_ACCESS_KEY=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
+export PROJECT_HOME=$HOME/work/glossify
+
+# Python
+export PYTHONPATH=$PYTHONPATH:$PROJECT_HOME/web/pylib
+
+# Dev port
+export DEV_NUMBER=[[PICK A 1-DIGIT NUMBER!!]]
+export DEV_APP_PORT=800$DEV_NUMBER
+export DEV_WEB_PORT=800$DEV_NUMBER
+
+
+5. Run a dev server for the back-end
+
+~/work/glossify/scripts/run_web_devserver
+
+
+6. Run a dev server for the front-end
+
+~/work/glossify/scripts/run_app_devserver
+
+ 
