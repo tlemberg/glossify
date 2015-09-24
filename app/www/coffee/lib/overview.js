@@ -3,37 +3,32 @@
   var indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
   define(['utils', 'storage', 'api', 'nav', 'css', 'deck', 'stack', 'strings', 'hbs!../../hbs/src/box-list'], function(utils, storage, api, nav, css, deck, stack, strings, boxListTemplate) {
-    var PICKER_TILE_MARGIN, _createEmptyProgress, _loadBoxList, _loadNavHeader, _loadPage, _nPages, _nav, _refreshPage, _registerEvents, _reloadPlan;
+    var PICKER_TILE_MARGIN, _createEmptyProgress, _loadBoxList, _loadPage, _nPages, _nav, _refreshPage, _registerEvents, _reloadPlan;
     _nav = void 0;
     _nPages = 10;
     PICKER_TILE_MARGIN = 10;
     _loadPage = function(template) {
-      var dictionary, i, lang, plan, planLength, results, templateArgs, userProfile;
+      var dictionary, doc, documentId, documents, lang, plan, planLength, templateArgs, userProfile;
       lang = storage.getLanguage();
       userProfile = storage.getUserProfile();
       if (indexOf.call(Object.keys(userProfile['langs']), lang) < 0) {
         _createEmptyProgress();
-      }
-      if (storage.getSection() == null) {
-        storage.setSection(1);
       }
       userProfile = storage.getUserProfile();
       dictionary = storage.getDictionary(lang);
       plan = storage.getPlan(lang);
       planLength = plan.length;
       _nPages = Math.ceil(planLength / 1000);
+      documents = storage.getDocuments();
+      documentId = storage.getDocumentId();
+      doc = documents[documentId];
       templateArgs = {
-        sections: (function() {
-          results = [];
-          for (var i = 1; 1 <= _nPages ? i <= _nPages : i >= _nPages; 1 <= _nPages ? i++ : i--){ results.push(i); }
-          return results;
-        }).apply(this)
+        documentTitle: doc['title']
       };
       $(".overview-page").html(template(templateArgs));
       _loadBoxList(false);
-      _loadNavHeader();
-      _nav.showBackBtn("Account", function(event) {
-        return _nav.loadPage('manage');
+      _nav.showBackBtn("Library", function(event) {
+        return _nav.loadPage('library');
       });
       if (!userProfile['confirmed']) {
         _nav.showAlert("You will need to check your email to confirm your email address and fully activate yout account.");
@@ -43,98 +38,39 @@
     _refreshPage = function() {
       return _loadBoxList(false);
     };
-    _loadNavHeader = function() {
-      var lang, maxIndex, minIndex, plan, s, section, sectionInterval;
-      section = storage.getSection();
-      sectionInterval = stack.getSectionInterval(section);
-      lang = storage.getLanguage();
-      plan = storage.getPlan(lang);
-      minIndex = sectionInterval['min'] + 1;
-      maxIndex = Math.min(sectionInterval['max'] + 1, plan.length);
-      s = "Cards " + minIndex + " through " + maxIndex;
-      if (section === 1) {
-        $('.overview-page .arrow-btn-left').hide();
-        $('.overview-page .arrow-btn-right').show();
-      } else if (section === _nPages) {
-        $('.overview-page .arrow-btn-left').show();
-        $('.overview-page .arrow-btn-right').hide();
-      } else {
-        $('.overview-page .arrow-btn-left').show();
-        $('.overview-page .arrow-btn-right').show();
-      }
-      return $(".overview-page .interval-text").html(s);
-    };
     _loadBoxList = function(transition) {
-      var box, boxes, dictionary, i, lang, len, matchWidth, plan, section, templateArgs, userProfile;
+      var boxes, dictionary, documentId, excerptId, excerpts, i, lang, len, matchWidth, plan, ref, templateArgs, userProfile;
       if (transition == null) {
         transition = true;
       }
       userProfile = storage.getUserProfile();
       lang = storage.getLanguage();
       dictionary = storage.getDictionary(lang);
-      section = storage.getSection();
       plan = storage.getPlan(lang);
-      boxes = stack.getBoxes(plan, dictionary, section, lang, 100);
+      documentId = storage.getDocumentId();
+      boxes = stack.getBoxes(plan, documentId);
       templateArgs = {
         boxes: boxes
       };
-      $(".overview-page .box-list-" + section).html(boxListTemplate(templateArgs));
-      for (i = 0, len = boxes.length; i < len; i++) {
-        box = boxes[i];
-        stack.updateProgressBars("box-div-" + box.index, box.phraseIds);
+      $(".overview-page .box-list").html(boxListTemplate(templateArgs));
+      excerpts = storage.getExcerpts();
+      ref = plan[documentId];
+      for (i = 0, len = ref.length; i < len; i++) {
+        excerptId = ref[i];
+        stack.updateProgressBars("box-div-" + excerptId, excerpts[excerptId]['phrase_ids']);
       }
-      $(".overview-page .box-list-" + section).css("width", utils.withUnit(utils.windowWidth(), 'px'));
+      $(".overview-page .box-list").css("width", utils.withUnit(utils.windowWidth(), 'px'));
       $(".overview-page .box-list-container").css("width", utils.withUnit(utils.windowWidth() * 10, 'px'));
-      matchWidth = $(".overview-page .box-list-" + section).css("width");
+      matchWidth = $(".overview-page .box-list").css("width");
       $(".overview-page .box-list").css("width", matchWidth);
       $(".box-list-container .box-div").off('click');
-      $(".box-list-" + section + " .box-div").click(function(event) {
-        storage.setBox($(this).data('index'));
+      return $(".box-list .box-div").click(function(event) {
+        storage.setExcerptId($(this).data('excerpt-id'));
         return _nav.loadPage('study');
       });
-      $(".box-list-" + section + " .small-btn").click(function(event) {
-        storage.setBox($(this).data('index'));
-        storage.setStudyMode($(this).data('study-mode'));
-        return _nav.loadPage('study');
-      });
-      if (transition) {
-        return $(".box-list-container").animate({
-          "margin-left": utils.withUnit(-1 * (section - 1) * utils.windowWidth(), 'px')
-        }, 500, function() {
-          return console.log("animate");
-        });
-      } else {
-        return $(".box-list-container").css("margin-left", utils.withUnit(-1 * (section - 1) * utils.windowWidth(), 'px'));
-      }
     };
     _registerEvents = function() {
-      $('.overview-page .arrow-btn-left').click(function(event) {
-        storage.setSection(storage.getSection() - 1);
-        _loadBoxList();
-        return _loadNavHeader();
-      });
-      $('.overview-page .arrow-btn-right').click(function(event) {
-        storage.setSection(storage.getSection() + 1);
-        _loadBoxList();
-        return _loadNavHeader();
-      });
-      $('.overview-page .plan-mode').click(function(event) {
-        var plan_mode;
-        plan_mode = $(this).data('mode');
-        storage.setPlanMode(plan_mode);
-        return _reloadPlan();
-      });
-      return $('.overview-page .add-example-btn').click(function(event) {
-        var excerpt;
-        excerpt = $('.overview-page .add-example-text').val();
-        return api.addExcerpt(excerpt, function(json) {
-          if (json['success']) {
-            return _reloadPlan();
-          } else {
-            return $('.login-page .error').html(strings.getString('unexpectedFailure'));
-          }
-        });
-      });
+      return console.log('events');
     };
     _reloadPlan = function() {
       var lang, plan_mode;
@@ -145,7 +81,6 @@
           return api.ensureExcerptDictionary(lang, function(json) {
             console.log(json);
             if (json['success']) {
-              storage.setSection(1);
               if (plan_mode === 'example') {
                 $('.overview-page .add-example-div').show();
               } else {

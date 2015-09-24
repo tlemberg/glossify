@@ -1,94 +1,29 @@
 define ['utils', 'storage'], (utils, storage) ->
 
-	SECTION_SIZE    = 1000
 	DICTIONARY_SIZE = 10000
-
-	boxSize = 100
-
-
-	############################################################################
-	# _getSectionInterval
-	#
-	############################################################################
-	_getSectionInterval = (section) ->
-		minIndex = minIndex = (section - 1) * SECTION_SIZE
-		maxIndex = minIndex + SECTION_SIZE - 1
-
-		return {
-			min: minIndex
-			max: maxIndex
-		}
-
-
-	############################################################################
-	# _getSectionInterval
-	#
-	############################################################################
-	_getBoxInterval = (section, box) ->
-		minIndex = (section - 1) * SECTION_SIZE + box * boxSize
-		maxIndex = minIndex + boxSize
-
-		return {
-			min: minIndex
-			max: maxIndex
-		}
-
-
-	############################################################################
-	# _getPhraseIds
-	#
-	############################################################################
-	_getPhraseIds = (plan, section, boxIndex, lang) ->
-		planMode = storage.getPlanMode()
-
-		phraseIds = undefined
-		if planMode == 'frequency'
-
-			minIndex = minIndex = (section - 1) * SECTION_SIZE + boxIndex * boxSize
-			maxIndex = minIndex + boxSize
-
-			phraseIds = plan.slice(minIndex, maxIndex)
-
-		else
-
-			phraseIds = plan[(section - 1) * SECTION_SIZE + boxIndex]['phraseIds']
-
-		phraseIds
-
 
 	############################################################################
 	# _getBoxes
 	#
 	############################################################################
-	_getBoxes = (plan, dictionary, section, lang, cardsPerBox) ->
+	_getBoxes = (plan, documentId) ->
 
-		flat = storage.getPlanMode() is 'frequency'
-
+		excerpt_dict = storage.getExcerpts()
+		lang = storage.getLanguage()
 
 		boxes = []
-		nBoxes = undefined
-		if flat
-			nBoxes = SECTION_SIZE / cardsPerBox
-		else
-			nBoxes = plan.length
+		nBoxes = plan.length
 
-		for boxIndex in [0..nBoxes-1]
+		console.log(excerpt_dict)
 
-			phraseIds = undefined
-			if flat?
-				phraseIds = _getPhraseIds(plan, section, boxIndex, lang)
-			else
-				phraseIds = plan[boxIndex]['phraseIds']
+		for excerptId in plan[documentId]
+
+			excerpt = excerpt_dict[excerptId]
+			phraseIds = excerpt['phrase_ids']
 
 			if phraseIds.length > 0
 
-				sample = undefined
-				if flat
-					samplePhraseIds = phraseIds[0..3]
-					sampleWords = (dictionary['dictionary'][phraseId]['base'] for phraseId in samplePhraseIds)
-					sample = sampleWords.join(', ') + ", ..."
-				else
-					sample = plan[boxIndex]['excerpt']
+				sample = excerpt['excerpt']
 
 				progressLevels = [1, 2, 3, 4, 5]
 
@@ -98,13 +33,11 @@ define ['utils', 'storage'], (utils, storage) ->
 					includePron = 1
 
 				box =
-					phraseIds: phraseIds
-					minCard: (section - 1) * SECTION_SIZE + boxIndex * cardsPerBox + 1
-					maxCard: (section - 1) * SECTION_SIZE + (boxIndex + 1) * cardsPerBox
-					sample : sample
-					index  : boxIndex
+					phraseIds     : phraseIds
+					sample        : sample
+					excerptId     : excerptId
 					progressLevels: progressLevels
-					include_pron: includePron
+					include_pron  : includePron
 
 				boxes.push(box)
 
@@ -132,6 +65,8 @@ define ['utils', 'storage'], (utils, storage) ->
 	#
 	############################################################################
 	_updateProgressBars = (className, phraseIds) ->
+		console.log(className)
+		console.log(phraseIds)
 		for studyMode in ['defs', 'pron']
 			progressHash = {
 				1: 0
@@ -211,8 +146,8 @@ define ['utils', 'storage'], (utils, storage) ->
 			_getPhraseIds(section, box, lang)
 
 
-		getBoxes: (userProfile, dictionary, section, lang, cardsPerBox) ->
-			_getBoxes(userProfile, dictionary, section, lang, cardsPerBox)
+		getBoxes: (plan, documentId) ->
+			_getBoxes(plan, documentId)
 
 
 		updateProgressBars: (className, phraseIds) ->

@@ -90,12 +90,15 @@ def Main() :
 		if args.lang == 'zh':
 			entry = db.translations_zh.find_one({ 'base': phrase['base'] })
 			if entry:
-				txs = [{
-					"text"   : entry['txs'][rank],
-					"rank"   : rank,
-					"deleted": False,
-				} for rank in xrange(len(entry['txs']))]
-				write_translations(phrase['base'], { 'unknown': txs })
+				all_txs = {}
+				for pron in entry['txs'].keys():
+					txs = [{
+						"text"   : entry['txs'][pron][rank],
+						"rank"   : rank,
+						"deleted": False,
+					} for rank in xrange(len(entry['txs'][pron]))]
+					all_txs[pron] = txs
+				write_translations(phrase['base'], all_txs)
 				count += 1
 				if count % 100 == 0:
 					print count
@@ -302,6 +305,5 @@ def f7(seq, idfun=None):
        seen[marker] = 1
        result.append(item)
    return result
-
 
 Main()

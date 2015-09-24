@@ -21,6 +21,7 @@ def create_dictionary_from_cursor(lang, cursor, max_entries=10000):
 
 	# Create a list of entries with the appropriate fields
 	for phrase in l:
+
 		if 'txs' in phrase and phrase['txs'] != {}:
 			new_txs = scraper.get_viewable_txs(phrase)
 
@@ -29,6 +30,7 @@ def create_dictionary_from_cursor(lang, cursor, max_entries=10000):
 				'base': phrase['base'],
 				'txs' : new_txs,
 				'_id': str(phrase['_id']),
+				'rank': phrase['rank'],
 			}
 			if include_pron:
 				to_append['pron'] = phrase['pron']
@@ -43,3 +45,4 @@ def create_dictionary_from_cursor(lang, cursor, max_entries=10000):
 		d[h['_id']] = h
 	
 	return d
+

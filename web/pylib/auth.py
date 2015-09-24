@@ -29,7 +29,7 @@ all_permissions = [
 # generate_auth_token
 #
 ################################################################################
-def generate_auth_token(email, expiration = 3600):
+def generate_auth_token(email, expiration = 360000):
 	s = itsdangerous.TimedJSONWebSignatureSerializer(secret_key, expires_in = expiration)
 	return s.dumps({ 'email': email })
 

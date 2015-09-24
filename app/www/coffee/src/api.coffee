@@ -232,21 +232,22 @@ define ['utils', 'storage', 'nav', 'strings', 'config', 'stack'], (utils, storag
 
 
 	############################################################################
-	# _addExcerpt
+	# _addDocument
 	#
 	############################################################################
-	_addExcerpt = (excerpt, handler) ->
+	_addDocument = (title, text, handler) ->
 		# Show the modal after a certain amount of load time
 		_nav.showModal("Saving your progress history", "ajax", 1000)
 
 		# Construct the data
 		data =
 			lang: storage.getLanguage()
-			excerpt: excerpt
+			title: title
+			text: text
 
 		# Send the query
 		$.ajax
-			url      : _apiUrl('add-excerpt', authenticated = true)
+			url      : _apiUrl('add-document', authenticated = true)
 			method   : "POST"
 			data     : data
 			dataType : 'json'
@@ -344,7 +345,9 @@ define ['utils', 'storage', 'nav', 'strings', 'config', 'stack'], (utils, storag
 				console.log(json)
 				_nav.hideModal()
 				if json['success']
-					storage.setPlan(lang, json['result'])
+					storage.setDocuments(json['result']['docs'])
+					storage.setExcerpts(json['result']['excerpts'])
+					storage.setPlan(lang, json['result']['plan'])
 					console.log(json)
 				handler(json)
 			error    : (jqXHR, textStatus, thownError) ->
@@ -400,9 +403,9 @@ define ['utils', 'storage', 'nav', 'strings', 'config', 'stack'], (utils, storag
 			_updateUserProfile(handler)
 
 
-		addExcerpt: (excerpt, handler) ->
+		addDocument: (title, text, handler) ->
 			_nav = require("nav")
-			_addExcerpt(excerpt, handler)
+			_addDocument(title, text, handler)
 
 
 		updateProgress: (handler) ->

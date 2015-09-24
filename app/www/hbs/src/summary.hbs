@@ -1,15 +1,18 @@
 {{#each summary_phrases}}
 	<div class='summary-row'>
 		<div class='summary-row-1'>
-			{{base}}
+			{{rank_description}}
 		</div>
 		<div class='summary-row-2'>
-			{{pron}}
+			{{base}}
 		</div>
 		<div class='summary-row-3'>
-			{{{tx_summary}}}
+			{{pron}}
 		</div>
 		<div class='summary-row-4'>
+			{{{tx_summary}}}
+		</div>
+		<div class='summary-row-5'>
 			<div class='delete-card-btn' data-phrase-id='{{phrase_id}}'>Delete</div>
 		</div>
 	</div>

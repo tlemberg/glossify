@@ -26,54 +26,46 @@ define ['storage', 'api', 'strings'], (storage, api, strings) ->
 		planMode = storage.getPlanMode() ? 'example'
 		storage.setPlanMode(planMode)
 
-		langs = ({
-			'code': code
-			'name': constants.langMap[code]
-		} for code in userProfile.langs)
-		options = ({
-			'code': code
-			'name': constants.langMap[code]
-		} for code in _validLangs when code not in userProfile.langs)
+		docs = storage.getDocuments()
 		
 		templateArgs =
-			langs  : langs
-			options: options
+			docs : docs
 
-		$(".manage-page").html(template(templateArgs))
+		console.log(template)
 
-		$('.manage-page .box').click (event) ->
-			langCode = $(this).data('lang-code')
-			storage.setLanguage(langCode)
-			api.ensureExcerptDictionary langCode, (json) ->
-				if json['success']
-					
-					api.getProgress (json) ->
-						if json['success']
-							api.getPlan (json) ->
-								if json['success']
-									_nav.loadPage('library')
-								else
-									# Error ensuring plan
-									$('.login-page .error').html(strings.getString('unexpectedFailure'))
-						else
-							# Error ensuring progress
-							$('.login-page .error').html(strings.getString('unexpectedFailure'))
-				else
-					# Error ensuring dictionary
-					$('.login-page .error').html(strings.getString('unexpectedFailure'))
+		$(".library-page").html(template(templateArgs))
+
+		$('.library-page .box').click (event) ->
+			documentId = $(this).data('document-id')
+			storage.setDocumentId(documentId)
+			_nav.loadPage('overview')
 
 		_nav.showBackBtn "Logout", (event) ->
 			storage.logout()
 			_nav.loadPage('login')
 
-		$('.manage-page .add-language-btn').click (event) ->
-			langCode = $('.manage-page .add-language-select').val()
-			api.addLanguage langCode, (json) ->
+		$('.library-page .add-doc-btn').click (event) ->
+			title = $('.library-page .add-doc-title-input').val()
+			text = $('.library-page .add-doc-text-input').val()
+			console.log(text)
+			api.addDocument title, text, (json) ->
 				if json['success']
-					_loadPage(_template)
-					_nav.showAlert('Language added!')
+					storage.setDocumentId(json['result'])	
+					api.getPlan (json) ->
+						if json['success']
+							lang = storage.getLanguage()
+							api.ensureExcerptDictionary lang, (json) ->
+								if json['success']
+									_nav.loadPage('overview')
+								else
+									# Error getting excerpt dictionary
+									$('.login-page .error').html(strings.getString('unexpectedFailure'))
+						else
+							# Error ensuring plan
+							$('.login-page .error').html(strings.getString('unexpectedFailure'))
 				else
-					_nav.showAlert('Failed to add language. Try again.')
+					# Error adding document
+					$('.login-page .error').html(strings.getString('unexpectedFailure'))
 
 
 	############################################################################

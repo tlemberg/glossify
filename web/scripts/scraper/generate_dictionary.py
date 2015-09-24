@@ -10,6 +10,7 @@ import itsdangerous
 from bson.json_util import dumps
 import os
 import scraper
+import pymongo
 
 # Set up an arg parser
 parser = argparse.ArgumentParser()
@@ -32,7 +33,7 @@ if include_pron:
 if args.lang == 'zh':
 	restrictions['trad'] = { '$exists': 0 }
 
-cursor = coll.find(restrictions)
+cursor = coll.find(restrictions).sort('rank', pymongo.ASCENDING)
 
 coll.update(
 	{ },
@@ -45,7 +46,7 @@ coll.update(
 	upsert=True,
 )
 
-d = dictionary.get_dictionary_from_cursor(lang, cursor)
+d = dictionary.create_dictionary_from_cursor(args.lang, cursor)
 
 for h in d.values():
 	coll.update(
@@ -70,6 +71,9 @@ obj = {
 }
 
 s = dumps(obj)
+
+print len(d.keys())
+print d['557da539bb345072f4115127']
 
 #serializer = itsdangerous.URLSafeSerializer('f15908888b0c1fa33bcf89c04f2d2410e4f9a81d6e764538')
 #encrypted_s = serializer.dumps(s)

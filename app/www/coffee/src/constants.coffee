@@ -3,11 +3,13 @@ define [
 	'hbs!../../hbs/src/login',
 	'hbs!../../hbs/src/signup',
 	'hbs!../../hbs/src/manage',
-	'hbs!../../hbs/src/overview',	
+	'hbs!../../hbs/src/library',
+	'hbs!../../hbs/src/overview',
 	'hbs!../../hbs/src/study',
 	'login',
 	'signup',
 	'manage',
+	'library',
 	'overview',
 	'study',
 ],
@@ -16,11 +18,13 @@ define [
 	loginTemplate,
 	signupTemplate,
 	manageTemplate,
+	libraryTemplate,
 	overviewTemplate,
 	studyTemplate,
 	login,
 	signup,
 	manage,
+	library,
 	overview,
 	study,
 ) ->
@@ -40,6 +44,9 @@ define [
 		manage:
 			load   : manage.loadPage
 			refresh: manage.refreshPage
+		library:
+			load   : library.loadPage
+			refresh: library.refreshPage
 		overview:
 			load   : overview.loadPage
 			refresh: overview.refreshPage
@@ -51,6 +58,7 @@ define [
 		login    : loginTemplate
 		signup   : signupTemplate
 		manage   : manageTemplate
+		library  : libraryTemplate
 		overview : overviewTemplate
 		study    : studyTemplate
 		
@@ -58,6 +66,7 @@ define [
 		'login',
 		'signup',
 		'manage',
+		'library',
 		'overview',
 		'study',
 	]

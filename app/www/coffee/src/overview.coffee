@@ -48,10 +48,6 @@ define [
 		if lang not in Object.keys(userProfile['langs'])
 			_createEmptyProgress()
 
-		# Ensure a section exists
-		if not storage.getSection()?
-			storage.setSection(1)
-
 		# Build args
 		userProfile = storage.getUserProfile()
 		dictionary  = storage.getDictionary(lang)
@@ -60,15 +56,18 @@ define [
 		planLength = plan.length
 		_nPages     = Math.ceil(planLength / 1000)
 
+
+		documents = storage.getDocuments()
+		documentId = storage.getDocumentId()
+		doc = documents[documentId]
 		templateArgs =
-			sections: [1.._nPages]
+			documentTitle: doc['title']
 		$(".overview-page").html(template(templateArgs))
 
 		_loadBoxList(false)
-		_loadNavHeader()
 
-		_nav.showBackBtn "Account", (event) ->
-			_nav.loadPage('manage')
+		_nav.showBackBtn "Library", (event) ->
+			_nav.loadPage('library')
 
 		if not userProfile['confirmed']
 			_nav.showAlert("You will need to check your email to confirm your email address and fully activate yout account.")
@@ -85,30 +84,6 @@ define [
 		_loadBoxList(false)
 
 
-	_loadNavHeader = ->
-		section = storage.getSection()
-		sectionInterval = stack.getSectionInterval(section)
-		lang = storage.getLanguage()
-		plan = storage.getPlan(lang)
-
-		minIndex = sectionInterval['min'] + 1
-		maxIndex = Math.min(sectionInterval['max'] + 1, plan.length)
-
-		s = "Cards #{minIndex} through #{maxIndex}"
-
-		if section == 1
-			$('.overview-page .arrow-btn-left').hide()
-			$('.overview-page .arrow-btn-right').show()
-		else if section == _nPages
-			$('.overview-page .arrow-btn-left').show()
-			$('.overview-page .arrow-btn-right').hide()
-		else
-			$('.overview-page .arrow-btn-left').show()
-			$('.overview-page .arrow-btn-right').show()
-
-		$(".overview-page .interval-text").html(s)
-
-
 	############################################################################
 	# _loadBoxList
 	#
@@ -118,47 +93,37 @@ define [
 		userProfile = storage.getUserProfile()
 		lang        = storage.getLanguage()
 		dictionary  = storage.getDictionary(lang)
-		section     = storage.getSection()
 		plan        = storage.getPlan(lang)
+		documentId  = storage.getDocumentId()
 
 		# Construct arguments
-		boxes = stack.getBoxes(plan, dictionary, section, lang, 100)
+		boxes = stack.getBoxes(plan, documentId)
 		templateArgs =
-			boxes      : boxes
+			boxes: boxes
 
 		# Render template
-		$(".overview-page .box-list-#{section}").html(boxListTemplate(templateArgs))
+		$(".overview-page .box-list").html(boxListTemplate(templateArgs))
 
 		# Do the progress bars
-		for box in boxes
-			stack.updateProgressBars("box-div-#{ box.index }", box.phraseIds)
+		excerpts = storage.getExcerpts()
+		for excerptId in plan[documentId]
+			stack.updateProgressBars("box-div-#{ excerptId }", excerpts[excerptId]['phrase_ids'])
 
-		$(".overview-page .box-list-#{section}").css("width", utils.withUnit(utils.windowWidth(), 'px'))
+		$(".overview-page .box-list").css("width", utils.withUnit(utils.windowWidth(), 'px'))
 
 		$(".overview-page .box-list-container").css("width", utils.withUnit(utils.windowWidth() * 10, 'px'))
 
-		matchWidth = $(".overview-page .box-list-#{section}").css("width")
-		#matchHeight = $(".overview-page .box-list-#{section}").css("height") + 100
+		matchWidth = $(".overview-page .box-list").css("width")
+		#matchHeight = $(".overview-page .box-list").css("height") + 100
 		$(".overview-page .box-list").css("width", matchWidth)
 		#$(".overview-page .box-list").css("height", matchHeight)
 		#$(".overview-page .box-list-container").css("height", matchHeight)
 
 		# Register events
 		$(".box-list-container .box-div").off('click')
-		$(".box-list-#{section} .box-div").click (event) ->
-			storage.setBox($(this).data('index'))
+		$(".box-list .box-div").click (event) ->
+			storage.setExcerptId($(this).data('excerpt-id'))
 			_nav.loadPage('study')
-
-		$(".box-list-#{section} .small-btn").click (event) ->
-			storage.setBox($(this).data('index'))
-			storage.setStudyMode($(this).data('study-mode'))
-			_nav.loadPage('study')
-
-		if transition
-			$(".box-list-container").animate { "margin-left": utils.withUnit(-1 * (section - 1) * utils.windowWidth(), 'px') }, 500, ->
-				console.log("animate")
-		else
-			$(".box-list-container").css("margin-left", utils.withUnit(-1 * (section - 1) * utils.windowWidth(), 'px'))
 
 
 	############################################################################
@@ -166,34 +131,7 @@ define [
 	#
 	############################################################################
 	_registerEvents = ->
-
-
-		$('.overview-page .arrow-btn-left').click (event) ->
-			storage.setSection(storage.getSection() - 1)
-			_loadBoxList()
-			_loadNavHeader()
-
-
-		$('.overview-page .arrow-btn-right').click (event) ->
-			storage.setSection(storage.getSection() + 1)
-			_loadBoxList()
-			_loadNavHeader()
-
-
-		$('.overview-page .plan-mode').click (event) ->
-			plan_mode = $(this).data('mode')
-			storage.setPlanMode(plan_mode)
-			_reloadPlan()
-
-
-		$('.overview-page .add-example-btn').click (event) ->
-			excerpt = $('.overview-page .add-example-text').val()
-			api.addExcerpt excerpt, (json) ->
-				if json['success']
-					_reloadPlan()
-				else
-					# Error adding excerpt
-					$('.login-page .error').html(strings.getString('unexpectedFailure'))
+		console.log('events')
 
 
 	############################################################################
@@ -208,7 +146,6 @@ define [
 				api.ensureExcerptDictionary lang, (json) ->
 					console.log(json)
 					if json['success']
-						storage.setSection(1)
 						if plan_mode == 'example'
 							$('.overview-page .add-example-div').show()
 						else

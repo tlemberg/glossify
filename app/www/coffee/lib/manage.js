@@ -12,7 +12,7 @@
       _template = template;
       userProfile = storage.getUserProfile();
       constants = require('constants');
-      planMode = (ref = storage.getPlanMode()) != null ? ref : 'frequency';
+      planMode = (ref = storage.getPlanMode()) != null ? ref : 'example';
       storage.setPlanMode(planMode);
       langs = (function() {
         var i, len, ref1, results;
@@ -50,14 +50,13 @@
         var langCode;
         langCode = $(this).data('lang-code');
         storage.setLanguage(langCode);
-        return api.ensureDictionary(langCode, function(json) {
+        return api.ensureExcerptDictionary(langCode, function(json) {
           if (json['success']) {
             return api.getProgress(function(json) {
               if (json['success']) {
-                return api.ensurePlan(function(json) {
+                return api.getPlan(function(json) {
                   if (json['success']) {
-                    storage.setSection(1);
-                    return _nav.loadPage('overview');
+                    return _nav.loadPage('library');
                   } else {
                     return $('.login-page .error').html(strings.getString('unexpectedFailure'));
                   }

@@ -9,7 +9,8 @@ define [
 	'constants',
 	'hbs!../../hbs/src/wordref',
 	'hbs!../../hbs/src/summary',
-], (utils, stack, storage, nav, deck, pageview, api, constants, wordrefTemplate, summaryTemplate) ->
+	'hbs!../../hbs/src/phrase-popup',
+], (utils, stack, storage, nav, deck, pageview, api, constants, wordrefTemplate, summaryTemplate, phrasePopupTemplate) ->
 
 
 	############################################################################
@@ -115,8 +116,7 @@ define [
 		_resetCard()
 
 		_nav.showBackBtn "Done", (event) ->
-			api.updateProgress (json) ->
-				_nav.loadPage('overview')
+			_nav.loadPage('overview')
 
 		# Refresh the summary
 		_resetSummary()
@@ -133,18 +133,15 @@ define [
 	#
 	############################################################################
 	_setDeckProperties = ->
-		lang        = storage.getLanguage()
-		section     = storage.getSection()
-		box         = storage.getBox()
-		plan        = storage.getPlan(lang)
-		planMode    = storage.getPlanMode()
 
 		# Get phrase IDs for the current box
-		_phraseIds = stack.getPhraseIds(plan, section, box, lang)
-		if planMode == 'example'
-			_excerpt = stack.getExcerpt(plan, section, box)
-		else
-			_excerpt = undefined
+		excerptId = storage.getExcerptId()
+		excerpts  = storage.getExcerpts()
+		
+		excerpt = excerpts[excerptId]
+		_excerpt = excerpt['excerpt']
+		_phraseIds = excerpt['phrase_ids']
+		
 
 
 	############################################################################
@@ -171,6 +168,9 @@ define [
 	#
 	############################################################################
 	_registerEvents = ->
+		$('.page').scroll (event) ->
+			$('.study-page .phrase-popup').css('top', '-100px')
+
 		$('.study-page .show-pron-btn').click (event) ->
 			showPron = storage.getShowPron()
 			if showPron
@@ -222,9 +222,49 @@ define [
 			_resetCard()
 			_updateConsole()
 
+		$('.forget-progress-btn').click (event) ->
+			for studyMode in ['defs', 'pron']
+				for phraseId in _phraseIds
+					currentProgress = storage.getProgress(phraseId, studyMode)
+					storage.setProgress(phraseId, Math.max(0, currentProgress - 1), studyMode)
+			lang = storage.getLanguage()
+			dictionary = storage.getDictionary(lang)
+			_deck = deck.createDeck(_phraseIds, dictionary)
+			_resetProgress()
+
+
+
 		$('.study-page .card-reveal-btn').click (event) ->
 			$('.study-page .card-reveal-txt').show()
 			$('.study-page .card-reveal-btn').hide()
+
+		$('.study-page .excerpt').mouseup (event) ->
+			text = window.getSelection().toString()
+			lang = storage.getLanguage()
+			dictionary = storage.getDictionary(lang)
+			phrase = dictionary['lookup'][text]
+			_showPhrasePopup(phrase, event.pageX, event.pageY)
+
+
+	############################################################################
+	# _showPhrasePopup
+	#
+	############################################################################
+	_showPhrasePopup = (phrase, x, y) ->
+
+		templateArgs =
+			unknown: 1
+		if phrase?
+			defText = _getTxSummary(phrase['txs'])
+			templateArgs = 
+				base: phrase['base']
+				pron: phrase['pron']
+				tx_summary: defText
+		
+		$(".study-page .phrase-popup").html(phrasePopupTemplate(templateArgs))
+		$(".study-page .phrase-popup").css('position', 'fixed')
+		$(".study-page .phrase-popup").css('left', "#{x}px")
+		$(".study-page .phrase-popup").css('top', "#{y+80}px")
 
 
 	############################################################################
@@ -248,15 +288,22 @@ define [
 		for phraseId in _phraseIds
 			phrase = dictionary['dictionary'][phraseId]
 			defText = _getTxSummary(phrase['txs'])
+			rankDescription = 'rare'
+			if phrase['rank'] < 100
+				rankDescription = 'very important'
+			else if phrase['rank'] < 1000
+				rankDescription = 'important'
+			else if phrase['rank'] < 5000
+				rankDescription = 'common'
 			summaryPhrases.push
 				base: phrase['base']
 				pron: phrase['pron']
 				tx_summary: defText
 				phrase_id: phrase['_id']
+				rank_description: rankDescription
 
 		templateArgs =
 			summary_phrases: summaryPhrases
-		
 		$(".deck-summary").html(summaryTemplate(templateArgs))
 
 		$('.study-page .delete-card-btn').click (event) ->
@@ -519,7 +566,7 @@ define [
 		chunks = []
 		for k in types[0..1]
 			v = txs[k]
-			lines = ("#{ i + 1 }. #{ v[i] }" for i in [0..Math.min(v.length - 1, 1)])
+			lines = ("#{ i + 1 }. #{ v[i] }" for i in [0..Math.min(v.length - 1, 4)])
 			if k == 'unknown'
 				chunks.push(lines.join("<br />"))
 			else

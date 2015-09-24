@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from flask             import render_template, request, redirect, send_from_directory
 from flask.ext.pymongo import PyMongo
 
@@ -12,6 +14,7 @@ import os.path
 
 from bson import ObjectId
 import dictionary
+import pymongo
 
 
 ################################################################################
@@ -67,30 +70,34 @@ def get_plan():
 			'error'  : 'invalid parameters',
 		})
 
-	# Create the plan array
-	plan = []
-	if planMode == 'frequency':
-		coll = mongo.db["phrases_%s" % lang]
-		for phrase in coll.find({ 'in_plan': 1 }, { '_id': 1 }).sort('rank', 1):
-			plan.append( phrase['_id'] )
-	else:
-		email = user_profile['email']
-		excerpts = mongo.db.excerpts.find({
-			'lang': lang,
-			'email': email })
-		coll = mongo.db["phrases_%s" % lang]
-		for e in excerpts:
-			phrases = coll.find({ '_id': { '$in': e['phrase_ids'] } })
-			plan.append({
-				'deckId': e['_id'],
-				'excerpt': e['excerpt'], 
-				'phraseIds': [p['_id'] for p in phrases],
-			})
+	email = user_profile['email']
+
+	# Create the documents dcitionary
+	docs_cursor = mongo.db.documents.find({
+		'lang': lang,
+		'email': email })
+	doc_dict = { str(d['_id']): d for d in docs_cursor }
+
+	# Create the excerpts dictionary
+	excerpt_cursor = mongo.db.excerpts.find({
+		'lang': lang,
+		'email': email })
+	excerpt_dict = { str(e['_id']): e for e in excerpt_cursor }
+
+	plan = {}
+	coll = mongo.db["phrases_%s" % lang]
+	for document_id in doc_dict.keys():
+		excerpt_cursor = mongo.db.excerpts.find({ 'document_id': ObjectId(document_id) }).sort('_id', pymongo.ASCENDING)
+		plan[document_id] = [str(e['_id']) for e in excerpt_cursor]
 
 	# Return success
 	return json_result({
 		'success': 1,
-		'result' : plan,
+		'result' : {
+			'docs': doc_dict,
+			'excerpts': excerpt_dict,
+			'plan': plan,
+		},
 	})
 
 
@@ -183,11 +190,11 @@ def get_progress():
 
 
 ################################################################################
-# add_Excerpt
+# add_document
 #
 ################################################################################
-@app.appconfig.app_instance.route('/api/add-excerpt', methods=['POST'])
-def add_excerpt():
+@app.appconfig.app_instance.route('/api/add-document', methods=['POST'])
+def add_document():
 
 	# Authenticate the user
 	user_profile = verify_auth_token()
@@ -202,7 +209,8 @@ def add_excerpt():
 
 	try:
 		# Read the parameters
-		excerpt = request.form['excerpt']
+		title = request.form['title']
+		text = request.form['text']
 		lang = request.form['lang']
 	except KeyError:
 		# Return failure if the arguments don't exist
@@ -211,27 +219,48 @@ def add_excerpt():
 			'error'  : 'invalid parameters',
 		})
 
-	phrase_ids = []
-	coll = mongo.db["phrases_%s" % lang]
+	excerpts = text.split(u'。')
 
-	for phrase_size in xrange(1,5):
-		for i in xrange(0, len(excerpt)-phrase_size+1):
-			j = i + phrase_size
-			phrase = excerpt[i:j]
-			phrase_id = coll.find_one({'base': phrase, 'txs': {'$exists': 1}}, {'_id': 1})
-			if phrase_id:
-				phrase_ids.append(phrase_id['_id'])
-
-	excerpt_id = mongo.db.excerpts.insert({
-		'email': email,
+	# Insert the document
+	document_id = mongo.db.documents.insert({
+		'title': title,
+		'text': text,
 		'lang': lang,
-		'excerpt': excerpt,
-		'phrase_ids': phrase_ids })
+		'email': email })
+
+	# Insert each excerpt
+	for excerpt in excerpts:
+
+		phrase_id_map = {}
+		coll = mongo.db["phrases_%s" % lang]
+
+		for phrase_size in xrange(1,5):
+			for i in xrange(0, len(excerpt)-phrase_size+1):
+				j = i + phrase_size
+				phrase = excerpt[i:j]
+				phrase_id = coll.find_one({'base': phrase, 'txs': {'$exists': 1}}, {'_id': 1})
+				if phrase_id:
+					phrase_id_map[phrase] = phrase_id['_id']
+
+		all_phrases = phrase_id_map.keys()
+		for phrase in all_phrases:
+			if len(phrase) > 1:
+				for c in phrase:
+					if c in phrase_id_map:
+						del phrase_id_map[c]
+		phrase_ids = phrase_id_map.values()
+
+		excerpt_id = mongo.db.excerpts.insert({
+			'email': email,
+			'lang': lang,
+			'excerpt': excerpt,
+			'phrase_ids': phrase_ids,
+			'document_id': document_id })
 
 	# Return success
 	return json_result({
 		'success': 1,
-		'result': excerpt_id })
+		'result': document_id })
 
 
 ################################################################################

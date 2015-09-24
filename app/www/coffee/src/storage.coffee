@@ -17,6 +17,8 @@ define ['utils'], (utils) ->
 	STUDY_MODE_KEY   = 'study_mode'
 	STUDY_ORDER_KEY  = 'study_order'
 	SHOW_PRON_KEY    = 'show_pron'
+	DOCUMENT_KEY     = 'doc'
+	EXCERPT_KEY      = 'excerpt'
 	PROGRESS_UPDATES_KEY  = 'card_updates'
 	ACCOUNT_CONFIRMED_KEY = 'account_confirmed'
 
@@ -99,7 +101,7 @@ define ['utils'], (utils) ->
 
 
 	_getDictionary = (lang) ->
-		_getLocalStorageItem("dictionary_#{ lang }")
+		_getLocalStorageItem("dictionary_#{ lang }") ? { 'dictionary': {} }
 
 
 	_setDictionary = (lang, v) ->
@@ -116,6 +118,22 @@ define ['utils'], (utils) ->
 
 	_setSection = (v) ->
 		_setLocalStorageItem(SECTION_KEY, v)
+
+
+	_getDocumentId = ->
+		_getLocalStorageItem(DOCUMENT_KEY)
+
+
+	_setDocumentId = (v) ->
+		_setLocalStorageItem(DOCUMENT_KEY, v)
+
+
+	_getExcerptId = ->
+		_getLocalStorageItem(EXCERPT_KEY)
+
+
+	_setExcerptId = (v) ->
+		_setLocalStorageItem(EXCERPT_KEY, v)
 
 
 	_getBox = ->
@@ -169,6 +187,11 @@ define ['utils'], (utils) ->
 	_clearProgressUpdates = ->
 		lang = _getLanguage()
 		_removeLocalStorageItem("progress_updates_#{ lang }")
+
+
+	_progressUpdatesEmpty = ->
+		updates = _getProgressUpdates()
+		Object.keys(updates['defs']).length == 0 and Object.keys(updates['pron']).length == 0 
 
 
 	_getProgressUpdates = ->
@@ -225,6 +248,34 @@ define ['utils'], (utils) ->
 		_removeLocalStorageItem("progress_#{ lang }")
 
 
+	_getDocuments = ->
+		lang = _getLanguage()
+		_getLocalStorageItem("documents_#{ lang }")
+
+
+	_setDocuments = (v) ->
+		lang = _getLanguage()
+		_setLocalStorageItem("documents_#{ lang }", v)
+
+
+	_removeDocuments = ->
+		_removeLocalStorageItem("documents_#{ lang }")
+
+
+	_getExcerpts = ->
+		lang = _getLanguage()
+		_getLocalStorageItem("excerpts_#{ lang }")
+
+
+	_setExcerpts = (v) ->
+		lang = _getLanguage()
+		_setLocalStorageItem("excerpts_#{ lang }", v)
+
+
+	_removeExcerpts = ->
+		_removeLocalStorageItem("excerpts_#{ lang }")
+
+
 	_getPlan = (lang) ->
 		planMode = _getPlanMode()
 		_getLocalStorageItem("plan_#{ lang }_#{ planMode }")
@@ -268,7 +319,7 @@ define ['utils'], (utils) ->
 
 	_addDeckUpdate = (deckId, phraseIds) ->
 
-		# Get the progressUpdates hash, defaulting to an empty hash
+		# Get the deckUpdates hash, defaulting to an empty hash
 		deckUpdates = _getDeckUpdates()
 		if !deckUpdates?
 			deckUpdates = {}
@@ -335,6 +386,9 @@ define ['utils'], (utils) ->
 			constants = require('constants')
 			for dictLang in Object.keys(constants.langMap)
 				_removeDictionary(dictLang)
+			v['lookup'] = {}
+			for phrase_id, entry of v['dictionary']
+				v['lookup'][entry['base']] = entry
 			_setDictionary(lang, v)
 
 		getSection: ->
@@ -348,6 +402,18 @@ define ['utils'], (utils) ->
 
 		setBox: (v) ->
 			_setBox(v)
+
+		getDocumentId: ->
+			_getDocumentId()
+
+		setDocumentId: (v) ->
+			_setDocumentId(v)
+
+		getExcerptId: ->
+			_getExcerptId()
+
+		setExcerptId: (v) ->
+			_setExcerptId(v)
 
 		getPlanMode: ->
 			_getPlanMode()
@@ -385,6 +451,9 @@ define ['utils'], (utils) ->
 		clearDeckUpdates: ->
 			_clearDeckUpdates()
 
+		progressUpdatesEmpty: ->
+			_progressUpdatesEmpty()
+
 		getProgressUpdates: ->
 			_getProgressUpdates()
 
@@ -408,6 +477,18 @@ define ['utils'], (utils) ->
 
 		setPlan: (lang, v) ->
 			_setPlan(lang, v)
+
+		getDocuments: () ->
+			_getDocuments()
+
+		setDocuments: (v) ->
+			_setDocuments(v)
+
+		getExcerpts: () ->
+			_getExcerpts()
+
+		setExcerpts: (v) ->
+			_setExcerpts(v)
 
 		isLoggedIn: ->
 			_isLoggedIn()

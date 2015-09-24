@@ -25,6 +25,15 @@ coll.remove({})
 coll.create_index([('base', pymongo.ASCENDING)])
 
 
+def u_join(sep, xs):
+	s = u""
+	for x in xs:
+		if type(x) != type(u''):
+			x = unicode(x, 'utf-8')
+		s = "%s%s%s" % (s, sep, x)
+	return s[1:]
+
+
 def convert_pinyin(s):
 	try:
 		a = s[0:-1]
@@ -97,15 +106,47 @@ for line in f_in.readlines():
 			if part:
 				pron += part
 
+		if type(pron) != type(u''):
+			pron = unicode(pron, 'utf-8')
+
 		# Get defs
 		i = line.find('/')
 		defs_str = line[i+1:len(line)-1]
 		defs = defs_str.split('/')
 
-		coll.insert({
-			'base': base,
-			'pron': pron,
-			'txs': defs})
+		# Look for variant defs
+		good_defs = {}
+		for d in defs:
+			if 'variant of' in d or 'CL:' in d:
+				continue
+			if pron not in good_defs.keys():
+				good_defs[pron] = []
+			good_defs[pron].append(d)
+
+		if good_defs != {}:
+			existing_entry = coll.find_one({'base': base})
+			if existing_entry:
+				for existing_pron in existing_entry['txs'].keys():
+					if existing_pron not in good_defs.keys():
+						good_defs[existing_pron] = []
+					good_defs[existing_pron] += existing_entry['txs'][existing_pron]
+				coll.update(
+					{ 'base': base },
+					{
+						'base': base,
+						'pron': u_join(u"/", good_defs.keys()),
+						'txs': good_defs
+					}
+				)
+			else:
+				coll.insert(
+					{
+						'base': base,
+						'pron': good_defs.keys()[0],
+						'txs': good_defs
+					}
+				)
 
 		count += 1
 		print "%d/%d" % (count, 113386)
+

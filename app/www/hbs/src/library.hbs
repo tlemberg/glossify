@@ -1,0 +1,24 @@
+{{#each docs}}
+	<div class="box" data-document-id="{{this._id}}">
+		<div class="box-content">
+			{{this.title}}
+		</div>
+	</div>
+{{/each}}
+
+<div class="add-doc-header">
+	Add document
+</div>
+
+<div class="add-doc-text">
+	<input type='text' class="add-doc-title-input" placeholder="title" />
+	<input type='text' class="add-doc-text-input" placeholder="document text" />
+</div>
+
+<div class="add-doc-btns">
+	<a>
+		<div class="facebook-signup-btn add-doc-btn">
+			Add
+		</div>
+	</a>
+</div>

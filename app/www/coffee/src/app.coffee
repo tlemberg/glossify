@@ -9,7 +9,8 @@ requirejs [
 	'jquery',
 	'nav',
 	'storage',
-], ($, nav, storage, url) ->
+	'api',
+], ($, nav, storage, url, api) ->
 
 
 	############################################################################
@@ -18,6 +19,19 @@ requirejs [
 	############################################################################
 	$(document).ready (event) ->
 		nav.initPages()
+
+		api = require('api')
+
+		( ->
+			if storage.isLoggedIn() and navigator.onLine
+				progressUpdates = storage.getProgressUpdates()
+				console.log(progressUpdates)
+				if progressUpdates? and not storage.progressUpdatesEmpty()
+					api.updateProgress (json) ->
+						console.log('update progress')
+			console.log('timer progress')
+			setTimeout(arguments.callee, 30000)
+		)();
 
 		if storage.isLoggedIn()
 			nav.loadPage('manage')

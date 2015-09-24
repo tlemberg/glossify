@@ -8,9 +8,24 @@
     }
   });
 
-  requirejs(['jquery', 'nav', 'storage'], function($, nav, storage, url) {
+  requirejs(['jquery', 'nav', 'storage', 'api'], function($, nav, storage, url, api) {
     $(document).ready(function(event) {
       nav.initPages();
+      api = require('api');
+      (function() {
+        var progressUpdates;
+        if (storage.isLoggedIn() && navigator.onLine) {
+          progressUpdates = storage.getProgressUpdates();
+          console.log(progressUpdates);
+          if ((progressUpdates != null) && !storage.progressUpdatesEmpty()) {
+            api.updateProgress(function(json) {
+              return console.log('update progress');
+            });
+          }
+        }
+        console.log('timer progress');
+        return setTimeout(arguments.callee, 30000);
+      })();
       if (storage.isLoggedIn()) {
         return nav.loadPage('manage');
       } else {

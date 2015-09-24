@@ -233,7 +233,7 @@ def get_viewable_txs(phrase):
 			continue
 		x = [tx for tx in v if not tx['deleted']]
 		x = sorted(x, key = lambda a: a['rank'])
-		x = x[0:3]
+		x = x[0:5]
 		x = [tx['text'] for tx in x]
 		new_txs[k] = x
 	return new_txs
