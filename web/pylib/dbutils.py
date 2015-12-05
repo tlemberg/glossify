@@ -5,8 +5,10 @@ import pymongo
 # get_phrase_for_base
 #
 ################################################################################
-def DBConnect():
-	client = pymongo.MongoClient('localhost', 27017)
+def DBConnect(host, user, passwd):
+	connect_str = "mongodb://%s:%s@%s/tenk" % (user, passwd, host)
+	print connect_str
+	client = pymongo.MongoClient(connect_str)
 	return client.tenk
 
 
@@ -24,3 +26,4 @@ def get_section_for_phrase(db, phrase):
 			section = db.sections.find_one({ 'base': base.upper(), 'lang': lang }, { "text": 1 })
 
 	return section
+
