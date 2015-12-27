@@ -37,7 +37,6 @@ api = restful.Api(app_instance)
 app_instance.config['DEBUG'] = True
 app_instance.config['SECRET_KEY'] = 'super-secret'
 
-"""
 app_instance.config['MONGO_HOST'] = 'glossify.io'
 app_instance.config['MONGO_PORT'] = '27017'
 app_instance.config['MONGO_DBNAME'] = 'tenk'
@@ -46,7 +45,6 @@ app_instance.config['MONGO_PASSWORD'] = 'tlemberg'
 
 # Mongo DB
 mongo = PyMongo(app_instance)
-"""
 
 mongo_db = dbutils.DBConnect('glossify.io', 'tlemberg', 'tlemberg')
 
