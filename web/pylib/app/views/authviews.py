@@ -30,7 +30,7 @@ def get_auth_token():
 	password = flask.request.form['password']
 
 	# Find the user
-	user_profile = mongo.db.user_profiles.find_one({ 'email': email })
+	user_profile = mongo_db.user_profiles.find_one({ 'email': email })
 
 	# Return the result
 	if user_profile is not None:
@@ -67,7 +67,7 @@ def create_user():
 
 	# Do SQL work
 	try:
-		if auth.cerate_user_profile(mongo.db, email, password):
+		if auth.cerate_user_profile(mongo_db, email, password):
 
 			auth.send_activation_email(email)
 			
@@ -110,7 +110,7 @@ def activate_user():
 		abort(404)
 
 	# Confirm the user
-	user_profile = mongo.db.user_profiles.find_one({ 'email': email })
+	user_profile = mongo_db.user_profiles.find_one({ 'email': email })
 	confirm_user_profile(user_profile)
 
 	# Return success

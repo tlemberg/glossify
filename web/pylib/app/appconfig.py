@@ -33,20 +33,30 @@ CORS(app_instance, resources=r'/api/*', allow_headers='Content-Type')
 # API
 api = restful.Api(app_instance)
 
-# Mongo DB
-mongo = PyMongo(app_instance)
-
 # Config the app
 app_instance.config['DEBUG'] = True
 app_instance.config['SECRET_KEY'] = 'super-secret'
+
+"""
+app_instance.config['MONGO_HOST'] = 'glossify.io'
+app_instance.config['MONGO_PORT'] = '27017'
+app_instance.config['MONGO_DBNAME'] = 'tenk'
+app_instance.config['MONGO_USERNAME'] = 'tlemberg'
+app_instance.config['MONGO_PASSWORD'] = 'tlemberg'
+
+# Mongo DB
+mongo = PyMongo(app_instance)
+"""
+
+mongo_db = dbutils.DBConnect('glossify.io', 'tlemberg', 'tlemberg')
 
 # Mail
 mail = Mail(app_instance)
 
 # Domains
 if 'ISDEV' in os.environ:
-	app_domain = 'http://glossify.net'
-	web_domain = 'https://glossify.net'
+	app_domain = 'http://glossify.io'
+	web_domain = 'https://glossify.io'
 else:
 	app_domain = "52.25.87.1:%s" % os.environ['DEV_APP_PORT']
 	web_domain = "52.25.87.1:%s" % os.environ['DEV_WEB_PORT']

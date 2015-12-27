@@ -99,14 +99,14 @@ def phrases_page(lang):
 		max_phrase = 99
 
 
-	phrases = mongo.db.phrases.find({
+	phrases = mongo_db.phrases.find({
 		'lang': lang,
 		'rank': { '$gt': min_phrase-1, '$lt': max_phrase+1 }
 	}).sort('rank', 1)
 
 	processed_phrases = []
 	for phrase in phrases:
-		if dbutils.get_section_for_phrase(mongo.db, phrase):
+		if dbutils.get_section_for_phrase(mongo_db, phrase):
 			phrase['has_section'] = 1
 		if 'txs' in phrase:
 			phrase['has_txs'] = 1
@@ -134,12 +134,12 @@ def phrase_page(lang, base):
 		return flask.redirect(flask.url_for('unauthorized_page'))
 
 	# Get the phrase from the database
-	phrase = mongo.db.phrases.find_one({
+	phrase = mongo_db.phrases.find_one({
 		'lang': lang,
 		'base': base
 	})
 
-	section = dbutils.get_section_for_phrase(mongo.db, phrase)
+	section = dbutils.get_section_for_phrase(mongo_db, phrase)
 
 	if phrase and flask.request.method == 'POST':
 		# Apply changes from the form
@@ -152,7 +152,7 @@ def phrase_page(lang, base):
 			phrase['txs'][k] = sorted(txs, key=lambda tx: tx['rank'])
 
 		# Perform the update
-		mongo.db.phrases.update(
+		mongo_db.phrases.update(
 			{
 			'lang': lang,
 			'base': base

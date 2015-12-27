@@ -21,6 +21,17 @@ import pymongo
 # get_worksheet
 #
 ################################################################################
+@app.appconfig.app_instance.route('/api/test')
+def test():
+	return json_result({
+		'success': 1,
+	})
+
+
+################################################################################
+# get_worksheet
+#
+################################################################################
 @app.appconfig.app_instance.route('/api/get-worksheet/<name>')
 def get_worksheet(name):
 	return send_from_directory(os.path.join(app.appconfig.template_folder, 'worksheets'), "%s.csv" % name)
@@ -73,21 +84,21 @@ def get_plan():
 	email = user_profile['email']
 
 	# Create the documents dcitionary
-	docs_cursor = mongo.db.documents.find({
+	docs_cursor = mongo_db.documents.find({
 		'lang': lang,
 		'email': email })
 	doc_dict = { str(d['_id']): d for d in docs_cursor }
 
 	# Create the excerpts dictionary
-	excerpt_cursor = mongo.db.excerpts.find({
+	excerpt_cursor = mongo_db.excerpts.find({
 		'lang': lang,
 		'email': email })
 	excerpt_dict = { str(e['_id']): e for e in excerpt_cursor }
 
 	plan = {}
-	coll = mongo.db["phrases_%s" % lang]
+	coll = mongo_db["phrases_%s" % lang]
 	for document_id in doc_dict.keys():
-		excerpt_cursor = mongo.db.excerpts.find({ 'document_id': ObjectId(document_id) }).sort('_id', pymongo.ASCENDING)
+		excerpt_cursor = mongo_db.excerpts.find({ 'document_id': ObjectId(document_id) }).sort('_id', pymongo.ASCENDING)
 		plan[document_id] = [str(e['_id']) for e in excerpt_cursor]
 
 	# Return success
@@ -129,7 +140,7 @@ def add_language(lang):
 		user_profile['langs'] = f7(user_profile['langs'])
 
 		# Perform the upsert
-		mongo.db.user_profiles.update(
+		mongo_db.user_profiles.update(
 			{ 'email': email },
 			user_profile,
 			upsert = True,
@@ -170,7 +181,7 @@ def get_progress():
 		})
 
 	# Get user progress, or initialize an empty progress history if none exists
-	user_progress = mongo.db.user_progress.find_one({ 'email': email, 'lang': lang })
+	user_progress = mongo_db.user_progress.find_one({ 'email': email, 'lang': lang })
 	if user_progress == None:
 		user_progress = {
 			'email'   : email,
@@ -180,7 +191,7 @@ def get_progress():
 				'pron': { },
 			},
 		}
-		mongo.db.user_progress.insert(user_progress)
+		mongo_db.user_progress.insert(user_progress)
 
 	# Return success
 	return json_result({
@@ -222,7 +233,7 @@ def add_document():
 	excerpts = text.split(u'。')
 
 	# Insert the document
-	document_id = mongo.db.documents.insert({
+	document_id = mongo_db.documents.insert({
 		'title': title,
 		'text': text,
 		'lang': lang,
@@ -232,7 +243,7 @@ def add_document():
 	for excerpt in excerpts:
 
 		phrase_id_map = {}
-		coll = mongo.db["phrases_%s" % lang]
+		coll = mongo_db["phrases_%s" % lang]
 
 		for phrase_size in xrange(1,5):
 			for i in xrange(0, len(excerpt)-phrase_size+1):
@@ -250,7 +261,7 @@ def add_document():
 						del phrase_id_map[c]
 		phrase_ids = phrase_id_map.values()
 
-		excerpt_id = mongo.db.excerpts.insert({
+		excerpt_id = mongo_db.excerpts.insert({
 			'email': email,
 			'lang': lang,
 			'excerpt': excerpt,
@@ -290,7 +301,7 @@ def get_excerpt_dictionary():
 
 	email = user_profile['email']
 
-	excerpts = mongo.db.excerpts.find({
+	excerpts = mongo_db.excerpts.find({
 		'lang': lang,
 		'email': email })
 
@@ -300,7 +311,7 @@ def get_excerpt_dictionary():
 
 	print len(set(phrase_ids))
 
-	coll = mongo.db["phrases_%s" % lang]
+	coll = mongo_db["phrases_%s" % lang]
 
 	cursor = coll.find({ '_id': { '$in': phrase_ids } })
 	d = dictionary.create_dictionary_from_cursor(lang, cursor)
@@ -349,7 +360,7 @@ def update_progress():
 
 	if deck_updates != {}:
 		for deck_id, phrase_ids in deck_updates.iteritems():
-			deck = mongo.db.excerpts.update(
+			deck = mongo_db.excerpts.update(
 				{ '_id': ObjectId(deck_id) },
 				{ '$set': { 'phrase_ids': [ObjectId(p) for p in phrase_ids] } },
 			)
@@ -357,7 +368,7 @@ def update_progress():
 	if card_updates != {}:
 
 		# Get user progress, or initialize an empty progress history if none exists
-		user_progress = mongo.db.user_progress.find_one({ 'email': email, 'lang': lang })
+		user_progress = mongo_db.user_progress.find_one({ 'email': email, 'lang': lang })
 
 		for studyMode in card_updates.keys():
 
@@ -366,7 +377,7 @@ def update_progress():
 				user_progress['progress'][studyMode][phrase_id] = progress
 
 	# Perform the upsert
-	mongo.db.user_progress.update(
+	mongo_db.user_progress.update(
 		{ 'email': email, 'lang': lang },
 		user_progress,
 		upsert = True
