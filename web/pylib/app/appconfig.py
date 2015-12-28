@@ -39,25 +39,27 @@ app_instance.config['SECRET_KEY'] = 'super-secret'
 
 app_instance.config['MONGO_HOST'] = 'glossify.io'
 app_instance.config['MONGO_PORT'] = '27017'
-app_instance.config['MONGO_DBNAME'] = 'tenk'
+app_instance.config['mongo.db.NAME'] = 'tenk'
 app_instance.config['MONGO_USERNAME'] = 'tlemberg'
 app_instance.config['MONGO_PASSWORD'] = 'tlemberg'
 
 # Mongo DB
 mongo = PyMongo(app_instance)
 
-mongo_db = dbutils.DBConnect('glossify.io', 'tlemberg', 'tlemberg')
-
 # Mail
 mail = Mail(app_instance)
 
 # Domains
-if 'ISDEV' in os.environ:
-	app_domain = 'http://glossify.io'
-	web_domain = 'https://glossify.io'
+if os.environ.get('ISDEV'):
+	if os.environ.get('ISLOCAL'):
+		app_domain = "http://glossify.io:%s" % os.environ['DEV_APP_PORT']
+		web_domain = "https://glossify.io:%s" % os.environ['DEV_WEB_PORT']
+	else:
+		app_domain = "http://localhost:%s" % os.environ['DEV_APP_PORT']
+		web_domain = "https://localhost:%s" % os.environ['DEV_WEB_PORT']
 else:
-	app_domain = "52.25.87.1:%s" % os.environ['DEV_APP_PORT']
-	web_domain = "52.25.87.1:%s" % os.environ['DEV_WEB_PORT']
+	app_domain = "http://glossify.io"
+	web_domain = "https://glossify.io"
 
 
 # jinja2

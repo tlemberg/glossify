@@ -6,7 +6,7 @@ define ->
 	############################################################################
 	return {
 
-		apiUrl: 'https://glossify.net:5001/api/'
+		apiUrl: 'https://localhost:5001/api/'
 		lockdown: 1
 
 	}

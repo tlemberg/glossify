@@ -12,7 +12,7 @@ from flask import request, redirect, jsonify
 def record_page():
 
 	# Get the ranks of phrases recorded by all users
-	phrases = mongo_db.phrases.find(
+	phrases = mongo.db.phrases.find(
 		{
 			'n_recordings': { '$lt': 3 },
 		},
@@ -36,7 +36,7 @@ def record_page():
 def verify_page():
 	
 	# Get the ranks of phrases recorded by all users
-	phrases = mongo_db.phrases.find(
+	phrases = mongo.db.phrases.find(
 		{
 			'n_verifications': { '$lt': 2 },
 		},
@@ -60,7 +60,7 @@ def verify_page():
 def correct_page():
 
 	# Get the ranks of phrases recorded by all users
-	phrases = mongo_db.phrases.find(
+	phrases = mongo.db.phrases.find(
 		{
 			'n_corrections': 0,
 		},

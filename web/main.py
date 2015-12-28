@@ -4,4 +4,5 @@ from app.views     import apiviews, managerviews, authviews, uploadviews
 import os
 
 if __name__ == '__main__':
-	app_instance.run(host='0.0.0.0', port=int(os.environ['DEV_WEB_PORT']), debug=True, ssl_context=('../ssl/cert.pem','../ssl/key.pem'))
+	host = '0.0.0.0' if not os.environ.get('ISLOCAL') else 'localhost'
+	app_instance.run(host=host, port=int(os.environ['DEV_WEB_PORT']), debug=True, ssl_context=('../ssl/cert.pem','../ssl/key.pem'))

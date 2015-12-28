@@ -1,4 +1,9 @@
 #!/bin/bash
 [ -d $PROJECT_HOME/app/www ] || mkdir -p $PROJECT_HOME/app/www
+cd $PROJECT_HOME/app/scripts
+./compile_coffee
+./compile_less
+
 cd $PROJECT_HOME/app/www
-python -m SimpleHTTPServer $DEV_APP_PORT
+python -c 'import os; import BaseHTTPServer as bhs, SimpleHTTPServer as shs; bhs.HTTPServer(("127.0.0.1", int(os.environ["DEV_APP_PORT"])), shs.SimpleHTTPRequestHandler).serve_forever()'
+

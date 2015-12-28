@@ -7,7 +7,7 @@ body {
   height: 100%;
   margin: 0px;
   padding: 0px;
-  color: #ffffff;
+  color: #fff;
   font-family: Helvetica Neue, Helvetica, Arial, sans-serif;
   background-color: #666666;
   overflow-y: hidden;
@@ -80,7 +80,7 @@ input[type="password"].focus {
   width: 33%;
 }
 .header .back-btn {
-  background-color: #ddffdd;
+  background-color: #dfd;
   color: #000000;
   padding: 10px;
   display: inline-block;
@@ -94,7 +94,7 @@ input[type="password"].focus {
 }
 .alert-div {
   background-color: #999999;
-  color: #00ffcc;
+  color: #00FFCC;
   text-align: center;
   border-bottom-style: solid;
   border-bottom-width: 1px;
@@ -134,7 +134,7 @@ input[type="password"].focus {
   display: inline-block;
 }
 .alert-div .alert-btn {
-  background-color: #ddffdd;
+  background-color: #dfd;
   color: #000000;
   padding: 10px;
   display: inline-block;
@@ -169,7 +169,7 @@ input[type="password"].focus {
   -ms-transform: translateY(-50%);
   transform: translateY(-50%);
   background-color: #999999;
-  color: #00ffcc;
+  color: #00FFCC;
   border-radius: 14px;
   border-style: solid;
   border-width: 1px;
@@ -187,7 +187,7 @@ input[type="password"].focus {
   height: 32px;
 }
 .modal-div .btn {
-  background-color: #ddffdd;
+  background-color: #dfd;
   color: #000000;
   padding: 10px;
   display: inline-block;
@@ -198,7 +198,7 @@ input[type="password"].focus {
 }
 .facebook-signup-btn {
   background-color: #3399ff;
-  color: #ffffff;
+  color: #fff;
   width: 300px;
   display: inline-block;
   padding-top: 20px;
@@ -464,7 +464,7 @@ input[type="password"].focus {
 }
 .overview-page .small-btn {
   background-color: #3399ff;
-  color: #ffffff;
+  color: #fff;
   display: inline-block;
   width: 90%;
   padding-top: 14px;
@@ -679,27 +679,27 @@ input[type="password"].focus {
 .study-page .btn-1,
 .study-page .progress-bar-1,
 .overview-page .progress-bar-1 {
-  background-color: #0099ff;
+  background-color: #0099FF;
 }
 .study-page .btn-2,
 .study-page .progress-bar-2,
 .overview-page .progress-bar-2 {
-  background-color: #66ccff;
+  background-color: #66CCFF;
 }
 .study-page .btn-3,
 .study-page .progress-bar-3,
 .overview-page .progress-bar-3 {
-  background-color: #ccffff;
+  background-color: #CCFFFF;
 }
 .study-page .btn-4,
 .study-page .progress-bar-4,
 .overview-page .progress-bar-4 {
-  background-color: #00ffcc;
+  background-color: #00FFCC;
 }
 .study-page .btn-5,
 .study-page .progress-bar-5,
 .overview-page .progress-bar-5 {
-  background-color: #66ff33;
+  background-color: #66FF33;
 }
 .study-page .btn-text {
   position: relative;
@@ -722,31 +722,31 @@ input[type="password"].focus {
   margin-left: -2px;
   border-style: solid;
   border-width: 4px;
-  border-color: #0099ff;
+  border-color: #0099FF;
 }
 .study-page .card-progress-2 {
   margin-left: -2px;
   border-style: solid;
   border-width: 4px;
-  border-color: #66ccff;
+  border-color: #66CCFF;
 }
 .study-page .card-progress-3 {
   margin-left: -2px;
   border-style: solid;
   border-width: 4px;
-  border-color: #ccffff;
+  border-color: #CCFFFF;
 }
 .study-page .card-progress-4 {
   margin-left: -2px;
   border-style: solid;
   border-width: 4px;
-  border-color: #00ffcc;
+  border-color: #00FFCC;
 }
 .study-page .card-progress-5 {
   margin-left: -2px;
   border-style: solid;
   border-width: 4px;
-  border-color: #66ff33;
+  border-color: #66FF33;
 }
 .study-page .card-half {
   height: 50%;
@@ -807,7 +807,7 @@ input[type="password"].focus {
 }
 .study-page .card-reveal-btn {
   background-color: #3399ff;
-  color: #ffffff;
+  color: #fff;
   width: 200px;
   display: inline-block;
   margin-top: 20px;

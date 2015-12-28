@@ -57,7 +57,7 @@ def verify_auth_token():
 		return None
 
 	email = token_data['email']
-	user_profile = mongo.db.user_profiles.find_one({ 'email': email })
+	user_profile = mongo.db.db.user_profiles.find_one({ 'email': email })
 
 	return user_profile
 
@@ -82,7 +82,7 @@ def verify_password(user_profile, password):
 def store_auth_token_in_session(email, password):
 
 	# Find the user
-	user_profile = mongo.db.user_profiles.find_one({ 'email': email })
+	user_profile = mongo.db.db.user_profiles.find_one({ 'email': email })
 
 	print user_profile
 
@@ -137,9 +137,9 @@ def send_activation_email(email):
 	activation_link = flask.url_for('activate_user', msg=msg, _external=True)
 
 	conn = boto.ses.connect_to_region('us-west-2')
-	conn.verify_email_address('noreply@glossify.net')
+	conn.verify_email_address('noreply@glossify.io')
 	conn.send_email(
-		'noreply@glossify.net',
+		'noreply@glossify.io',
 		'Activate your glossify account',
 		'',
 		[email],
@@ -155,8 +155,8 @@ def send_request_access_email(email):
 
 	conn = boto.ses.connect_to_region('us-west-2')
 	conn.send_email(
-		'noreply@glossify.net',
-		'A user has requested access to glossify.net',
+		'noreply@glossify.io',
+		'A user has requested access to glossify.io',
 		'',
 		['tlemberg10@gmail.com'],
 		html_body="The user's email address is: %s" % email,
@@ -173,7 +173,7 @@ def confirm_user_profile(user_profile):
 	user_profile['langs'] = {}
 
 	# Upsert the document
-	mongo.db.user_profiles.update(
+	mongo.db.db.user_profiles.update(
 		{ 'email': user_profile['email'] },
 		user_profile,
 		upsert = True
