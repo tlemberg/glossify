@@ -8,8 +8,6 @@ def launch_prod():
 		sudo("apachectl restart")
 
 
-def launch_local():
-	script_path = os.path.join(os.environ['PROJECT_HOME'], 'web/main.py')
-	local("workon glossify")
-	local("python %s" % script_path)
+def dump_mongo():
+	sudo("mongodump --db tenk --collection phrases_fr --out /data/dump")
 		

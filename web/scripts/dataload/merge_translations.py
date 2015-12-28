@@ -33,7 +33,9 @@ def main():
 	for document in forward_coll.find():
 		buf.append({
 			'base': document['word'],
-			'txs': [document['tx']],
+			'txs': [{
+				'text': document['tx'],
+			}],
 			'count': document['count'],
 		})
 		progress.advance()
@@ -53,7 +55,9 @@ def main():
 			'base': document['tx'],
 		}, {
 			'$addToSet': {
-				'txs': document['word']
+				'txs': {
+					'text': document['word'],
+				},
 			},
 			'$set': {
 				'base': document['tx'],
@@ -69,7 +73,7 @@ def main():
 		('count', pymongo.ASCENDING),
 	])
 
-	print "Sorting"
+	print "Setting ranks"
 	buf = dbutils.DBUpdateBuffer(phrases_coll)
 	progress = perf.ProgressDisplay(phrases_coll.count())
 	rank = 1
@@ -99,7 +103,7 @@ def main():
 		tags_to_add = set()
 		for tag_name, tag_info in read_all_tag_files().iteritems():
 			for tx in document['txs']:
-				if tx in tag_info['phrases']:
+				if tx['text'] in tag_info['phrases']:
 					tags_to_add.add(tag_name)
 					continue
 		buf.append({

@@ -53,7 +53,7 @@ mail = Mail(app_instance)
 if os.environ.get('ISDEV'):
 	if os.environ.get('ISLOCAL'):
 		app_domain = "http://glossify.io:%s" % os.environ['DEV_APP_PORT']
-		web_domain = "https://glossify.io:%s" % os.environ['DEV_WEB_PORT']
+		web_domain = "http://glossify.io:%s" % os.environ['DEV_WEB_PORT']
 	else:
 		app_domain = "http://localhost:%s" % os.environ['DEV_APP_PORT']
 		web_domain = "https://localhost:%s" % os.environ['DEV_WEB_PORT']

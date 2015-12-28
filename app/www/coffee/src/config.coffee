@@ -6,7 +6,7 @@ define ->
 	############################################################################
 	return {
 
-		apiUrl: 'https://localhost:5001/api/'
+		apiUrl: 'http://localhost:5001/api/'
 		lockdown: 1
 
 	}

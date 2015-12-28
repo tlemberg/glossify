@@ -25,9 +25,13 @@ def unauthorized_page():
 @app_instance.route('/api/authenticate-user', methods=['POST'])
 def get_auth_token():
 
+	print flask.request.form.__dict__
+
 	# Extract params
 	email	= flask.request.form['email']
 	password = flask.request.form['password']
+
+	print email, password
 
 	# Find the user
 	user_profile = mongo.db.user_profiles.find_one({ 'email': email })
