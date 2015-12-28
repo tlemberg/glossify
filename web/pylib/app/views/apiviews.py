@@ -96,7 +96,7 @@ def get_plan():
 	excerpt_dict = { str(e['_id']): e for e in excerpt_cursor }
 
 	plan = {}
-	coll = mongo["phrases_%s" % lang]
+	coll = mongo.db["phrases_%s" % lang]
 	for document_id in doc_dict.keys():
 		excerpt_cursor = mongo.db.excerpts.find({ 'document_id': ObjectId(document_id) }).sort('_id', pymongo.ASCENDING)
 		plan[document_id] = [str(e['_id']) for e in excerpt_cursor]
@@ -243,7 +243,7 @@ def add_document():
 	for excerpt in excerpts:
 
 		phrase_id_map = {}
-		coll = mongo["phrases_%s" % lang]
+		coll = mongo.db["phrases_%s" % lang]
 
 		for phrase_size in xrange(1,5):
 			for i in xrange(0, len(excerpt)-phrase_size+1):
@@ -311,7 +311,7 @@ def get_excerpt_dictionary():
 
 	print len(set(phrase_ids))
 
-	coll = mongo["phrases_%s" % lang]
+	coll = mongo.db["phrases_%s" % lang]
 
 	cursor = coll.find({ '_id': { '$in': phrase_ids } })
 	d = dictionary.create_dictionary_from_cursor(lang, cursor)

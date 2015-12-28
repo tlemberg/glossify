@@ -57,7 +57,7 @@ def verify_auth_token():
 		return None
 
 	email = token_data['email']
-	user_profile = mongo.db.db.user_profiles.find_one({ 'email': email })
+	user_profile = mongo.db.user_profiles.find_one({ 'email': email })
 
 	return user_profile
 
@@ -82,7 +82,7 @@ def verify_password(user_profile, password):
 def store_auth_token_in_session(email, password):
 
 	# Find the user
-	user_profile = mongo.db.db.user_profiles.find_one({ 'email': email })
+	user_profile = mongo.db.user_profiles.find_one({ 'email': email })
 
 	print user_profile
 
@@ -173,7 +173,7 @@ def confirm_user_profile(user_profile):
 	user_profile['langs'] = {}
 
 	# Upsert the document
-	mongo.db.db.user_profiles.update(
+	mongo.db.user_profiles.update(
 		{ 'email': user_profile['email'] },
 		user_profile,
 		upsert = True

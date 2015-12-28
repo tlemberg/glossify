@@ -10,7 +10,8 @@ parser.add_argument("password")
 # Parse the arguments
 args = parser.parse_args()
 
-# Connect to the DB
-db = dbutils.DBConnect()
+# Connect to DB
+print "Connecting to DB"
+db = dbutils.DBConnect('glossify.io', 'tlemberg', 'tlemberg')
 
 auth.create_user_profile(db, args.email, args.password, confirmed=1)
