@@ -9,5 +9,11 @@ def launch_prod():
 
 
 def dump_mongo():
-	sudo("mongodump --db tenk --collection phrases_fr --out /data/dump")
+	collections = [
+		'user_profiles',
+		'user_progress',
+		'phrases_fr',
+	]
+	for collection in collections:
+		sudo("mongodump --db tenk --collection %s --out /data/dump" % collection)
 		
