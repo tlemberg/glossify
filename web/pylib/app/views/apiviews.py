@@ -15,6 +15,7 @@ import os.path
 from bson import ObjectId
 import dictionary
 import pymongo
+import api_utils
 
 
 ################################################################################
@@ -206,6 +207,7 @@ def get_progress():
 ################################################################################
 @app.appconfig.app_instance.route('/api/add-document', methods=['POST'])
 def add_document():
+	print "hello world\n"
 
 	# Authenticate the user
 	user_profile = verify_auth_token()
@@ -230,7 +232,9 @@ def add_document():
 			'error'  : 'invalid parameters',
 		})
 
-	excerpts = text.split(u'。')
+	# TODO(kgu): Replace with text segmentation
+	excerpts = api_utils.segment_doc(text)
+	# excerpts = text.split(u'。')
 
 	# Insert the document
 	document_id = mongo.db.documents.insert({
@@ -241,6 +245,7 @@ def add_document():
 
 	# Insert each excerpt
 	for excerpt in excerpts:
+		print "excerpt: ", excerpt
 
 		phrase_id_map = {}
 		coll = mongo.db["phrases_%s" % lang]
