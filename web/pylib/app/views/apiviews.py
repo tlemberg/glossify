@@ -216,11 +216,9 @@ def add_document():
 			'error'  : 'authentication failed',
 		})
 
-	# Get user properties
+	# Get user properties and params
 	email = user_profile['email']
-
 	try:
-		# Read the parameters
 		title = request.form['title']
 		text = request.form['text']
 		lang = request.form['lang']
@@ -231,9 +229,8 @@ def add_document():
 			'error'  : 'invalid parameters',
 		})
 
-	# TODO(kgu): Replace with text segmentation
+	# 1. segment the document into excerpts given the language
 	excerpts = api_utils.segment_doc(text, lang)
-	# excerpts = text.split(u'。')
 
 	# Insert the document
 	document_id = mongo.db.documents.insert({
@@ -242,36 +239,34 @@ def add_document():
 		'lang': lang,
 		'email': email })
 
-	# Insert each excerpt
-	excerpt_times_B = []
-	excerpt_miss_count = 0
-	excerpt_phrase_count = 0
+	# 2. Get the set of unique phrases to be looked up
+	t = time.time()
+	phrases_list, unique_phrases = api_utils.get_phrases_from_excerpts(excerpts, lang)
+	print "unique phrases in doc: ", len(unique_phrases)
+	print "get unique phrases time: ", time.time() - t
+
+	# 3. Look up all phrases and get phrase-to-ID mapping
+	t = time.time()
+	phrase_id_map = api_utils.get_phrase_ids(unique_phrases, lang)
+	print "get phrase_id_map time: ", time.time() - t
+
+	# 4. Insert each excerpt with corresponding phrase ids
+	# TODO(kgu): do bulk insertion
+	t = time.time()
+	num_ph = sum([len(phrases) for phrases in phrases_list])
+	num_hit = 0
 	missed_phrases = set()
-	found_phrases = []
-	known_phrases = {}
-	for excerpt in excerpts:
-		# Get phrases from excerts
-		start = time.time()
-		phrase_id_map = api_utils.excerpt_to_phrase_ids(excerpt, lang, known_phrases)
-		phrase_ids = phrase_id_map.values()
-		excerpt_times_B.append(time.time() - start)
-
-		# Compute hit and miss rates
-		misses = [k for k in phrase_id_map if phrase_id_map[k] == None]
-		found_phrases += [k for k in phrase_id_map if phrase_id_map[k] != None]
-		print "didn't find definition for {} words: ".format(len(misses)), misses
-		missed_phrases |= set(misses)
-		excerpt_miss_count += len(misses)
-		excerpt_phrase_count += len(phrase_id_map.keys())
-
-		# TODO(kgu): do bulk insert
+	for excerpt, phrases in zip(excerpts, phrases_list):
+		phrase_ids = [phrase_id_map[ph] for ph in phrases if phrase_id_map[ph] != None]
 		excerpt_id = mongo.db.excerpts.insert({
 			'email': email,
 			'lang': lang,
 			'excerpt': excerpt,
 			'phrase_ids': phrase_ids,
 			'document_id': document_id })
-		known_phrases.update(phrase_id_map)
+		num_hit += len([1 for ph in phrases if phrase_id_map[ph] != None])
+		missed_phrases |= set([ph for ph in phrases if phrase_id_map[ph] == None])
+	print "insert each excerpt into mongo time: ", time.time() - t
 
 	# Return success
 	return json_result({
@@ -279,12 +274,9 @@ def add_document():
 		'document_id': document_id,
 		# excerpts stats
 		'num_excerpts': len(excerpts),
-		'num_phrases_found': len(found_phrases),
-		'num_phrases_missed': excerpt_miss_count,
-		'total_phrase_count': excerpt_phrase_count,
-		'total_hit_rate': float(1 - excerpt_miss_count / float(excerpt_phrase_count)),
-		# timers
-		'avg_get_ph_time': sum(excerpt_times_B)/ len(excerpt_times_B),
+		'total_phrase_count': num_ph,
+		'total_hit_count': num_hit,
+		'total_hit_rate': num_hit / float(num_ph),
 		# missed phrases
 		'missed_phrases': list(missed_phrases)
 		})

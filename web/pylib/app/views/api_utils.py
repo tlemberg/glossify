@@ -14,6 +14,7 @@ def segment_doc(text, lang):
 	# For all greet languages, split on one-word stop to avoid abbr periods.
 	return text.split('. ')
 
+# Old Code, no longer used
 def excerpt_to_phrase_ids(text, lang, known_phrases):
 	coll = mongo.db["phrases_%s" % lang]
 	phrase_id_map = {}
@@ -53,3 +54,40 @@ def normalize(word, lang):
 	return pattern.sub('', lower_word, re.UNICODE)
 
 	# return word # Without normalization, average hit rate is <10% lower
+
+def sentence_to_phrases(text, lang):
+	if lang == 'fr':
+		return [normalize(word, lang) for word in excerpt.split(' ')]
+	if lang == 'zh':
+		# for chinese, interested in multi-character phrases
+		phrases = []
+		for phrase_size in xrange(1,5):
+			for i in xrange(0, len(text)-phrase_size+1):
+				j = i + phrase_size
+				phrases.append(text[i:j])
+		return phrases
+				
+def get_phrases_from_excerpts(excerpts, lang):
+	unique_phrases = set()
+	phrase_lists = []
+	for excerpt in excerpts:
+		phrases = sentence_to_phrases(excerpt, lang)
+		phrase_lists.append(phrases)
+		unique_phrases |= set(phrases)
+	return phrase_lists, unique_phrases
+
+def get_phrase_ids(phrases, lang):
+	print "total phrases to get id: ", len(phrases)
+
+	# construct a single query
+	coll = mongo.db["phrases_%s" % lang]
+	or_clause = [{"base": ph} for ph in list(phrases)]
+	cursor = coll.find({"$or": or_clause})
+
+	phrase_id_map = dict((key, None) for key in list(phrases))
+	for d in cursor:
+		phrase_id_map[d['base']] = d['_id']
+		
+	return phrase_id_map
+
+
