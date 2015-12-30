@@ -37,11 +37,17 @@ api = restful.Api(app_instance)
 app_instance.config['DEBUG'] = True
 app_instance.config['SECRET_KEY'] = 'super-secret'
 
-app_instance.config['MONGO_HOST'] = 'glossify.io'
-app_instance.config['MONGO_PORT'] = '27017'
-app_instance.config['mongo.db.NAME'] = 'tenk'
-app_instance.config['MONGO_USERNAME'] = 'tlemberg'
-app_instance.config['MONGO_PASSWORD'] = 'tlemberg'
+if not os.environ.get('LOCALDB'):
+	app_instance.config['MONGO_HOST'] = 'glossify.io'
+	app_instance.config['MONGO_PORT'] = '27017'
+	app_instance.config['MONGO_USERNAME'] = 'tlemberg'
+	app_instance.config['MONGO_PASSWORD'] = 'tlemberg'
+	app_instance.config['MONGO_NAME'] = 'tenk'
+else:
+	app_instance.config['MONGO_HOST'] = 'localhost'
+	app_instance.config['MONGO_PORT'] = '27017'
+	app_instance.config['MONGO_NAME'] = 'tenk'
+
 
 # Mongo DB
 mongo = PyMongo(app_instance)
@@ -53,7 +59,7 @@ mail = Mail(app_instance)
 if os.environ.get('ISDEV'):
 	if os.environ.get('ISLOCAL'):
 		app_domain = "http://glossify.io:%s" % os.environ['DEV_APP_PORT']
-		web_domain = "https://glossify.io:%s" % os.environ['DEV_WEB_PORT']
+		web_domain = "http://glossify.io:%s" % os.environ['DEV_WEB_PORT']
 	else:
 		app_domain = "http://localhost:%s" % os.environ['DEV_APP_PORT']
 		web_domain = "https://localhost:%s" % os.environ['DEV_WEB_PORT']

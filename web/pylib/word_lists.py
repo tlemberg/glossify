@@ -1,7 +1,7 @@
 import os, zipfile
 
 
-WORD_LISTS_BASE_PATH = os.path.join(os.environ['PROJECT_HOME'], "word_lists")
+WORD_LISTS_BASE_PATH = os.environ.get('WORD_LISTS_BASE_PATH') or os.path.join(os.environ['PROJECT_HOME'], "word_lists")
 
 
 def get_word_list_zip_path(lang):
@@ -14,7 +14,7 @@ def get_word_list_zip_path(lang):
 		return path
 
 
-def get_word_list(lang, limit=None):
+def get_word_list(lang, min_index=None, max_index=None):
 	zip_path = get_word_list_zip_path(lang)
 	with open(zip_path, 'rb') as f:
 		z = zipfile.ZipFile(f)
@@ -24,9 +24,10 @@ def get_word_list(lang, limit=None):
 			for line in f.readlines():
 				line = line.strip().decode('utf-8')
 				parts = line.split(' ')
-				lines.append((parts[0], int(parts[1])))
+				if not min_index or i >= min_index:
+					lines.append((parts[0], int(parts[1])))
 				i += 1
-				if limit and i >= limit:
+				if max_index and i >= max_index:
 					return lines
 			return lines
 

@@ -1,6 +1,8 @@
-import os
-from fabric.api import run, cd, sudo, local
+import os, time
+from fabric.api import run, cd, sudo, local, task
 
+
+@task
 def launch_prod():
 	with cd('/var/www/prod/glossify'):
 		sudo("git fetch --all")
@@ -8,8 +10,10 @@ def launch_prod():
 		sudo("apachectl restart")
 
 
-def launch_local():
-	script_path = os.path.join(os.environ['PROJECT_HOME'], 'web/main.py')
-	local("workon glossify")
-	local("python %s" % script_path)
-		
+@task
+def dump_mongo(*args):
+	collections = list(args)
+	out_dir = '/data/dump'
+	sudo("mkdir -p %s" % out_dir)
+	for collection in collections:
+		sudo("mongodump --db tenk --collection %s --out %s" % (collection, out_dir))
