@@ -205,10 +205,9 @@ def get_progress():
 # add_document
 #
 ################################################################################
+import time
 @app.appconfig.app_instance.route('/api/add-document', methods=['POST'])
 def add_document():
-	print "hello world\n"
-
 	# Authenticate the user
 	user_profile = verify_auth_token()
 	if user_profile is None:
@@ -233,7 +232,7 @@ def add_document():
 		})
 
 	# TODO(kgu): Replace with text segmentation
-	excerpts = api_utils.segment_doc(text)
+	excerpts = api_utils.segment_doc(text, lang)
 	# excerpts = text.split(u'。')
 
 	# Insert the document
@@ -244,39 +243,51 @@ def add_document():
 		'email': email })
 
 	# Insert each excerpt
+	excerpt_times_B = []
+	excerpt_miss_count = 0
+	excerpt_phrase_count = 0
+	missed_phrases = set()
+	found_phrases = []
+	known_phrases = {}
 	for excerpt in excerpts:
-		print "excerpt: ", excerpt
-
-		phrase_id_map = {}
-		coll = mongo.db["phrases_%s" % lang]
-
-		for phrase_size in xrange(1,5):
-			for i in xrange(0, len(excerpt)-phrase_size+1):
-				j = i + phrase_size
-				phrase = excerpt[i:j]
-				phrase_id = coll.find_one({'base': phrase, 'txs': {'$exists': 1}}, {'_id': 1})
-				if phrase_id:
-					phrase_id_map[phrase] = phrase_id['_id']
-
-		all_phrases = phrase_id_map.keys()
-		for phrase in all_phrases:
-			if len(phrase) > 1:
-				for c in phrase:
-					if c in phrase_id_map:
-						del phrase_id_map[c]
+		# Get phrases from excerts
+		start = time.time()
+		phrase_id_map = api_utils.excerpt_to_phrase_ids(excerpt, lang, known_phrases)
 		phrase_ids = phrase_id_map.values()
+		excerpt_times_B.append(time.time() - start)
 
+		# Compute hit and miss rates
+		misses = [k for k in phrase_id_map if phrase_id_map[k] == None]
+		found_phrases += [k for k in phrase_id_map if phrase_id_map[k] != None]
+		print "didn't find definition for {} words: ".format(len(misses)), misses
+		missed_phrases |= set(misses)
+		excerpt_miss_count += len(misses)
+		excerpt_phrase_count += len(phrase_id_map.keys())
+
+		# TODO(kgu): do bulk insert
 		excerpt_id = mongo.db.excerpts.insert({
 			'email': email,
 			'lang': lang,
 			'excerpt': excerpt,
 			'phrase_ids': phrase_ids,
 			'document_id': document_id })
+		known_phrases.update(phrase_id_map)
 
 	# Return success
 	return json_result({
 		'success': 1,
-		'result': document_id })
+		'document_id': document_id,
+		# excerpts stats
+		'num_excerpts': len(excerpts),
+		'num_phrases_found': len(found_phrases),
+		'num_phrases_missed': excerpt_miss_count,
+		'total_phrase_count': excerpt_phrase_count,
+		'total_hit_rate': float(1 - excerpt_miss_count / float(excerpt_phrase_count)),
+		# timers
+		'avg_get_ph_time': sum(excerpt_times_B)/ len(excerpt_times_B),
+		# missed phrases
+		'missed_phrases': list(missed_phrases)
+		})
 
 
 ################################################################################
