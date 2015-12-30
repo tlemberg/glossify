@@ -57,7 +57,7 @@ def normalize(word, lang):
 
 def sentence_to_phrases(text, lang):
 	if lang == 'fr':
-		return [normalize(word, lang) for word in excerpt.split(' ')]
+		return [normalize(word, lang) for word in text.split(' ')]
 	if lang == 'zh':
 		# for chinese, interested in multi-character phrases
 		phrases = []
@@ -77,8 +77,6 @@ def get_phrases_from_excerpts(excerpts, lang):
 	return phrase_lists, unique_phrases
 
 def get_phrase_ids(phrases, lang):
-	print "total phrases to get id: ", len(phrases)
-
 	# construct a single query
 	coll = mongo.db["phrases_%s" % lang]
 	or_clause = [{"base": ph} for ph in list(phrases)]

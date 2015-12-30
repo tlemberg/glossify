@@ -240,35 +240,30 @@ def add_document():
 		'email': email })
 
 	# 2. Get the set of unique phrases to be looked up
-	t = time.time()
 	phrases_list, unique_phrases = api_utils.get_phrases_from_excerpts(excerpts, lang)
-	print "unique phrases in doc: ", len(unique_phrases)
-	print "get unique phrases time: ", time.time() - t
 
 	# 3. Look up all phrases and get phrase-to-ID mapping
-	t = time.time()
 	phrase_id_map = api_utils.get_phrase_ids(unique_phrases, lang)
-	print "get phrase_id_map time: ", time.time() - t
 
 	# 4. Insert each excerpt with corresponding phrase ids
-	# TODO(kgu): do bulk insertion
-	t = time.time()
 	num_ph = sum([len(phrases) for phrases in phrases_list])
 	num_hit = 0
 	missed_phrases = set()
+	new_excerpts = []
+	bulk = mongo.db.excerpts.initialize_unordered_bulk_op()
 	for excerpt, phrases in zip(excerpts, phrases_list):
 		phrase_ids = [phrase_id_map[ph] for ph in phrases if phrase_id_map[ph] != None]
-		excerpt_id = mongo.db.excerpts.insert({
+		bulk.insert({
 			'email': email,
 			'lang': lang,
 			'excerpt': excerpt,
 			'phrase_ids': phrase_ids,
-			'document_id': document_id })
+			'document_id': document_id})
 		num_hit += len([1 for ph in phrases if phrase_id_map[ph] != None])
 		missed_phrases |= set([ph for ph in phrases if phrase_id_map[ph] == None])
-	print "insert each excerpt into mongo time: ", time.time() - t
+	bulk.execute()
 
-	# Return success
+	# Return success, stats for analysis, and missing phrases.
 	return json_result({
 		'success': 1,
 		'document_id': document_id,
