@@ -37,7 +37,7 @@ def main():
 	print "Translating"
 	buf = dbutils.DBWriteBuffer(coll)
 	progress = perf.ProgressDisplay(len(word_list))
-	for word_list_chunk in dbutils.chunk_list(word_list, 1000):
+	for word_list_chunk in dbutils.chunk_list(word_list, 10000):
 		tx_dict = pooled_translate([tup[0] for tup in word_list_chunk], args.lang, 'en')
 		for (word, count) in word_list_chunk:
 			tx = tx_dict[word]
