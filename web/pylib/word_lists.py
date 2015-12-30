@@ -1,7 +1,7 @@
 import os, zipfile
 
 
-WORD_LISTS_BASE_PATH = os.path.join(os.environ['PROJECT_HOME'], "word_lists")
+WORD_LISTS_BASE_PATH = os.environ.get('WORD_LISTS_BASE_PATH') or os.path.join(os.environ['PROJECT_HOME'], "word_lists")
 
 
 def get_word_list_zip_path(lang):
