@@ -12,10 +12,12 @@ def translate(q, source, target):
 		'target': target,
 		'key': API_KEY,
 	}
-	obj = json.loads(requests.get(API_BASE_URL, params=payload).content	)
+	response = requests.get(API_BASE_URL, params=payload)
 	try:
+		obj = json.loads(response.content)
 		return obj['data']['translations'][0]['translatedText']
 	except:
+		print "Failed to translate '%s'" % q
 		return None
 	
 

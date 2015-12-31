@@ -58,7 +58,7 @@ def main():
 				'count': count,
 				'tx': tx,
 			})
-		progress.advance(1)
+			progress.advance(1)
 	buf.flush()
 
 	print "Done"
