@@ -1,4 +1,4 @@
-import argparse, dbutils, perf, requests, time
+import argparse, dbutils, perf, requests, time, traceback
 from pprint import pprint
 
 from translations import pooled_translate
@@ -46,7 +46,8 @@ def main():
 			try:
 				tx_dict = pooled_translate([tup[0] for tup in word_list_chunk], args.lang, 'en')
 				break
-			except requests.exceptions.SSLError as e:
+			except Exception as e:
+				traceback.print_exc()
 				print "SSL Exception. Retrying."
 				n_failures += 1
 				if n_failures == MAX_FAILURES:
