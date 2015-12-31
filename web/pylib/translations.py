@@ -26,7 +26,7 @@ def translate(q, source, target):
 	
 
 
-def pooled_translate(qs, source, target, n_pools=6):
+def pooled_translate(qs, source, target, n_pools=3):
 	pool = ThreadPool(n_pools)
 	results = pool.map(lambda q: (q, translate(q, source, target)), qs)
 	pool.close()
