@@ -18,7 +18,7 @@ def main():
 		help='2-character language code')
 	parser.add_argument('--min-index', default=None, type=int,
 		help='minimum word index')
-	parser.add_argument('--max-index', default=200000, type=int,
+	parser.add_argument('--max-index', default=100000, type=int,
 		help='maximum word index')
 	parser.add_argument('--remove', action='store_true',
 		help='remove all documents before beginning?')
