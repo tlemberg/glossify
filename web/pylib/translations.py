@@ -18,6 +18,7 @@ def translate(q, source, target):
 		return obj['data']['translations'][0]['translatedText']
 	except:
 		print "Failed to translate '%s'" % q
+		print response.content
 		return None
 	
 

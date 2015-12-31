@@ -26,7 +26,7 @@ def main():
 
 	# Get the words
 	print "Getting words"
-	word_list = get_word_list(args.lang, min_index=args.min_index, max_index=args.max_index)
+	word_list = get_word_list('en', min_index=args.min_index, max_index=args.max_index)
 	print_pricing_info(word_list)
 
 	# Connect to DB
