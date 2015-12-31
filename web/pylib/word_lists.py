@@ -3,9 +3,13 @@ import os, zipfile
 
 WORD_LISTS_BASE_PATH = os.environ.get('WORD_LISTS_BASE_PATH') or os.path.join(os.environ['PROJECT_HOME'], "word_lists")
 
+defined_filed_names = {
+	'zh': 'zh-2011.zip',
+}
 
 def get_word_list_zip_path(lang):
-	path = os.path.join(WORD_LISTS_BASE_PATH, "%s-2012.zip" % lang)
+	defined_filed_name = defined_filed_names.get(lang)
+	path = os.path.join(WORD_LISTS_BASE_PATH, defined_filed_name or "%s-2012.zip" % lang)
 	try:
 		open(path)
 		return path
