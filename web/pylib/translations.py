@@ -15,6 +15,9 @@ def translate(q, source, target):
 	response = requests.get(API_BASE_URL, params=payload)
 	try:
 		obj = json.loads(response.content)
+		if obj.get('error'):
+			print response.content
+			raise Exception("Failed to translate '%s' due to API error." % q)
 		return obj['data']['translations'][0]['translatedText']
 	except:
 		print "Failed to translate '%s'" % q
