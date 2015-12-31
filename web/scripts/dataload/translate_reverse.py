@@ -7,6 +7,9 @@ from translations import pooled_translate
 from word_lists import get_word_list, print_pricing_info
 
 
+MAX_FAILURES = 3
+
+
 def main():
 	parser = argparse.ArgumentParser()
 	parser.add_argument('--host', default='glossify.io',
@@ -40,6 +43,16 @@ def main():
 	progress = perf.ProgressDisplay(len(word_list))
 	for word_list_chunk in dbutils.chunk_list(word_list, 1000):
 		tx_dict = pooled_translate([tup[0] for tup in word_list_chunk], 'en', args.lang)
+		n_failures = 0
+		while n_failures < MAX_FAILURES:
+			try:
+				tx_dict = pooled_translate([tup[0] for tup in word_list_chunk], 'en', args.lang)
+				break
+			except requests.exceptions.SSLError as e:
+				print "SSL Exception. Retrying."
+				n_failures += 1
+				if n_failures == MAX_FAILURES:
+					raise Exception('Too many SSL Exceptions. Giving up.')
 		for (word, count) in word_list_chunk:
 			tx = tx_dict[word]
 			buf.append({
