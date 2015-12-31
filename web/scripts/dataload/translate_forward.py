@@ -16,7 +16,7 @@ def main():
 	parser.add_argument('--max-index', default=None, type=int,
 		help='maximum word index')
 	parser.add_argument('--remove', action='store_true',
-		help='remove all documents before beginning??')
+		help='remove all documents before beginning?')
 	args = parser.parse_args()
 
 	# Get the words

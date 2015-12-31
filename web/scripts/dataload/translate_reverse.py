@@ -13,13 +13,17 @@ def main():
 		help='server name where the database lives')
 	parser.add_argument('--lang',
 		help='2-character language code')
-	parser.add_argument('--limit', default=10, type=int,
-		help='2-character language code')
+	parser.add_argument('--min-index', default=None, type=int,
+		help='minimum word index')
+	parser.add_argument('--max-index', default=None, type=int,
+		help='maximum word index')
+	parser.add_argument('--remove', action='store_true',
+		help='remove all documents before beginning?')
 	args = parser.parse_args()
 
 	# Get the words
 	print "Getting words"
-	word_list = get_word_list('en', limit=args.limit if args.limit else None)
+	word_list = get_word_list(args.lang, min_index=args.min_index, max_index=args.max_index)
 	print_pricing_info(word_list)
 
 	# Connect to DB
@@ -34,7 +38,7 @@ def main():
 	print "Translating"
 	buf = dbutils.DBWriteBuffer(coll)
 	progress = perf.ProgressDisplay(len(word_list))
-	for word_list_chunk in dbutils.chunk_list(word_list, 100):
+	for word_list_chunk in dbutils.chunk_list(word_list, 1000):
 		tx_dict = pooled_translate([tup[0] for tup in word_list_chunk], 'en', args.lang)
 		for (word, count) in word_list_chunk:
 			tx = tx_dict[word]
