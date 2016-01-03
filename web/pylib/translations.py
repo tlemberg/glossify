@@ -39,7 +39,7 @@ def rate_limited(max_per_second):
     return decorate
 
 
-@rate_limited(75)
+@rate_limited(30)
 def translate(q, source, target):
 	payload = {
 		'q': q,
@@ -61,7 +61,7 @@ def translate(q, source, target):
 	
 
 
-def pooled_translate(qs, source, target, n_pools=5):
+def pooled_translate(qs, source, target, n_pools=3):
 	pool = ThreadPool(n_pools)
 	results = pool.map(lambda q: (q, translate(q, source, target)), qs)
 	pool.close()
