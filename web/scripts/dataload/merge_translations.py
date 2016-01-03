@@ -77,7 +77,7 @@ def main():
 	buf = dbutils.DBUpdateBuffer(phrases_coll)
 	progress = perf.ProgressDisplay(phrases_coll.count())
 	rank = 1
-	for document in phrases_coll.find():
+	for document in phrases_coll.find().sort('count', pymongo.DESCENDING):
 		buf.append({
 			'base': document['base'],
 		}, {
