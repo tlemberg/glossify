@@ -11,6 +11,7 @@ from auth              import verify_auth_token
 import app.appconfig
 import json
 import os.path
+import dbutils
 
 from bson import ObjectId
 import dictionary
@@ -318,8 +319,10 @@ def get_excerpt_dictionary():
 
 	coll = mongo.db["phrases_%s" % lang]
 
-	cursor = coll.find({ '_id': { '$in': phrase_ids } })
-	d = dictionary.create_dictionary_from_cursor(lang, cursor)
+	d = {}
+	for phrase_id_chunk in dbutils.chunk_list(phrase_ids, 1000):
+		cursor = coll.find({ '_id': { '$in': phrase_id_chunk } })
+		d.update(dictionary.create_dictionary_from_cursor(lang, cursor))
 
 	print len(set(d.keys()))
 
