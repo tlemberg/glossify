@@ -39,7 +39,7 @@ def rate_limited(max_per_second):
     return decorate
 
 
-@rate_limited(30)
+@rate_limited(99)
 def translate(q, source, target):
 	payload = {
 		'q': q,

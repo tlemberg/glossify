@@ -3,7 +3,7 @@ import dbutils, perf
 import time, traceback
 from pprint import pprint
 
-from translations import pooled_translate
+from translations import translate
 from word_lists import get_word_list, print_pricing_info
 
 
@@ -43,11 +43,11 @@ def main():
 	buf = dbutils.DBWriteBuffer(coll)
 	progress = perf.ProgressDisplay(len(word_list))
 	for word_list_chunk in dbutils.chunk_list(word_list, 1000):
-		tx_dict = pooled_translate([tup[0] for tup in word_list_chunk], 'en', args.lang)
+		tx_dict = [translate(tup[0], 'en', args.lang) for tup in word_list_chunk]
 		n_failures = 0
 		while n_failures < MAX_FAILURES:
 			try:
-				tx_dict = pooled_translate([tup[0] for tup in word_list_chunk], 'en', args.lang)
+				tx_dict = {tup[0]: translate(tup[0], 'en', args.lang) for tup in word_list_chunk}
 				break
 			except Exception as e:
 				traceback.print_exc()
