@@ -36,7 +36,8 @@ def main():
 	coll = db[coll_name]
 
 	print "Removing documents"
-	coll.remove({})
+	if args.remove:
+		coll.remove({})
 
 	print "Translating"
 	buf = dbutils.DBWriteBuffer(coll)
