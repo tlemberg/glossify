@@ -2,6 +2,6 @@
 
 echo "Compiling COFFEE"
 
-APPDIR=$PROJECT_HOME/app/www/coffee
+APPDIR=../www/coffee
 
 coffee --compile --output $APPDIR/lib/ $APPDIR/src/

@@ -1,12 +1,7 @@
 #!/bin/bash
 
-SHAREDDIR=$PROJECT_HOME/shared/less
-APPDIR=$PROJECT_HOME/app/www/less
-WEBDIR=$PROJECT_HOME/web/static/less
+APPDIR=../www/less
+WEBDIR=../../web/static/less
 
-find $SHAREDDIR/src/ -name '*.less' -exec lessc {} \; > $SHAREDDIR/lib/shared.css
 find $APPDIR/src/ -name '*.less' -exec lessc {} \; > $APPDIR/lib/app.css
 find $WEBDIR/src/ -name '*.less' -exec lessc {} \; > $WEBDIR/lib/web.css
-
-cp $SHAREDDIR/lib/shared.css $APPDIR/lib/shared.css
-cp $SHAREDDIR/lib/shared.css $WEBDIR/lib/shared.css

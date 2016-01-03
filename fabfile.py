@@ -4,9 +4,13 @@ from fabric.api import run, cd, sudo, local, task
 
 @task
 def launch_prod():
-	with cd('/var/www/prod/glossify'):
+	with cd('/var/www/glossify'):
 		sudo("git fetch --all")
 		sudo("git reset --hard")
+		sudo("mv /var/www/glossify/app/www/coffee/src/config-prod.coffee /var/www/glossify/app/www/coffee/src/config.coffee")
+		with cd('/var/www/glossify/app/scripts'):
+			sudo('./compile_coffee')
+			sudo('./compile_less')
 		sudo("apachectl restart")
 
 

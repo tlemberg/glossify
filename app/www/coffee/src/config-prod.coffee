@@ -6,7 +6,7 @@ define ->
 	############################################################################
 	return {
 
-		apiUrl: 'https://glossify.net/api/'
+		apiUrl: 'https://glossify.io/api/'
 		lockdown: 1
 
 	}
