@@ -225,6 +225,15 @@ def get_gb2312_hash():
 #
 ################################################################################
 def get_viewable_txs(phrase):
+	tx_groups = {}
+	for tx in phrase['txs']:
+		text = tx['text']
+		pron = tx.get('pron') or 'default'
+		if not tx_groups.get(pron):
+			tx_groups[pron] = []
+		tx_groups[pron].append(text)
+	return tx_groups
+	"""
 	priority = sorted(phrase['txs'].keys(), key = lambda t: len(phrase['txs'][t]), reverse=True)
 	new_txs = {}
 	for k in priority[:2]:
@@ -237,6 +246,7 @@ def get_viewable_txs(phrase):
 		x = [tx['text'] for tx in x]
 		new_txs[k] = x
 	return new_txs
+	"""
 
 
 ################################################################################
