@@ -37,7 +37,7 @@ api = restful.Api(app_instance)
 app_instance.config['DEBUG'] = True
 app_instance.config['SECRET_KEY'] = 'super-secret'
 
-if not int(os.environ.get('LOCALDB')):
+if not os.environ.get('LOCALDB') or not int(os.environ.get('LOCALDB')):
 	app_instance.config['MONGO_HOST'] = 'glossify.io'
 	app_instance.config['MONGO_PORT'] = '27017'
 	app_instance.config['MONGO_USERNAME'] = 'tlemberg'

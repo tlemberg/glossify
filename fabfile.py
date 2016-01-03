@@ -14,9 +14,8 @@ def launch_prod():
 		sudo("cp -rf /home/ubuntu/Envs/tenk/lib/python2.7/site-packages /var/www/glossify/web")
 		run("export WORKON_HOME=~/Envs")
 		run("source /usr/local/bin/virtualenvwrapper.sh")
-		run("workon glossify")
-		run("pip install -r $HOME/work/glossify/web/requirements.txt")
-		sudo("LOCALDB=1 ISDEV=0 ISLOCAL=0 apachectl restart")
+		sudo("pip install -r $HOME/work/glossify/web/requirements.txt")
+		sudo("apachectl restart")
 
 
 @task
