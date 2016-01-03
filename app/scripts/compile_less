@@ -2,6 +2,6 @@
 
 echo "Compiling LESS"
 
-WEBDIR=$PROJECT_HOME/app/www/less
+WEBDIR=../www/less
 
 find $WEBDIR/src/ -name '*.less' -exec lessc {} \; > $WEBDIR/lib/app.css
