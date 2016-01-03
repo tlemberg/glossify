@@ -44,20 +44,31 @@ def excerpt_to_phrase_ids(text, lang, known_phrases):
 			else: phrase_id_map[norm_phrase] = known_phrases[norm_phrase]
 	return phrase_id_map
 
+
 def normalize(word, lang):
 	# currently ignoring language
-	# return word.lower().strip(':').strip('"').strip('.').strip(',').strip('-')
 
 	# Use Regex
 	lower_word = word.lower()
 	pattern=re.compile(u'[^\w+\']', re.UNICODE)
-	return pattern.sub('', lower_word, re.UNICODE)
+	normalized_words = pattern.sub(' ', lower_word, re.UNICODE).split(' ')
+
+	if lang == 'fr': # handle french abbrvs
+		for word in normalized_words:
+			if '\'' in word:
+				normalized_words.remove(word)
+				normalized_words.append(max(word.split('\''), key=lambda p: len(p)))
+	return normalized_words
 
 	# return word # Without normalization, average hit rate is <10% lower
 
 def sentence_to_phrases(text, lang):
 	if lang == 'fr':
-		return [normalize(word, lang) for word in text.split(' ')]
+		# return [normalize(word, lang) for word in text.split(' ')]
+		phrases = []
+		for word in text.split(' '):
+			phrases += normalize(word, lang)
+		return [ph for ph in phrases if (ph.strip() and not ph.isdigit())]
 	if lang == 'zh':
 		# for chinese, interested in multi-character phrases
 		phrases = []
@@ -87,5 +98,6 @@ def get_phrase_ids(phrases, lang):
 		phrase_id_map[d['base']] = d['_id']
 		
 	return phrase_id_map
+
 
 

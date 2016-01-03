@@ -241,9 +241,11 @@ def add_document():
 
 	# 2. Get the set of unique phrases to be looked up
 	phrases_list, unique_phrases = api_utils.get_phrases_from_excerpts(excerpts, lang)
-
+	
 	# 3. Look up all phrases and get phrase-to-ID mapping
 	phrase_id_map = api_utils.get_phrase_ids(unique_phrases, lang)
+
+	# 3.5 TODO(kgu) handle phrases not found
 
 	# 4. Insert each excerpt with corresponding phrase ids
 	num_ph = sum([len(phrases) for phrases in phrases_list])
